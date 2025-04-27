@@ -222,7 +222,13 @@ function createMainMenu()
         love.graphics.setColor({0, 1, 0})
         rotAdd = 0.1 * math.sin(GlobalSinAngle)
         scale = self.currentOptionScale
-        drawOutlinedText(self.options[self.menuLevel][self.pos], (Push:getWidth() / 2), (Push:getHeight() / 2) + 64 + 40 * self.pos, 0 + rotAdd, scale, scale, love.graphics.getFont():getWidth(self.options[self.menuLevel][self.pos]) / 2, love.graphics.getFont():getHeight(self.options[self.menuLevel][self.pos]) / 2, 4, {0, 0, 0})
+        local txt = self.options[self.menuLevel][self.pos]
+
+
+        if gameStuff.lang == "pt-br" then
+            txt = self.optionsPT[self.menuLevel][self.pos]
+        end
+        drawOutlinedText(txt, (Push:getWidth() / 2), (Push:getHeight() / 2) + 64 + 40 * self.pos, 0 + rotAdd, scale, scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, {0, 0, 0})
 
 
         love.graphics.setColor({1, 1, 1})

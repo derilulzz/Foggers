@@ -82,6 +82,9 @@ function createCarInstance(_inheritFrom, _x, _y)
 		self.vel.y = Lume.lerp(self.vel.y, 0, 0.1)
 
 
+		self.driveParticle:setSpeed(gameStuff.speed - 0.1, gameStuff.speed)
+
+
 		if self.startSfx ~= nil then
 			if not self.startSfx:isPlaying() then
 				self.startSfx:release()
@@ -197,7 +200,7 @@ function createCarInstance(_inheritFrom, _x, _y)
 
 		self.driveParticle:setPosition(self.pos.x + 16, self.pos.y + 24)
 		self.driveParticle:update(globalDt)
-		self.angle = self.angle + 1 * globalDt
+		self.angle = self.angle + (1 * gameStuff.speed) * globalDt
 		if self.fromCar.especialPropertys.seller then
 			if self.fromCar.especialPropertys.recieveCooldown <= 0 then
 				money = money + Lume.clamp(((self.moneyGenerated * 0.2) / moneyGainDiv) * moneyGainMult, 0, 9999)
