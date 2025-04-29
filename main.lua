@@ -24,6 +24,8 @@ require "sounds"
 require "musics"
 require "startThing"
 require "events"
+require "colorStuff"
+require "credits"
 
 
 GameCarInstances = {}
@@ -240,6 +242,7 @@ gameCam = {
 love.mouse.setVisible(false)
 rooms = {
     quit = -1,
+    credits = 0.25,
     start = 0.5,
     mainMenu = 0,
     game = 1,
@@ -282,12 +285,7 @@ damageEffectStuff = {
 }
 
 
-for c = 1, #GameCars do
-    table.insert(gameCarButtons, #gameCarButtons + 1,
-        createButton(0 + 128 * c, 64, 108, 108, GameCars[c].name, GameCars[c].desc, false))
-end
-speedUpButton = createButton(35, 64, 50, 84, "1x", "LMB to speed down\nRMB to speed up")
-speedUpButton.disabled = true
+speedUpButton = nil
 
 
 function love.run()
@@ -373,6 +371,14 @@ function love.update(dt)
             end
         end
     end
+    for c = 1, #GameCarInstances do
+        if GameCarInstances[c] ~= nil then
+            GameCarInstances[c].walkSfx:setVolume(gameStuff.sfxVolume)
+            if GameCarInstances[c].startSfx ~= nil then
+                GameCarInstances[c].startSfx:setVolume(gameStuff.sfxVolume)
+            end
+        end
+    end
     updateMusicVolume()
 
 
@@ -399,6 +405,12 @@ function love.update(dt)
 
         if currentRoom == rooms.quit then
             love.event.quit()
+        elseif currentRoom == rooms.credits then
+            if creditsInstance == nil then
+                creditsInstance = createCredits()
+            else
+                creditsInstance:update()
+            end
         elseif currentRoom == rooms.start then
             if startThingInstance == nil then
                 startThingInstance = createStartThing()
@@ -439,15 +451,14 @@ function love.update(dt)
             for c = 1, #gameCarButtons do
                 if gameStuff.lang == "pt-br" then
                     gameCarButtons[c].text = GameCars[c].namePT
+                    gameCarButtons[c].addText = GameCars[c].descPT
                 else
                     gameCarButtons[c].text = GameCars[c].name
+                    gameCarButtons[c].addText = GameCars[c].desc
                 end
             end
 
 
-            for b = 1, #UiStuff do
-                UiStuff[b]:update(dt)
-            end
             updateAllCars()
             for f = 1, #Foggs do
                 if Foggs[f] ~= nil then
@@ -580,23 +591,25 @@ function love.update(dt)
             end
 
 
-            if speedUpButton.hovered then
-                if love.mouse.isDown(2) then gameStuff.speed = gameStuff.speed + 5 * dt end
-                if love.mouse.isDown(1) then gameStuff.speed = gameStuff.speed - 5 * dt end
+            if speedUpButton ~= nil then
+                if speedUpButton.hovered then
+                    if love.mouse.isDown(2) then gameStuff.speed = gameStuff.speed + 5 * dt end
+                    if love.mouse.isDown(1) then gameStuff.speed = gameStuff.speed - 5 * dt end
+                end
+                if speedUpButton.oldHovered == false and speedUpButton.hovered then
+                    mouse.showLMBIcon = true
+                    mouse.showRMBIcon = true
+                    mouse.LMBModulate = { 1, 0.5, 0.5 }
+                    mouse.RMBModulate = { 1, 0.5, 0.5 }
+                end
+                if speedUpButton.oldHovered and speedUpButton.hovered == false then
+                    mouse.showLMBIcon = false
+                    mouse.showRMBIcon = false
+                    mouse.LMBModulate = { 1, 1, 1 }
+                    mouse.RMBModulate = { 1, 1, 1 }
+                end
+                speedUpButton.text = "x" .. tostring(math.floor(gameStuff.speed))
             end
-            if speedUpButton.oldHovered == false and speedUpButton.hovered then
-                mouse.showLMBIcon = true
-                mouse.showRMBIcon = true
-                mouse.LMBModulate = { 1, 0.5, 0.5 }
-                mouse.RMBModulate = { 1, 0.5, 0.5 }
-            end
-            if speedUpButton.oldHovered and speedUpButton.hovered == false then
-                mouse.showLMBIcon = false
-                mouse.showRMBIcon = false
-                mouse.LMBModulate = { 1, 1, 1 }
-                mouse.RMBModulate = { 1, 1, 1 }
-            end
-            speedUpButton.text = "x" .. tostring(math.floor(gameStuff.speed))
 
 
             if #Foggs <= 0 and megaWave.enabled then
@@ -912,6 +925,9 @@ function love.update(dt)
     if pauseMenuInstance ~= nil then
         pauseMenuInstance:update()
     end
+    for b = 1, #UiStuff do
+        UiStuff[b]:update(dt)
+    end
 
 
 
@@ -950,13 +966,13 @@ function love.draw()
         if mainMenuInstance == nil then
             mainMenuInstance = createMainMenu()
         else
-            drawGrass()
-
-
-            drawAllCars()
-
-
             mainMenuInstance:draw()
+        end
+    elseif currentRoom == rooms.credits then
+        if creditsInstance == nil then
+            creditsInstance = createCredits()
+        else
+            creditsInstance:draw()
         end
     elseif currentRoom == rooms.start then
         if startThingInstance == nil then
@@ -1055,11 +1071,11 @@ function love.draw()
             local txt = modifier.current.name
             drawOutlinedText(txt, 8, 600 - 4, 0, 4, 4, 0, love.graphics.getFont():getHeight(txt), 4, { 0, 0, 0 })
         end
+    end
 
 
-        for b = 1, #UiStuff do
-            UiStuff[b]:draw()
-        end
+    for b = 1, #UiStuff do
+        UiStuff[b]:draw()
     end
 
 
@@ -1196,6 +1212,7 @@ function love.keypressed(key)
     end
     if key == "f1" then
         debugStuff.enabled = not debugStuff.enabled
+        startEvent()
     end
 end
 
@@ -1232,6 +1249,10 @@ function setRoom()
     if currentRoom == rm then return end
 
 
+    if currentRoom == rooms.mainMenu and mainMenuInstance ~= nil then mainMenuInstance.creditsButton = nil end
+    if currentRoom == rooms.game then gameCarButtons = {}; speedUpButton = nil end
+
+
     currentRoom = rm
 
 
@@ -1241,12 +1262,26 @@ function setRoom()
     megaWave.timer = 60
     startThingInstance = nil
     tableClear(Foggs)
+    UiStuff = {}
     modifier.current = modList[1]
     foggCreateTimerDef = 5
     gameStuff.currentFoggGaved = 0
     gameStuff.hp = 10
     modifier.current = modList[1]
     money = 100
+
+
+    if rm == rooms.game then
+        gameCarButtons = {}
+        speedUpButton = createButton(35, 64, 50, 84, "1x", "LMB to speed down\nRMB to speed up")
+        speedUpButton.disabled = true
+
+
+        for c = 1, #GameCars do
+            table.insert(gameCarButtons, #gameCarButtons + 1,
+                createButton(0 + 128 * c, 64, 108, 108, GameCars[c].name, GameCars[c].desc, false))
+        end
+    end
 end
 
 function updateAllCars()

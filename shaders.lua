@@ -109,10 +109,10 @@ function drawOutlinedText(text, x, y, r, sx, sy, ox, oy, outlineSize, outlineCol
 
 
             if rt < 4 then
-                if outlineColor == nil then
-                    love.graphics.setColor({ currentColor[1] / 8, currentColor[2] / 8, currentColor[3] / 8 })
-                else
+                if outlineColor then
                     love.graphics.setColor(outlineColor)
+                else
+                    love.graphics.setColor({ currentColor[1] / 8, currentColor[2] / 8, currentColor[3] / 8 })
                 end
             else
                 love.graphics.setColor(currentColor)
@@ -121,7 +121,7 @@ function drawOutlinedText(text, x, y, r, sx, sy, ox, oy, outlineSize, outlineCol
 
             love.graphics.print(text, x + add.x, y + add.y, r, sx, sy, ox, oy)
         end
-        outlineSize = outlineSize - 4
+        outlineSize = outlineSize - 2
     end
 end
 
@@ -162,6 +162,6 @@ function drawOutlinedTextF(text, x, y, limit, align, r, sx, sy, ox, oy, outlineS
 
             love.graphics.printf(text, x + add.x, y + add.y, limit, align, r, sx, sy, ox, oy)
         end
-        outlineSize = outlineSize - 4
+        outlineSize = outlineSize - 2
     end
 end
