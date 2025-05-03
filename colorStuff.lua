@@ -17,5 +17,5 @@ function HSV(h, s, v)
     else
         r, g, b = c, 0, x
     end
-    return r+m, g+m, b+m
+    return {r+m, g+m, b+m}
 end

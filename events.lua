@@ -1,13 +1,56 @@
+function createCitizen()
+    local c = {
+        pos = {x = -32, y = (600 / 2) - 64},
+--        spr = newAnimation(love.graphics)
+        mspd = 50,
+    }
 
 
-function startEvent()
-    createEventStartText()
+    function c:update()
+        if self.pos.x >= 800 then
+            table.remove(gameInstances, tableFind(gameInstances, self))
+        end
+
+
+        self.pos.x = self.pos.x + (self.mspd * gameStuff.speed) * globalDt
+    end
+
+
+    function c:draw()
+        love.graphics.rectangle("fill", self.pos.x, self.pos.y, 32, 32)
+    end
+
+
+    table.insert(gameInstances, 1, c)
 end
 
 
-function createEventStartText()
+eventTypes = {
+    {creationCode = createCitizen, stopFrogg=false, id = 0, name = "Citizen"},
+}
+currentEvent = 0
+
+
+
+function startEvent()
+    currentEvent = eventTypes[math.random(1, #eventTypes)]
+    currentEvent.creationCode()
+
+
+    if currentEvent.stopFrogg then
+        gameStuff.pauseFroggCreation = true
+    end
+
+
+    
+    createEventStartText(currentEvent)
+end
+
+
+function createEventStartText(whatEvent)
     local t = {
         text = "EVENT STARTED",
+        forEvent = whatEvent,
         scale = 0,
         rot = 6,
         alpha = 0,
@@ -26,6 +69,9 @@ function createEventStartText()
 
     function t:draw()
         drawOutlinedText(self.text, 800 / 2, 600 / 2, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(self.text) / 2, love.graphics.getFont():getHeight(self.text) / 2, 8, {0, 0, 0})
+
+
+        drawOutlinedText(self.forEvent.name, 800 / 2, (600 / 2) + 128, 0, self.scale, self.scale, love.graphics.getFont():getWidth(self.forEvent.name) / 2, love.graphics.getFont():getHeight(self.forEvent.name) / 2, 8, {0, 0, 0})
     end
 
 

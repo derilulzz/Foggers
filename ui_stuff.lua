@@ -80,7 +80,7 @@ function createButton(_x, _y, _w, _h, _text, additionalText, _fixed_to_scr)
 		love.graphics.printf(self.text, realPos.x + (self.size.w / 2), (realPos.y + self.size.h / 2), self.size.w / 2, "center", 0, 1 * sizeAdd, 1 * sizeAdd, (self.size.w / 2) / 2, txtHeight / 2)
 
 
-		if self.hoverTime >= 1 then
+		if self.hoverTime >= 1 and self.addText ~= "" then
 			local wrap = {fnt:getWrap(self.addText, self.size.w / 2)}
 			local txtHeight = fnt:getHeight() * #wrap[2]
 			love.graphics.setColor({0, 0, 0})

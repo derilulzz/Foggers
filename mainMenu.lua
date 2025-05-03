@@ -36,12 +36,13 @@ function createMainMenu()
             }
         },
         menuLevel = 1,
-        theme = 0,
+        theme = oldMainMenuTheme,
         THEMES = {
             THEME_NORMAL = 0,
             THEME_HARD = 1,
             THEME_SOFT = 2,
             THEME_BLOOD = 3,
+            THEME_CAT = 4,
         },
         pos = 1,
         oldUpBtn = false,
@@ -50,13 +51,12 @@ function createMainMenu()
         currentOptionScale = 5,
         mouseMoved = false,
         blackEnterAlpha = 1,
-        creditsButton = createButton(800 - (128 + 8), 600 - (64 + 8), 128, 64, "Credits", "", true),
+        creditsButton = createButton(800 - (64 + 8), 600 - (32 + 8), 128, 64, "Credits", "", true),
     }
 
 
     function m:init()
-        --self.theme = math.random(1, #self.THEMES)
-        self.theme = self.THEMES.THEME_BLOOD
+        self.theme = randomNumber
 
 
         Flux.to(self, 1, {scale=16, blackEnterAlpha=0}):ease("expoout")
@@ -65,6 +65,9 @@ function createMainMenu()
         for i=1, #GameCars do
             createCarInstance(GameCars[i], 800, 128 + 64 * i)
         end
+
+
+        oldMainMenuTheme = self.theme
     end
 
 
@@ -222,7 +225,7 @@ function createMainMenu()
             love.graphics.setColor({1, 1, 1})
             drawOutlinedText(txt, (Push:getWidth() / 2) + 8, 80, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, {0, 0, 0})
         elseif self.theme == self.THEMES.THEME_HARD then
-            love.graphics.setColor(HSV(0.5 + 0.5 * math.sin(GlobalSinAngle / 2), 1, 1))
+            love.graphics.setColor(HSV(0, 1, 1))
             love.graphics.rectangle("fill", 0, 0, 800, 600)
 
 
@@ -231,6 +234,9 @@ function createMainMenu()
             drawOutlinedText(txt, (Push:getWidth() / 2) + 8 + 8, 80 + 8, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, {0, 0, 0})
             love.graphics.setColor(HSV(0, 1, 0.85 + 0.25 * math.sin(GlobalSinAngle / 2)))
             drawOutlinedText(txt, (Push:getWidth() / 2) + 8, 80, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, {0, 0, 0})
+
+
+            drawOutlinedText("DIE EDITION", 800 / 2, 8 + (love.graphics.getFont():getHeight(txt) * self.scale), 0.05 * math.sin(GlobalSinAngle), 2, 2, love.graphics.getFont():getWidth("DIE EDITION") / 2, love.graphics.getFont():getHeight("DIE EDITION") / 2, 2, {0, 0, 0})
         elseif self.theme == self.THEMES.THEME_SOFT then
             love.graphics.setColor(HSV(0.95, 0.25, 1))
             love.graphics.rectangle("fill", 0, 0, 800, 600)
@@ -238,9 +244,12 @@ function createMainMenu()
 
             local txt = "FOGGERS"
             love.graphics.setColor(HSV(0.985, 0.5, 1))
-            drawOutlinedText(txt, (Push:getWidth() / 2) + 8 + 8, 80 + 8, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, {HSV(0.925, 1, 0.4)})
+            drawOutlinedText(txt, (Push:getWidth() / 2) + 8 + 8, 80 + 8, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, HSV(0.925, 1, 0.4))
             love.graphics.setColor(HSV(0.95, 0, 1))
-            drawOutlinedText(txt, (Push:getWidth() / 2) + 8, 80, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, {HSV(0.9, 0.85, 0.6)})
+            drawOutlinedText(txt, (Push:getWidth() / 2) + 8, 80, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, HSV(0.9, 0.85, 0.6))
+            
+            
+            drawOutlinedText("CALM EDITION", 800 / 2, 8 + (love.graphics.getFont():getHeight(txt) * self.scale), 0.05 * math.sin(GlobalSinAngle), 2, 2, love.graphics.getFont():getWidth("CALM EDITION") / 2, love.graphics.getFont():getHeight("CALM EDITION") / 2, 2, {0, 0, 0})
         elseif self.theme == self.THEMES.THEME_BLOOD then
             love.graphics.setColor(0, 0, 0)
             love.graphics.rectangle("fill", 0, 0, 800, 600)
@@ -251,6 +260,34 @@ function createMainMenu()
             drawOutlinedText(txt, (Push:getWidth() / 2) + 8 + 8, 80 + 8, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, {1, 0, 0})
             love.graphics.setColor(0, 0, 0)
             drawOutlinedText(txt, (Push:getWidth() / 2) + 8, 80, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, {1, 0, 0})
+
+
+            drawOutlinedText("DARK EDITION", 800 / 2, 8 + (love.graphics.getFont():getHeight(txt) * self.scale), 0.05 * math.sin(GlobalSinAngle), 2, 2, love.graphics.getFont():getWidth("DARK EDITION") / 2, love.graphics.getFont():getHeight("DARK EDITION") / 2, 2, {0, 0, 0})
+        elseif self.theme == self.THEMES.THEME_CAT then
+            love.graphics.setColor(HSV(0.5 + 0.5 * math.cos(GlobalSinAngle), 1, 1))
+            love.graphics.rectangle("fill", 0, 0, 800, 600)
+
+
+            local txt = "FOGGERS"
+            love.graphics.setColor(0, 0, 0)
+            drawOutlinedText(txt, (Push:getWidth() / 2) + 8 + 8, 80 + 8, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, {1, 0, 0})
+            love.graphics.setColor(1, 1, 1)
+            drawOutlinedText(txt, (Push:getWidth() / 2) + 8, 80, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, {1, 0, 0})
+
+
+            drawOutlinedText("CAT EDITION", 800 / 2, 8 + (love.graphics.getFont():getHeight(txt) * self.scale), 0.05 * math.sin(GlobalSinAngle), 2, 2, love.graphics.getFont():getWidth("DARK EDITION") / 2, love.graphics.getFont():getHeight("DARK EDITION") / 2, 2, {0, 0, 0})
+
+
+            love.graphics.setColor(1, 1, 1)
+            love.graphics.circle("fill", (800 / 2) - 164, 600 / 2, 128, 8)
+            love.graphics.circle("fill", (800 / 2) + 164, 600 / 2, 128, 8)
+            love.graphics.setColor(0, 0, 0)
+            love.graphics.ellipse("fill", (800 / 2) - 164 + 32 * math.cos(GlobalSinAngle), (600 / 2) + 32 * math.sin(GlobalSinAngle), 32, 64, 8)
+            love.graphics.ellipse("fill", (800 / 2) + 164 + 32 * math.cos(GlobalSinAngle), (600 / 2) + 32 * math.sin(GlobalSinAngle), 32, 64, 8)
+            love.graphics.setColor(1, 1, 1)
+            love.graphics.setLineWidth(8)
+            love.graphics.line((800 / 2) - 164, (600 / 2) + 164, (800 / 2) - 148, (600 / 2) + 256, (800 / 2), (600 / 2) + 164, (800 / 2) + 128, (600 / 2) + 256, (800 / 2) + 148, (600 / 2) + 164)
+            love.graphics.setLineWidth(1)
         end
 
 
@@ -263,7 +300,7 @@ function createMainMenu()
 
 
                 if self.theme == self.THEMES.THEME_SOFT then
-                    outlineColor = {HSV(0.925, 1, 0.4)}
+                    outlineColor = HSV(0.925, 1, 0.4)
                 end
                 if self.theme == self.THEMES.THEME_BLOOD then
                     outlineColor = {0.25, 0, 0}
@@ -282,6 +319,8 @@ function createMainMenu()
                 drawOutlinedText(txt, (Push:getWidth() / 2), (Push:getHeight() / 2) + 64 + 40 * o, 0 + rotAdd, scale, scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, outlineColor)
             end
         end
+
+
         local outlineColor = {0, 0, 0}
         if self.theme == self.THEMES.THEME_NORMAL then
             love.graphics.setColor({0, 1, 0})
@@ -289,10 +328,13 @@ function createMainMenu()
             love.graphics.setColor(HSV(0, 1, 0.85 + 0.25 * math.sin(GlobalSinAngle / 2)))
         elseif self.theme == self.THEMES.THEME_SOFT then
             love.graphics.setColor(HSV(0.95, 0, 1))
-            outlineColor = {HSV(0.9, 0.85, 0.6)}
+            outlineColor = HSV(0.9, 0.85, 0.6)
         elseif self.theme == self.THEMES.THEME_BLOOD then
             love.graphics.setColor({0, 0, 0})
             outlineColor = {1, 0, 0}
+        elseif self.theme == self.THEMES.THEME_CAT then
+            love.graphics.setColor(HSV(0.5 + 0.5 * math.sin(GlobalSinAngle), 1, 1))
+            outlineColor = {0, 0, 0}
         end
         rotAdd = 0.1 * math.sin(GlobalSinAngle)
         scale = self.currentOptionScale
@@ -305,9 +347,12 @@ function createMainMenu()
         drawOutlinedText(txt, (Push:getWidth() / 2), (Push:getHeight() / 2) + 64 + 40 * self.pos, 0 + rotAdd, scale, scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, outlineColor)
 
 
-        
+        love.graphics.setColor({1, 1, 1})
         local txt = "Version: " .. tostring(gameStuff.currentVersion)
         drawOutlinedText(txt, 8, 600 - 8, 0, 2, 2, 0, love.graphics.getFont():getHeight(txt), 2, {0, 0, 0})
+        if debugStuff.enabled then
+            drawOutlinedText(tostring(self.theme), 8, 600 - 8 - 32, 0, 2, 2, 0, love.graphics.getFont():getHeight(txt), 2, {0, 0, 0})
+        end
 
 
         drawAllCars()

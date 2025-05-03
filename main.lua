@@ -7,6 +7,9 @@ utf8 = require "utf8"
 love.graphics.setDefaultFilter("nearest", "nearest")
 
 
+if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
+    require("lldebugger").start()
+end
 require "effects"
 require "cars"
 require "animations"
@@ -128,6 +131,7 @@ placingStuff = {
 }
 PushsInGameMousePos = { x = 0, y = 0 }
 LastLeftMouseButton = false
+oldMainMenuTheme = 0
 LastRightMouseButton = false
 gameCarButtons = {}
 selectedCar = 1
@@ -146,6 +150,7 @@ megaWave = {
 gameInstances = {}
 yForCar = math.floor(PushsInGameMousePos.y / carGridLockDist) * carGridLockDist
 globalDt = 1
+randomNumber = math.random(1, 4)
 camera = {
     offset = { x = 0, y = 0 },
     trans = love.math.newTransform(),
@@ -255,9 +260,11 @@ oldMousePos = { x = 0, y = 0 }
 sceneTransition = {
     progress = 0,
     enabled = false,
+    coolIcon = nil,
 }
 gameStuff = {
     paused = false,
+    pauseFroggCreation = false,
     speed = 1,
     lang = "eng",
     currentFoggGaved = 0,
@@ -289,7 +296,7 @@ speedUpButton = nil
 
 
 function love.run()
-    Push:setupScreen(800, 600, 800, 600)
+    Push:setupScreen(800, 600, 800, 600, {resizable=true})
     love.window.setTitle("Foggers")
 
 
@@ -298,7 +305,9 @@ function love.run()
     -- We don't want the first frame's dt to include time taken by love.load.
     if love.timer then love.timer.step() end
 
+
     local dt = 0
+
 
     -- Main loop time.
     return function()
@@ -315,24 +324,31 @@ function love.run()
             end
         end
 
+
         -- Update dt, as we'll be passing it to update
         if love.timer then dt = love.timer.step() end
 
+
         -- Call update and draw
         if love.update then love.update(dt) end -- will pass 0 if love.timer is disabled
+
 
         if love.graphics and love.graphics.isActive() then
             love.graphics.origin()
             love.graphics.clear(love.graphics.getBackgroundColor())
 
+
             if love.draw then love.draw() end
+
 
             love.graphics.present()
         end
 
-        if love.timer then love.timer.sleep(0.001) end
+
+        if love.timer then love.timer.sleep(1 / 60) end
     end
 end
+
 
 function love.load(args, unfilteredArgs)
     love.graphics.setLineStyle("rough")
@@ -350,10 +366,15 @@ function love.load(args, unfilteredArgs)
     loadGame()
 end
 
+
 function love.update(dt)
     local mP = { gameCam.transform:inverseTransformPoint(Push:toGame(love.mouse.getX(), love.mouse.getY())) }
     PushsInGameMousePos = { x = mP[1], y = mP[2] }
     globalDt = dt
+    randomNumber = math.random(1, 4)
+
+
+    Push:resize(love.graphics.getWidth(), love.graphics.getHeight())
 
 
     if gameStuff.paused then
@@ -531,6 +552,16 @@ function love.update(dt)
             if not megaWave.enabled then
                 if foggCreateTimer <= 0 then
                     createANewFogg()
+
+
+                    local chance = love.math.random(0, 2)
+                    
+                    
+                    if chance == 0 then
+                        startEvent()
+                    end
+                    
+                    
                     foggCreateTimer = foggCreateTimerDef
                 end
             end
@@ -935,22 +966,30 @@ function love.update(dt)
     gameStuff.musicVolume = Lume.clamp(gameStuff.musicVolume, 0, 1)
 
 
+    if sceneTransition.coolIcon ~= nil then
+        sceneTransition.coolIcon:update()
+    end
+
+
     if gameStuff.timeSinceStart > 20000 then
         gameStuff.timeSinceStart = 0
     end
-    math.randomseed(gameStuff.timeSinceStart)
-    love.math.setRandomSeed(gameStuff.timeSinceStart)
 
 
     mouse:updateMouse()
-    math.randomseed(love.timer.getTime())
+    math.randomseed(gameStuff.timeSinceStart)
+    love.math.setRandomSeed(gameStuff.timeSinceStart)
     LastLeftMouseButton = love.mouse.isDown(1)
     LastRightMouseButton = love.mouse.isDown(2)
     GlobalSinAngle = GlobalSinAngle + (1 * gameStuff.speed) * dt
-    foggCreateTimer = foggCreateTimer - (1 * gameStuff.speed) * dt
+    if not gameStuff.pauseFroggCreation then
+        foggCreateTimer = foggCreateTimer - (1 * gameStuff.speed) * dt
+    else
+        tableClear(Foggs)
+    end
     oldMousePos = { x = PushsInGameMousePos.x, y = PushsInGameMousePos.y }
     Flux.update(dt * gameStuff.speed)
-    gameStuff.timeSinceStart = gameStuff.timeSinceStart + 1 * dt
+    gameStuff.timeSinceStart = gameStuff.timeSinceStart + 1
     saveGame(love.window.getFullscreen(), gameStuff.lang, gameStuff.sfxVolume, gameStuff.musicVolume)
 end
 
@@ -1114,15 +1153,26 @@ function love.draw()
     end
 
 
+    if sceneTransition.coolIcon ~= nil then
+        sceneTransition.coolIcon:draw()
+    end
+
+
     if debugStuff.enabled then
-        love.graphics.print("RedRect: " .. tostring(damageEffectStuff.redRectRGBAdd), 8, 8)
-        love.graphics.print("FPS: " .. tostring(love.timer.getFPS()), 8, 16 + 4)
-        love.graphics.print("gameCarsAmnt: " .. tostring(#GameCarInstances), 8, 16 + 8 + 4 + 4)
-        love.graphics.print("FoggsAmnt: " .. tostring(#Foggs), 8, 16 + 8 + 8 + 4 + 4 + 4)
-        love.graphics.print("gameInstancesAmnt: " .. tostring(#gameInstances), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4)
-        love.graphics.print("onTopGameInstancesAmnt: " .. tostring(#onTopGameInstaces), 8,
+        love.graphics.setColor({1, 1, 1})
+        drawOutlinedText("RedRect: " .. tostring(damageEffectStuff.redRectRGBAdd), 8, 8)
+        drawOutlinedText("FPS: " .. tostring(love.timer.getFPS()), 8, 16 + 4)
+        drawOutlinedText("gameCarsAmnt: " .. tostring(#GameCarInstances), 8, 16 + 8 + 4 + 4)
+        drawOutlinedText("FoggsAmnt: " .. tostring(#Foggs), 8, 16 + 8 + 8 + 4 + 4 + 4)
+        drawOutlinedText("gameInstancesAmnt: " .. tostring(#gameInstances), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4)
+        drawOutlinedText("onTopGameInstancesAmnt: " .. tostring(#onTopGameInstaces), 8,
             16 + 8 + 8 + 8 + 8 + 4 + 4 + 4 +
             4 + 4)
+        drawOutlinedText("timeSinceStartLove2D: " .. tostring(love.timer.getTime()), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4)
+        drawOutlinedText("timeSinceStartFromGame: " .. tostring(gameStuff.timeSinceStart), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4)
+        drawOutlinedText("random Number: " .. tostring(love.math.random(1, 4)), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4)
+        drawOutlinedText("random Number Lua: " .. tostring(math.random(1, 4)), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4)
+        drawOutlinedText("global Random Number: " .. tostring(randomNumber), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4)
     end
     Push:finish()
 end
@@ -1235,6 +1285,9 @@ function changeRoom(toWhat)
     if sceneTransition.enabled then return end
 
 
+    sceneTransition.coolIcon = createCoolTransition()
+
+
     rm = toWhat
     sceneTransition.enabled = true
     Flux.to(sceneTransition, 0.5, { progress = 1 }):ease("expoin"):oncomplete(setRoom):after(sceneTransition, 0.5,
@@ -1283,6 +1336,7 @@ function setRoom()
         end
     end
 end
+
 
 function updateAllCars()
     for c = 1, #GameCarInstances do
@@ -1357,4 +1411,61 @@ function isPointInsideCam(x, y)
         x <= (gameCam.pos.x + gameCam.offset.x) - ((800 / 2) * gameCam.zoom) + 800 * 2 and
         y >= (gameCam.pos.y + gameCam.offset.y) - ((600) * gameCam.zoom) and
         y <= (gameCam.pos.y + gameCam.offset.y) - ((600 / 2) * gameCam.zoom) + 600 * 2
+end
+
+
+function createCoolTransition()
+    local c = {
+        icons = {
+            love.graphics.newImage("Sprs/Icons/Face1.png"),
+            love.graphics.newImage("Sprs/Icons/Face2.png"),
+            love.graphics.newImage("Sprs/Icons/Face3.png"),
+            love.graphics.newImage("Sprs/Icons/Face4.png"),
+            love.graphics.newImage("Sprs/Icons/Face5.png"),
+        },
+        currentIcon = love.math.random(1, 5),
+        iconScale = 0,
+        iconRot = -6,
+        coolParticles = love.graphics.newParticleSystem(love.graphics.newImage("Sprs/Icons/ParticleCool.png"), 100),
+    }
+
+
+    function c:init()
+        self.coolParticles:setParticleLifetime(2, 3)
+		self.coolParticles:moveTo(800 / 2, 600 / 2)
+		self.coolParticles:setLinearAcceleration(-2000, -600, 2000, 600)
+		self.coolParticles:setSizes(2, 4)
+		self.coolParticles:setRotation(-3, 3)
+		self.coolParticles:setColors({1, 1, 1, 1}, {1, 1, 1, 0})
+		self.coolParticles:setDirection(-1)
+		self.coolParticles:setParticleLifetime(1, 2)
+		self.coolParticles:emit(32)
+
+
+        Flux.to(self, 0.25, {iconScale = 8, iconRot = 0}):ease("expoout"):after(self, 0.25, {iconScale = 0, iconRot = 6}):delay(0.5):ease("expoin"):oncomplete(c.deleteSelf)
+    end
+
+
+    function c:update()
+        self.coolParticles:update(globalDt)
+    end
+
+
+    function c:draw()
+        love.graphics.draw(self.coolParticles)
+
+
+        drawOutlinedSprite(self.icons[self.currentIcon], 800 / 2, 600 / 2, self.iconRot, self.iconScale, self.iconScale, self.icons[self.currentIcon]:getWidth() / 2, self.icons[self.currentIcon]:getHeight() / 2, 8, HSV(0.5 + 0.5 * math.sin(GlobalSinAngle * 4), 1, 1))
+    end
+
+
+    function c:deleteSelf()
+        sceneTransition.coolIcon = nil
+    end
+
+
+    c:init()
+
+
+    return c
 end
