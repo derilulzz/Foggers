@@ -3,14 +3,15 @@
 grassSpr = love.graphics.newImage("Sprs/Bgs/Grass.png")
 roadSpr = love.graphics.newImage("Sprs/Bgs/Road.png")
 roadSideSpr = love.graphics.newImage("Sprs/Bgs/Grass2.png")
+roadSideSprExtend = love.graphics.newImage("Sprs/Bgs/Grass2Continue.png")
 
 
 function drawGrass()
     local tileSize = {x = grassSpr:getWidth() * 2, y = grassSpr:getHeight() * 2}
 
 
-    for x=-8, math.floor(800 / tileSize.x) + 8 do
-        for y=-8, math.floor(600 / tileSize.y) + 8 do
+    for x=-8, math.floor(800 / tileSize.x) + 16 do
+        for y=-8, math.floor(600 / tileSize.y) + 16 do
             if isPointInsideCam(tileSize.x * x, tileSize.y * y) then
                 love.graphics.draw(grassSpr, tileSize.x * x, tileSize.y * y, 0, 2, 2)
             end
@@ -31,9 +32,17 @@ end
 
 
 function drawRoadSide()
-    for x=-8, (800 / (roadSideSpr:getWidth() * 2)) + 8 do
-        if isPointInsideCam((roadSideSpr:getWidth() * 2) * x, 600 - (roadSideSpr:getHeight() * 2)) then
-            love.graphics.draw(roadSideSpr, (roadSideSpr:getWidth() * 2) * x, 600 - (roadSideSpr:getHeight() * 2), 0, 2, 2)
+    for x=-8, (800 / (roadSideSpr:getWidth() * 2)) + 16 do
+        for y=0, (64 / (roadSideSpr:getHeight() * 2)) + 8 do
+            local spr = roadSideSpr
+
+
+            if y ~= 0 then spr = roadSideSprExtend end
+
+
+            if isPointInsideCam((roadSideSpr:getWidth() * 2) * x, 600 - (roadSideSpr:getHeight() * 2)) then
+                love.graphics.draw(spr, (roadSideSpr:getWidth() * 2) * x, (600 - (roadSideSpr:getHeight() * 2)) + (roadSideSpr:getHeight() * 2) * y, 0, 2, 2)
+            end
         end
     end
 end

@@ -130,6 +130,7 @@ placingStuff = {
     maxX = 800,
 }
 PushsInGameMousePos = { x = 0, y = 0 }
+PushsInGameMousePosNoTransform = { x = 0, y = 0 }
 LastLeftMouseButton = false
 oldMainMenuTheme = 0
 LastRightMouseButton = false
@@ -239,6 +240,7 @@ screenShake = {
 }
 gameCam = {
     pos = { x = 0, y = 0 },
+    vel = { x = 0, y = 0 },
     transform = love.math.newTransform(),
     offset = { x = 0, y = 0 },
     zoom = 1,
@@ -290,6 +292,7 @@ oldPlacingCar = false
 damageEffectStuff = {
     redRectRGBAdd = 0,
 }
+pushUpdateDelayTimer = 0.1
 
 
 speedUpButton = nil
@@ -354,9 +357,6 @@ function love.load(args, unfilteredArgs)
     love.graphics.setLineStyle("rough")
 
 
-    startEvent()
-
-
     updateMusicVolume()
 
 
@@ -369,12 +369,24 @@ end
 
 function love.update(dt)
     local mP = { gameCam.transform:inverseTransformPoint(Push:toGame(love.mouse.getX(), love.mouse.getY())) }
+    local realMPos = {Push:toGame(love.mouse.getX(), love.mouse.getY())}
+    PushsInGameMousePosNoTransform = {x = realMPos[1], y = realMPos[2]}
     PushsInGameMousePos = { x = mP[1], y = mP[2] }
     globalDt = dt
     randomNumber = math.random(1, 4)
 
 
-    Push:resize(love.graphics.getWidth(), love.graphics.getHeight())
+    if pushUpdateDelayTimer <= 0 then
+        Push:resize(love.graphics.getWidth(), love.graphics.getHeight())
+        pushUpdateDelayTimer = 0.1
+    end
+
+
+    if not gameStuff.paused then
+        for b = 1, #UiStuff do
+            UiStuff[b]:update(dt)
+        end
+    end
 
 
     if gameStuff.paused then
@@ -469,6 +481,28 @@ function love.update(dt)
             yForCar = Lume.clamp(math.floor(PushsInGameMousePos.y / carGridLockDist) * carGridLockDist, upBoxStuff.h, 510)
 
 
+
+            --#region Move the camera
+                local inputDirX = 0
+                local inputDirY = 0
+                local mspd = 500
+
+
+                if love.keyboard.isDown("a") then inputDirX = inputDirX - 1 end
+                if love.keyboard.isDown("d") then inputDirX = inputDirX + 1 end
+                if love.keyboard.isDown("w") then inputDirY = inputDirY - 1 end
+                if love.keyboard.isDown("s") then inputDirY = inputDirY + 1 end
+
+
+                if love.keyboard.isDown("lshift") then mspd = 850 end
+
+
+                gameCam.vel.x = Lume.lerp(gameCam.vel.x, mspd * inputDirX, 0.1)
+                gameCam.vel.y = Lume.lerp(gameCam.vel.y, mspd * inputDirY, 0.1)
+            --#endregion
+
+
+
             for c = 1, #gameCarButtons do
                 if gameStuff.lang == "pt-br" then
                     gameCarButtons[c].text = GameCars[c].namePT
@@ -553,14 +587,6 @@ function love.update(dt)
                 if foggCreateTimer <= 0 then
                     createANewFogg()
 
-
-                    local chance = love.math.random(0, 2)
-                    
-                    
-                    if chance == 0 then
-                        startEvent()
-                    end
-                    
                     
                     foggCreateTimer = foggCreateTimerDef
                 end
@@ -627,7 +653,7 @@ function love.update(dt)
                     if love.mouse.isDown(2) then gameStuff.speed = gameStuff.speed + 5 * dt end
                     if love.mouse.isDown(1) then gameStuff.speed = gameStuff.speed - 5 * dt end
                 end
-                if speedUpButton.oldHovered == false and speedUpButton.hovered then
+                if speedUpButton.hovered == false and speedUpButton.hovered then
                     mouse.showLMBIcon = true
                     mouse.showRMBIcon = true
                     mouse.LMBModulate = { 1, 0.5, 0.5 }
@@ -649,6 +675,12 @@ function love.update(dt)
                 modifier.current = modList[math.random(1, #modList)]
                 playSound(modChangeSfx)
                 megaWave.timer = megaWave.timerDef
+
+
+                local chance = love.math.random(0, 2)
+                if chance == 0 then
+                    startEvent()
+                end
             end
 
 
@@ -956,9 +988,6 @@ function love.update(dt)
     if pauseMenuInstance ~= nil then
         pauseMenuInstance:update()
     end
-    for b = 1, #UiStuff do
-        UiStuff[b]:update(dt)
-    end
 
 
 
@@ -976,6 +1005,14 @@ function love.update(dt)
     end
 
 
+    gameCam.pos.x = gameCam.pos.x + gameCam.vel.x * dt
+    gameCam.pos.y = gameCam.pos.y + gameCam.vel.y * dt
+
+
+    gameCam.pos.x = Lume.clamp(gameCam.pos.x, -128, 800 - 800 / 2)
+    gameCam.pos.y = Lume.clamp(gameCam.pos.y, -128, 600 - 600 / 2)
+
+
     mouse:updateMouse()
     math.randomseed(gameStuff.timeSinceStart)
     love.math.setRandomSeed(gameStuff.timeSinceStart)
@@ -987,6 +1024,7 @@ function love.update(dt)
     else
         tableClear(Foggs)
     end
+    pushUpdateDelayTimer = pushUpdateDelayTimer - 1 * dt
     oldMousePos = { x = PushsInGameMousePos.x, y = PushsInGameMousePos.y }
     Flux.update(dt * gameStuff.speed)
     gameStuff.timeSinceStart = gameStuff.timeSinceStart + 1

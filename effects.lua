@@ -219,3 +219,19 @@ function createDamageText(x, y)
     t:init()
     table.insert(onTopGameInstaces, 1, t)
 end
+
+
+shadowSpr = love.graphics.newImage("Sprs/Other/Shadow.png")
+
+
+function drawShadow(x, y, scaleX, scaleY, rot)
+    love.graphics.setColor(1, 1, 1, 0.5)
+
+
+    scaleX = scaleX or 1
+    scaleY = scaleY or 1
+    rot = rot or 1
+
+
+    love.graphics.draw(shadowSpr, x, y, rot, scaleX, scaleY, shadowSpr:getWidth() / 2, shadowSpr:getHeight() / 2)
+end

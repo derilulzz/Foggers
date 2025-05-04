@@ -1,23 +1,28 @@
 function createCitizen()
     local c = {
-        pos = {x = -32, y = (600 / 2) - 64},
---        spr = newAnimation(love.graphics)
+        pos = {x = -32, y = math.random((600 / 2) - 128, (600 / 2) + 128)},
+        spr = newAnimation(love.graphics.newImage("Sprs/Events/Citizen/CitizenWalk.png"), 32, 32, 3, 5),
         mspd = 50,
     }
 
 
     function c:update()
         if self.pos.x >= 800 then
+            createMoneyGainEffect(500, self.pos.x - 64, self.pos.y)
+            money = money + 500
             table.remove(gameInstances, tableFind(gameInstances, self))
         end
 
 
         self.pos.x = self.pos.x + (self.mspd * gameStuff.speed) * globalDt
+        self.spr:update(globalDt * gameStuff.speed)
     end
 
 
     function c:draw()
-        love.graphics.rectangle("fill", self.pos.x, self.pos.y, 32, 32)
+        drawShadow(self.pos.x, self.pos.y + 32, 4, 4, 0)
+        love.graphics.setColor(1, 1, 1, 1)
+        self.spr:draw(self.rot, self.pos.x, self.pos.y, 2, 2, nil, nil, 2, {0, 0, 0})
     end
 
 
@@ -42,7 +47,6 @@ function startEvent()
     end
 
 
-    
     createEventStartText(currentEvent)
 end
 

@@ -1,13 +1,13 @@
 
 
 
-function createButton(_x, _y, _w, _h, _text, additionalText, _fixed_to_scr)
+function createButton(_x, _y, _w, _h, _text, additionalText, _fixedToScreen)
 	local b = {
 		pos = {x = _x, y = _y},
 		size = {w = _w, h = _h},
 		wantedSize = {w = _w, h = _h},
 		text = _text,
-		fixed_to_screen = _fixed_to_scr,
+		fixedToScreen = _fixedToScreen,
 		hovered = false,
 		pressed = false,
 		addText = additionalText,
@@ -19,7 +19,10 @@ function createButton(_x, _y, _w, _h, _text, additionalText, _fixed_to_scr)
 
 	function b:update(dt)
 		local realPos = {x = self.pos.x - self.size.w / 2, y = self.pos.y - self.size.h / 2}
-		self.hovered = PushsInGameMousePos.x >= realPos.x and PushsInGameMousePos.x <= realPos.x + self.size.w and PushsInGameMousePos.y >= realPos.y and PushsInGameMousePos.y <= realPos.y + self.size.h
+		local usedMousePos = PushsInGameMousePosNoTransform
+
+
+		self.hovered = usedMousePos.x >= realPos.x and usedMousePos.x <= realPos.x + self.size.w and usedMousePos.y >= realPos.y and usedMousePos.y <= realPos.y + self.size.h
 		
 
 		if self.oldHovered == false and self.hovered then
@@ -84,10 +87,10 @@ function createButton(_x, _y, _w, _h, _text, additionalText, _fixed_to_scr)
 			local wrap = {fnt:getWrap(self.addText, self.size.w / 2)}
 			local txtHeight = fnt:getHeight() * #wrap[2]
 			love.graphics.setColor({0, 0, 0})
-				love.graphics.rectangle("fill", PushsInGameMousePos.x, PushsInGameMousePos.y, (self.size.w) + 16, ((txtHeight) * 2) + 16)
+				love.graphics.rectangle("fill", PushsInGameMousePosNoTransform.x, PushsInGameMousePosNoTransform.y, (self.size.w) + 16, ((txtHeight) * 2) + 16)
 			love.graphics.setColor({1, 1, 1})
-				love.graphics.rectangle("line", PushsInGameMousePos.x, PushsInGameMousePos.y, (self.size.w) + 16, ((txtHeight) * 2) + 16)
-				drawOutlinedTextF(self.addText, PushsInGameMousePos.x + 8 + ((self.size.w / 4) * 2), PushsInGameMousePos.y + 8 + ((txtHeight / 2) * 2), self.size.w / 2, "center", 0, 2, 2, self.size.w / 4, txtHeight / 2, 4, {0, 0, 0})
+				love.graphics.rectangle("line", PushsInGameMousePosNoTransform.x, PushsInGameMousePosNoTransform.y, (self.size.w) + 16, ((txtHeight) * 2) + 16)
+				drawOutlinedTextF(self.addText, PushsInGameMousePosNoTransform.x + 8 + ((self.size.w / 4) * 2), PushsInGameMousePosNoTransform.y + 8 + ((txtHeight / 2) * 2), self.size.w / 2, "center", 0, 2, 2, self.size.w / 4, txtHeight / 2, 4, {0, 0, 0})
 		end
 	end
 
