@@ -29,7 +29,10 @@ function createForg(_x, _y, _spr, _jumpSpr, _hp, _jumpTimerDef)
 
 
 	function f:init()
-		Flux.to(self, 1, {alpha = 1}):ease("expoout")
+		self.scale = 16
+
+
+		Flux.to(self, 1, {alpha = 1, scale=2}):ease("expoout")
 	end
 
 
@@ -69,7 +72,7 @@ function createForg(_x, _y, _spr, _jumpSpr, _hp, _jumpTimerDef)
 		if ((self.hp + self.hpAddFogg) / self.hpDivFogg) * self.hpMultFogg <= 0 then
 			self:die()
 		end
-		if self.pos.y <= (upBoxStuff.y + upBoxStuff.h) - 32 then
+		if self.pos.y <= -32 then
 			table.remove(Foggs, tableFind(Foggs, self))
 			recieveDamage(1, self.pos.x, self.pos.y)
 		end
@@ -124,8 +127,8 @@ function createForg(_x, _y, _spr, _jumpSpr, _hp, _jumpTimerDef)
 
 
 	function f:die()
-		money = money + ((100 / moneyGainDiv) * moneyGainMult)
-		createMoneyGainEffect(((100 / moneyGainDiv) * moneyGainMult), self.pos.x, self.pos.y)
+		money = money + (((100 * Lume.clamp(gameStuff.currentFoggGaved, 1, 999)) / moneyGainDiv) * moneyGainMult)
+		createMoneyGainEffect((((100 * Lume.clamp(gameStuff.currentFoggGaved, 1, 999)) / moneyGainDiv) * moneyGainMult), self.pos.x, self.pos.y)
 		createBlood(self.pos.x, self.pos.y)
 		table.remove(Foggs, tableFind(Foggs, self))
 	end

@@ -125,17 +125,17 @@ function createCarInstance(_inheritFrom, _x, _y)
 		end
 
 
-		if self.pos.x < gameCam.pos.x - 128 then
-			self.pos.x = gameCam.pos.x + 800 + 128
+		if self.pos.x < -128 then
+			self.pos.x = (800 * 1.5) + 128
 		end
-		if self.pos.x > gameCam.pos.x + 800 + 128 then
-			self.pos.x = gameCam.pos.x - 128
+		if self.pos.x > (800 * 1.5) + 128 then
+			self.pos.x = -128
 		end
-		if self.pos.y < (upBoxStuff.y + upBoxStuff.h) - 64 then
+		if self.pos.y < -64 then
 			self.pos.y = gameCam.pos.y + 600 + 64
 		end
 		if self.pos.y > gameCam.pos.y + 600 + 64 then
-			self.pos.y = (upBoxStuff.y + upBoxStuff.h) - 64
+			self.pos.y = -64
 		end
 
 

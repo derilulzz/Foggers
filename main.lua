@@ -29,6 +29,8 @@ require "startThing"
 require "events"
 require "colorStuff"
 require "credits"
+require "Tutorial.tutorial"
+require "Bag.bag"
 
 
 GameCarInstances = {}
@@ -267,6 +269,7 @@ sceneTransition = {
 gameStuff = {
     paused = false,
     pauseFroggCreation = false,
+    canPlaceFroggs = false,
     speed = 1,
     lang = "eng",
     currentFoggGaved = 0,
@@ -293,6 +296,7 @@ damageEffectStuff = {
     redRectRGBAdd = 0,
 }
 pushUpdateDelayTimer = 0.1
+xForCar = 0
 
 
 speedUpButton = nil
@@ -379,6 +383,14 @@ function love.update(dt)
     if pushUpdateDelayTimer <= 0 then
         Push:resize(love.graphics.getWidth(), love.graphics.getHeight())
         pushUpdateDelayTimer = 0.1
+    end
+
+
+    if currentRoom ~= rooms.game then
+        gameCam.pos.x = Lume.lerp(gameCam.pos.x, 0, 0.1)
+        gameCam.pos.y = Lume.lerp(gameCam.pos.y, 0, 0.1)
+        gameCam.vel.x = 0
+        gameCam.vel.y = 0
     end
 
 
@@ -478,8 +490,8 @@ function love.update(dt)
                 end
             end
         elseif currentRoom == rooms.game then
-            yForCar = Lume.clamp(math.floor(PushsInGameMousePos.y / carGridLockDist) * carGridLockDist, upBoxStuff.h, 510)
-
+            yForCar = Lume.clamp(math.floor(PushsInGameMousePos.y / carGridLockDist) * carGridLockDist, 0, 510)
+            xForCar = Lume.clamp(PushsInGameMousePos.x, placingStuff.minX, placingStuff.maxX)
 
 
             --#region Move the camera
@@ -575,15 +587,15 @@ function love.update(dt)
                     if love.mouse.isDown(1) and LastLeftMouseButton == false then
                         if money >= GameCars[selectedCar].cost then
                             money = money - GameCars[selectedCar].cost
-                            createCarInstance(GameCars[selectedCar],
-                                Lume.clamp(PushsInGameMousePos.x, placingStuff.minX, placingStuff.maxX), yForCar)
+                            gameStuff.canPlaceFroggs = true
+                            createCarInstance(GameCars[selectedCar], xForCar, yForCar)
                         end
                     end
                 end
             end
 
 
-            if not megaWave.enabled then
+            if not megaWave.enabled and gameStuff.canPlaceFroggs then
                 if foggCreateTimer <= 0 then
                     createANewFogg()
 
@@ -684,7 +696,9 @@ function love.update(dt)
             end
 
 
-            megaWave.timer = megaWave.timer - (1 * gameStuff.speed) * dt
+            if gameStuff.canPlaceFroggs then
+                megaWave.timer = megaWave.timer - (1 * gameStuff.speed) * dt
+            end
 
 
             if not megaWave.enabled then
@@ -712,8 +726,8 @@ function love.update(dt)
                     GameCarInstances[c].spdMultCar = 1
                     GameCarInstances[c].scaleAdd = 0
                 end
-                placingStuff.minX = 0
-                placingStuff.maxX = 800
+                placingStuff.minX = -128
+                placingStuff.maxX = 800 * 1.5
                 for f = 1, #Foggs do
                     Foggs[f].spdDivFogg = 1
                     Foggs[f].hpDivFogg = 1
@@ -730,8 +744,8 @@ function love.update(dt)
                     GameCarInstances[c].spdMultCar = 1
                     GameCarInstances[c].scaleAdd = 0
                 end
-                placingStuff.minX = 0
-                placingStuff.maxX = 800
+                placingStuff.minX = -128
+                placingStuff.maxX = 800 * 1.5
                 for f = 1, #Foggs do
                     Foggs[f].spdDivFogg = 1
                     Foggs[f].hpDivFogg = 1
@@ -748,8 +762,8 @@ function love.update(dt)
                     GameCarInstances[c].spdMultCar = 1
                     GameCarInstances[c].scaleAdd = 0
                 end
-                placingStuff.minX = 0
-                placingStuff.maxX = 800
+                placingStuff.minX = -128
+                placingStuff.maxX = 800 * 1.5
                 for f = 1, #Foggs do
                     Foggs[f].spdDivFogg = 1
                     Foggs[f].hpDivFogg = 1
@@ -766,8 +780,8 @@ function love.update(dt)
                     GameCarInstances[c].spdMultCar = 1
                     GameCarInstances[c].scaleAdd = 0
                 end
-                placingStuff.minX = 0
-                placingStuff.maxX = 800
+                placingStuff.minX = -128
+                placingStuff.maxX = 800 * 1.5
                 for f = 1, #Foggs do
                     Foggs[f].spdDivFogg = 2
                     Foggs[f].hpDivFogg = 2
@@ -784,8 +798,8 @@ function love.update(dt)
                     GameCarInstances[c].spdMultCar = 1
                     GameCarInstances[c].scaleAdd = 0
                 end
-                placingStuff.minX = 0
-                placingStuff.maxX = 800
+                placingStuff.minX = -128
+                placingStuff.maxX = 800 * 1.5
                 for f = 1, #Foggs do
                     Foggs[f].spdDivFogg = 1
                     Foggs[f].hpDivFogg = 2
@@ -802,8 +816,8 @@ function love.update(dt)
                     GameCarInstances[c].spdMultCar = 1
                     GameCarInstances[c].scaleAdd = 0
                 end
-                placingStuff.minX = 0
-                placingStuff.maxX = 800
+                placingStuff.minX = -128
+                placingStuff.maxX = 800 * 1.5
                 for f = 1, #Foggs do
                     Foggs[f].spdDivFogg = 1
                     Foggs[f].hpDivFogg = 1
@@ -821,7 +835,7 @@ function love.update(dt)
                     GameCarInstances[c].scaleAdd = 0
                 end
                 placingStuff.minX = 800 / 2
-                placingStuff.maxX = 800
+                placingStuff.maxX = 800 * 1.5
                 for f = 1, #Foggs do
                     Foggs[f].spdDivFogg = 1
                     Foggs[f].hpDivFogg = 1
@@ -838,8 +852,8 @@ function love.update(dt)
                     GameCarInstances[c].spdMultCar = 1
                     GameCarInstances[c].scaleAdd = 0
                 end
-                placingStuff.minX = 0
-                placingStuff.maxX = 800
+                placingStuff.minX = -128
+                placingStuff.maxX = 800 * 1.5
                 for f = 1, #Foggs do
                     Foggs[f].spdDivFogg = 1
                     Foggs[f].hpDivFogg = 1
@@ -857,8 +871,8 @@ function love.update(dt)
                     GameCarInstances[c].scaleAdd = 0
                     GameCarInstances[c].scaleAdd = GameCarInstances[c].fromCar.scale
                 end
-                placingStuff.minX = 0
-                placingStuff.maxX = 800
+                placingStuff.minX = -128
+                placingStuff.maxX = 800 * 1.5
                 for f = 1, #Foggs do
                     Foggs[f].spdDivFogg = 1
                     Foggs[f].hpDivFogg = 1
@@ -875,8 +889,8 @@ function love.update(dt)
                     GameCarInstances[c].spdMultCar = 2
                     GameCarInstances[c].scaleAdd = 0
                 end
-                placingStuff.minX = 0
-                placingStuff.maxX = 800
+                placingStuff.minX = -128
+                placingStuff.maxX = 800 * 1.5
                 for f = 1, #Foggs do
                     Foggs[f].spdDivFogg = 1
                     Foggs[f].hpDivFogg = 1
@@ -893,8 +907,8 @@ function love.update(dt)
                     GameCarInstances[c].spdMultCar = 2
                     GameCarInstances[c].scaleAdd = 0
                 end
-                placingStuff.minX = 0
-                placingStuff.maxX = 800
+                placingStuff.minX = -128
+                placingStuff.maxX = 800 * 1.5
                 for f = 1, #Foggs do
                     Foggs[f].spdDivFogg = 1
                     Foggs[f].hpDivFogg = 1
@@ -911,8 +925,8 @@ function love.update(dt)
                     GameCarInstances[c].spdMultCar = 1
                     GameCarInstances[c].scaleAdd = 0
                 end
-                placingStuff.minX = 0
-                placingStuff.maxX = 800
+                placingStuff.minX = -128
+                placingStuff.maxX = 800 * 1.5
                 for f = 1, #Foggs do
                     Foggs[f].spdDivFogg = 1
                     Foggs[f].hpDivFogg = 1
@@ -929,8 +943,8 @@ function love.update(dt)
                     GameCarInstances[c].spdMultCar = 1
                     GameCarInstances[c].scaleAdd = 0
                 end
-                placingStuff.minX = 0
-                placingStuff.maxX = 800
+                placingStuff.minX = -128
+                placingStuff.maxX = 800 * 1.5
                 for f = 1, #Foggs do
                     Foggs[f].spdDivFogg = 1
                     Foggs[f].hpDivFogg = 1
@@ -980,8 +994,12 @@ function love.update(dt)
     damageEffectStuff.redRectRGBAdd = Lume.lerp(damageEffectStuff.redRectRGBAdd, 0, 0.1)
 
 
-    for t = 1, #onTopGameInstaces do
-        onTopGameInstaces[t]:update()
+    if not gameStuff.paused then
+        for t = 1, #onTopGameInstaces do
+            if onTopGameInstaces[t] ~= nil and onTopGameInstaces[t].update ~= nil then
+                onTopGameInstaces[t]:update()
+            end
+        end
     end
 
 
@@ -1076,7 +1094,7 @@ function love.draw()
         if placingCar then
             love.graphics.setColor(1, 1, 1, 0.5)
             GameCars[selectedCar].spr:draw(0.25 * math.cos(GlobalSinAngle),
-                Lume.clamp(PushsInGameMousePos.x, placingStuff.minX, placingStuff.maxX), yForCar,
+            xForCar, yForCar,
                 GameCars[selectedCar].scale, GameCars[selectedCar].scale, nil, nil, 4 + 2 * math.cos(GlobalSinAngle),
                 { 0, 0, 0, 0.5 })
             love.graphics.setColor(1, 1, 1, 1)
@@ -1157,7 +1175,9 @@ function love.draw()
 
 
     for t = 1, #onTopGameInstaces do
-        onTopGameInstaces[t]:draw()
+        if onTopGameInstaces[t] ~= nil then
+            onTopGameInstaces[t]:draw()
+        end
     end
 
 
@@ -1211,6 +1231,7 @@ function love.draw()
         drawOutlinedText("random Number: " .. tostring(love.math.random(1, 4)), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4)
         drawOutlinedText("random Number Lua: " .. tostring(math.random(1, 4)), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4)
         drawOutlinedText("global Random Number: " .. tostring(randomNumber), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4)
+        drawOutlinedText("Ram used: " .. tostring(collectgarbage("count") / 1024 .. " MB used"), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4)
     end
     Push:finish()
 end
@@ -1220,7 +1241,7 @@ function love.resize(w, h)
 end
 
 function createANewFogg(altX, altY)
-    local x = math.random(0, 800)
+    local x = math.random(0, 800 * 1.5)
     local y = 632
     local selectedFogg = Lume.clamp((gameStuff.currentFoggGaved), 0, 3)
 
@@ -1341,7 +1362,7 @@ function setRoom()
 
 
     if currentRoom == rooms.mainMenu and mainMenuInstance ~= nil then mainMenuInstance.creditsButton = nil end
-    if currentRoom == rooms.game then gameCarButtons = {}; speedUpButton = nil end
+    if currentRoom == rooms.game then createCamMoveTutorial(); gameCarButtons = {}; speedUpButton = nil end
 
 
     currentRoom = rm
@@ -1354,6 +1375,8 @@ function setRoom()
     startThingInstance = nil
     tableClear(Foggs)
     UiStuff = {}
+    onTopGameInstaces = {}
+    gameStuff.canPlaceFroggs = false
     modifier.current = modList[1]
     foggCreateTimerDef = 5
     gameStuff.currentFoggGaved = 0
@@ -1366,6 +1389,8 @@ function setRoom()
         gameCarButtons = {}
         speedUpButton = createButton(35, 64, 50, 84, "1x", "LMB to speed down\nRMB to speed up")
         speedUpButton.disabled = true
+        createCamMoveTutorial()
+        bagStuff:initBag()
 
 
         for c = 1, #GameCars do

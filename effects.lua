@@ -27,7 +27,7 @@ function createMoneyGainEffect(amnt, x, y)
 
 
     function e:update()
-        self.pos.y = self.pos.y - 100 * globalDt
+        self.pos.y = self.pos.y - (100 * gameStuff.speed) * globalDt
 
 
         if self.enableMov then

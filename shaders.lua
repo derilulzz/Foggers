@@ -202,3 +202,10 @@ function drawOutlinedTextF(text, x, y, limit, align, r, sx, sy, ox, oy, outlineS
         outlineSize = outlineSize - 1
     end
 end
+
+
+function drawOutlinedRect(x, y, width, height, outlineColor)
+    love.graphics.rectangle("fill", x, y, width, height)
+    love.graphics.setColor(outlineColor)
+    love.graphics.rectangle("line", x, y, width, height)
+end
