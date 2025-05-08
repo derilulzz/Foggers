@@ -46,7 +46,7 @@ function createPause()
 
 
     function p:update()
-        self.mouseMoved = oldMousePos.x ~= PushsInGameMousePos.x or oldMousePos.y ~= PushsInGameMousePos.y
+        self.mouseMoved = oldMousePos.x ~= PushsInGameMousePosNoTransform.x or oldMousePos.y ~= PushsInGameMousePosNoTransform.y
         self.rot = Lume.lerp(self.rot, 0.05 * math.cos(self.angle), 0.1)
 
 
@@ -69,8 +69,8 @@ function createPause()
 
         local hoveringOne = false
         for o=1, #self.options[self.menuLevel] do
-            if PushsInGameMousePos.x > (Push:getWidth() / 2) - (love.graphics.getFont():getWidth(self.options[self.menuLevel][o]) * 4) / 2 and PushsInGameMousePos.y > ((Push:getHeight() / 2) + 64 + 40 * o) - (love.graphics.getFont():getHeight(self.options[self.menuLevel][o]) * 4) / 2 then
-                if PushsInGameMousePos.x < (Push:getWidth() / 2) + (love.graphics.getFont():getWidth(self.options[self.menuLevel][o]) * 4) / 2 and PushsInGameMousePos.y < ((Push:getHeight() / 2) + 64 + 40 * o) + (love.graphics.getFont():getHeight(self.options[self.menuLevel][o]) * 4) / 2 then
+            if PushsInGameMousePosNoTransform.x > (Push:getWidth() / 2) - (love.graphics.getFont():getWidth(self.options[self.menuLevel][o]) * 4) / 2 and PushsInGameMousePosNoTransform.y > ((Push:getHeight() / 2) + 64 + 40 * o) - (love.graphics.getFont():getHeight(self.options[self.menuLevel][o]) * 4) / 2 then
+                if PushsInGameMousePosNoTransform.x < (Push:getWidth() / 2) + (love.graphics.getFont():getWidth(self.options[self.menuLevel][o]) * 4) / 2 and PushsInGameMousePosNoTransform.y < ((Push:getHeight() / 2) + 64 + 40 * o) + (love.graphics.getFont():getHeight(self.options[self.menuLevel][o]) * 4) / 2 then
                     hoveringOne = true
                     if self.mouseMoved then
                         if self.pos ~= o then

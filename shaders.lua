@@ -58,6 +58,14 @@ end
 function drawOutlinedSpriteQuad(drawable, quad, x, y, r, sx, sy, ox, oy, outlineSize, outlineColor)
     local add = { x = outlineSize, y = outlineSize }
     local currentColor = { love.graphics.getColor() }
+    x = x or 0
+    y = y or 0
+    text = text or ""
+    r = r or 0
+    sx = sx or 1
+    sy = sy or 1
+    ox = ox or drawable:getWidth() / 2
+    oy = oy or drawable:getHeight() / 2
 
 
     while outlineSize > 0 do
@@ -113,6 +121,14 @@ function drawOutlinedText(text, x, y, r, sx, sy, ox, oy, outlineSize, outlineCol
         end
     end
     if outlineSize == nil then outlineSize = 1 * (sx or 1) end
+    x = x or 0
+    y = y or 0
+    text = text or ""
+    r = r or 0
+    sx = sx or 1
+    sy = sy or 1
+    ox = ox or love.graphics.getFont():getWidth(text) / 2
+    oy = oy or love.graphics.getFont():getHeight(text) / 2
 
 
     local add = { x = outlineSize, y = outlineSize }
@@ -165,6 +181,14 @@ end
 function drawOutlinedTextF(text, x, y, limit, align, r, sx, sy, ox, oy, outlineSize, outlineColor)
     local add = { x = outlineSize, y = outlineSize }
     local currentColor = { love.graphics.getColor() }
+    x = x or 0
+    y = y or 0
+    text = text or ""
+    r = r or 0
+    sx = sx or 1
+    sy = sy or 1
+    ox = ox or love.graphics.getFont():getWidth(text) / 2
+    oy = oy or love.graphics.getFont():getHeight(text) / 2
 
 
     while outlineSize > 0 do

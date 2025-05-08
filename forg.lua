@@ -127,6 +127,13 @@ function createForg(_x, _y, _spr, _jumpSpr, _hp, _jumpTimerDef)
 
 
 	function f:die()
+		for c=1, #GameCarInstances do
+			if GameCarInstances[c].fromCar.especialPropertys.seller and GameCarInstances[c].fromCar.especialPropertys.froggsKilled then
+				GameCarInstances[c].fromCar.especialPropertys.froggsKilled = GameCarInstances[c].fromCar.especialPropertys.froggsKilled + 1
+			end
+		end
+
+
 		money = money + (((100 * Lume.clamp(gameStuff.currentFoggGaved, 1, 999)) / moneyGainDiv) * moneyGainMult)
 		createMoneyGainEffect((((100 * Lume.clamp(gameStuff.currentFoggGaved, 1, 999)) / moneyGainDiv) * moneyGainMult), self.pos.x, self.pos.y)
 		createBlood(self.pos.x, self.pos.y)

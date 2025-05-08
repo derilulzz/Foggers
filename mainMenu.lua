@@ -52,11 +52,22 @@ function createMainMenu()
         mouseMoved = false,
         blackEnterAlpha = 1,
         creditsButton = createButton(800 - (64 + 8), 600 - (32 + 8), 128, 64, "Credits", "", true),
+        showRunConfig = false,
+        runConfigStuff = {
+            startRunButton = nil,
+            numButton = nil,
+        }
     }
+
+
+    function m:createCreditsButton()
+        self.creditsButton = createButton(800 - (64 + 8), 600 - (32 + 8), 128, 64, "Credits", "", true)
+    end
 
 
     function m:init()
         self.theme = randomNumber
+        self:createCreditsButton()
 
 
         Flux.to(self, 1, {scale=16, blackEnterAlpha=0}):ease("expoout")
@@ -76,99 +87,114 @@ function createMainMenu()
         self.rot = Lume.lerp(self.rot, 0.05 * math.cos(self.angle), 0.1)
 
 
-        if love.keyboard.isDown("up", "w") and self.oldUpBtn == false then
-            self.pos = self.pos - 1
-            self.currentOptionScale = 6
-        end
-        if love.keyboard.isDown("down", "s") and self.oldDownBtn == false then
-            self.pos = self.pos + 1
-            self.currentOptionScale = 6
-        end
-        if love.keyboard.isDown("return", "space") and self.oldSelectButtonPressed == false then
-            self:selectOption()
-        end
+        if not self.showRunConfig then
+            if love.keyboard.isDown("up", "w") and self.oldUpBtn == false then
+                self.pos = self.pos - 1
+                self.currentOptionScale = 6
+            end
+            if love.keyboard.isDown("down", "s") and self.oldDownBtn == false then
+                self.pos = self.pos + 1
+                self.currentOptionScale = 6
+            end
+            if love.keyboard.isDown("return", "space") and self.oldSelectButtonPressed == false then
+                self:selectOption()
+            end
 
 
-        if self.pos < 1 then self.pos = #self.options[self.menuLevel] end
-        if self.pos > #self.options[self.menuLevel] then self.pos = 1 end
+            if self.pos < 1 then self.pos = #self.options[self.menuLevel] end
+            if self.pos > #self.options[self.menuLevel] then self.pos = 1 end
 
 
-        if self.creditsButton.pressed then
-            changeRoom(rooms.credits)
+            if self.creditsButton.pressed then
+                changeRoom(rooms.credits)
 
 
-            self.creditsButton.pressed = false
-        end
+                self.creditsButton.pressed = false
+            end
 
 
-        local hoveringOne = false
-        for o=1, #self.options[self.menuLevel] do
-            if PushsInGameMousePos.x > (Push:getWidth() / 2) - (love.graphics.getFont():getWidth(self.options[self.menuLevel][o]) * 4) / 2 and PushsInGameMousePos.y > ((Push:getHeight() / 2) + 64 + 40 * o) - (love.graphics.getFont():getHeight(self.options[self.menuLevel][o]) * 4) / 2 then
-                if PushsInGameMousePos.x < (Push:getWidth() / 2) + (love.graphics.getFont():getWidth(self.options[self.menuLevel][o]) * 4) / 2 and PushsInGameMousePos.y < ((Push:getHeight() / 2) + 64 + 40 * o) + ((love.graphics.getFont():getHeight(self.options[self.menuLevel][o]) * 4) / 2) - 4 then
-                    hoveringOne = true
-                    if self.mouseMoved then
-                        if self.pos ~= o then
-                            self.pos = o
-                            self.currentOptionScale = 6
+            local hoveringOne = false
+            for o=1, #self.options[self.menuLevel] do
+                if PushsInGameMousePos.x > (Push:getWidth() / 2) - (love.graphics.getFont():getWidth(self.options[self.menuLevel][o]) * 4) / 2 and PushsInGameMousePos.y > ((Push:getHeight() / 2) + 64 + 40 * o) - (love.graphics.getFont():getHeight(self.options[self.menuLevel][o]) * 4) / 2 then
+                    if PushsInGameMousePos.x < (Push:getWidth() / 2) + (love.graphics.getFont():getWidth(self.options[self.menuLevel][o]) * 4) / 2 and PushsInGameMousePos.y < ((Push:getHeight() / 2) + 64 + 40 * o) + ((love.graphics.getFont():getHeight(self.options[self.menuLevel][o]) * 4) / 2) - 4 then
+                        hoveringOne = true
+                        if self.mouseMoved then
+                            if self.pos ~= o then
+                                self.pos = o
+                                self.currentOptionScale = 6
+                            end
                         end
                     end
                 end
             end
-        end
-        if hoveringOne then
-            if love.mouse.isDown(1) == false and LastLeftMouseButton then
-                self:selectOption()
+            if hoveringOne then
+                if love.mouse.isDown(1) == false and LastLeftMouseButton then
+                    self:selectOption()
+                end
+            end
+
+
+            if love.window.getFullscreen() then
+                self.options[2][1] = "Fullscreen: Yes"
+            else
+                self.options[2][1] = "Fullscreen: No"
+            end
+            if love.window.getFullscreen() then
+                self.optionsPT[2][1] = "Tela Cheia: Sim"
+            else
+                self.optionsPT[2][1] = "Tela Cheia: Nao"
+            end
+
+
+            if gameStuff.lang == "pt-br" then
+                self.options[2][2] = "Lenguage: PT-BR"
+            else
+                self.options[2][2] = "Lenguage: Eng"
+            end
+            if gameStuff.lang == "pt-br" then
+                self.optionsPT[2][2] = "Lingua: PT-BR"
+            else
+                self.optionsPT[2][2] = "Lingua: Eng"
+            end
+
+
+            if gameStuff.lang == "eng" then
+                self.options[2][3] = "SFX Volume: " .. math.floor(gameStuff.sfxVolume * 100)
+            end
+            if gameStuff.lang == "pt-br" then
+                self.optionsPT[2][3] = "Volume Dos SFX: " .. math.floor(gameStuff.sfxVolume * 100)
+            end
+
+
+            if gameStuff.lang == "eng" then
+                self.options[2][4] = "Music Volume: " .. math.floor(gameStuff.musicVolume * 100)
+            end
+            if gameStuff.lang == "pt-br" then
+                self.optionsPT[2][4] = "Volume Da Musica: " .. math.floor(gameStuff.musicVolume * 100)
+            end
+
+
+            if self.menuLevel == 2 and self.pos == 3 then
+                if love.keyboard.isDown("left", "a") then gameStuff.sfxVolume = gameStuff.sfxVolume - 0.1 * globalDt end
+                if love.keyboard.isDown("right", "d") then gameStuff.sfxVolume = gameStuff.sfxVolume + 0.1 * globalDt end
+            end
+            if self.menuLevel == 2 and self.pos == 4 then
+                if love.keyboard.isDown("left", "a") then gameStuff.musicVolume = gameStuff.musicVolume - 0.1 * globalDt end
+                if love.keyboard.isDown("right", "d") then gameStuff.musicVolume = gameStuff.musicVolume + 0.1 * globalDt end
+            end
+        else
+            if self.runConfigStuff.startRunButton.pressed then
+                changeRoom(rooms.game)
+
+
+                self.runConfigStuff.startRunButton.pressed = false
             end
         end
 
 
-        if love.window.getFullscreen() then
-            self.options[2][1] = "Fullscreen: Yes"
-        else
-            self.options[2][1] = "Fullscreen: No"
-        end
-        if love.window.getFullscreen() then
-            self.optionsPT[2][1] = "Tela Cheia: Sim"
-        else
-            self.optionsPT[2][1] = "Tela Cheia: Nao"
-        end
 
-
-        if gameStuff.lang == "pt-br" then
-            self.options[2][2] = "Lenguage: PT-BR"
-        else
-            self.options[2][2] = "Lenguage: Eng"
-        end
-        if gameStuff.lang == "pt-br" then
-            self.optionsPT[2][2] = "Lingua: PT-BR"
-        else
-            self.optionsPT[2][2] = "Lingua: Eng"
-        end
-
-
-        if gameStuff.lang == "eng" then
-            self.options[2][3] = "SFX Volume: " .. math.floor(gameStuff.sfxVolume * 100)
-        end
-        if gameStuff.lang == "pt-br" then
-            self.optionsPT[2][3] = "Volume Dos SFX: " .. math.floor(gameStuff.sfxVolume * 100)
-        end
-
-
-        if gameStuff.lang == "eng" then
-            self.options[2][4] = "Music Volume: " .. math.floor(gameStuff.musicVolume * 100)
-        end
-        if gameStuff.lang == "pt-br" then
-            self.optionsPT[2][4] = "Volume Da Musica: " .. math.floor(gameStuff.musicVolume * 100)
-        end
-
-
-        if self.menuLevel == 2 and self.pos == 3 then
-            if love.keyboard.isDown("left", "a") then gameStuff.sfxVolume = gameStuff.sfxVolume - 0.1 * globalDt end
-            if love.keyboard.isDown("right", "d") then gameStuff.sfxVolume = gameStuff.sfxVolume + 0.1 * globalDt end
-        end
-        if self.menuLevel == 2 and self.pos == 4 then
-            if love.keyboard.isDown("left", "a") then gameStuff.musicVolume = gameStuff.musicVolume - 0.1 * globalDt end
-            if love.keyboard.isDown("right", "d") then gameStuff.musicVolume = gameStuff.musicVolume + 0.1 * globalDt end
+        if tableFind(UiStuff, self.creditsButton) == -1 and not self.showRunConfig then
+            table.insert(UiStuff, 1, self.creditsButton)
         end
 
 
@@ -187,7 +213,9 @@ function createMainMenu()
     function m:selectOption()
         if self.menuLevel == 1 then
             if self.pos == 1 then
-                changeRoom(rooms.game)
+                self.showRunConfig = true
+                UiStuff = {}
+                self:initRunConfig()
             elseif self.pos == 2 then
                 self:setMenuLevel(2)
             elseif self.pos == 3 then
@@ -206,6 +234,12 @@ function createMainMenu()
                 self:setMenuLevel(1)
             end
         end
+    end
+
+
+    function m:initRunConfig()
+        self.runConfigStuff.startRunButton = createButton(800 / 2, (600) - 64, 128, 64, "Start", "")
+        self.runConfigStuff.numButton = createNumberInsertButton(800 / 2, 64, 128, 64, "Text", "",  true)
     end
 
 
@@ -291,67 +325,71 @@ function createMainMenu()
         end
 
 
-        for o=1, #self.options[self.menuLevel] do
-            local scale = 4
-            local rotAdd = 0
-            if o ~= self.pos then
-                local outlineColor = {0, 0, 0}
-                love.graphics.setColor({1, 1, 1})
+        if not self.showRunConfig then
+            for o=1, #self.options[self.menuLevel] do
+                local scale = 4
+                local rotAdd = 0
+                if o ~= self.pos then
+                    local outlineColor = {0, 0, 0}
+                    love.graphics.setColor({1, 1, 1})
 
 
-                if self.theme == self.THEMES.THEME_SOFT then
-                    outlineColor = HSV(0.925, 1, 0.4)
+                    if self.theme == self.THEMES.THEME_SOFT then
+                        outlineColor = HSV(0.925, 1, 0.4)
+                    end
+                    if self.theme == self.THEMES.THEME_BLOOD then
+                        outlineColor = {0.25, 0, 0}
+                    love.graphics.setColor({0, 0, 0})
                 end
-                if self.theme == self.THEMES.THEME_BLOOD then
-                    outlineColor = {0.25, 0, 0}
+
+
+                    local txt = self.options[self.menuLevel][o]
+
+
+                    if gameStuff.lang == "pt-br" then
+                        txt = self.optionsPT[self.menuLevel][o]
+                    end
+
+
+                    drawOutlinedText(txt, (Push:getWidth() / 2), (Push:getHeight() / 2) + 64 + 40 * o, 0 + rotAdd, scale, scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, outlineColor)
+                end
+            end
+
+
+            local outlineColor = {0, 0, 0}
+            if self.theme == self.THEMES.THEME_NORMAL then
+                love.graphics.setColor({0, 1, 0})
+            elseif self.theme == self.THEMES.THEME_HARD then
+                love.graphics.setColor(HSV(0, 1, 0.85 + 0.25 * math.sin(GlobalSinAngle / 2)))
+            elseif self.theme == self.THEMES.THEME_SOFT then
+                love.graphics.setColor(HSV(0.95, 0, 1))
+                outlineColor = HSV(0.9, 0.85, 0.6)
+            elseif self.theme == self.THEMES.THEME_BLOOD then
                 love.graphics.setColor({0, 0, 0})
+                outlineColor = {1, 0, 0}
+            elseif self.theme == self.THEMES.THEME_CAT then
+                love.graphics.setColor(HSV(0.5 + 0.5 * math.sin(GlobalSinAngle), 1, 1))
+                outlineColor = {0, 0, 0}
             end
+            rotAdd = 0.1 * math.sin(GlobalSinAngle)
+            scale = self.currentOptionScale
+            local txt = self.options[self.menuLevel][self.pos]
 
 
-                local txt = self.options[self.menuLevel][o]
-
-
-                if gameStuff.lang == "pt-br" then
-                    txt = self.optionsPT[self.menuLevel][o]
-                end
-
-
-                drawOutlinedText(txt, (Push:getWidth() / 2), (Push:getHeight() / 2) + 64 + 40 * o, 0 + rotAdd, scale, scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, outlineColor)
+            if gameStuff.lang == "pt-br" then
+                txt = self.optionsPT[self.menuLevel][self.pos]
             end
-        end
+            drawOutlinedText(txt, (Push:getWidth() / 2), (Push:getHeight() / 2) + 64 + 40 * self.pos, 0 + rotAdd, scale, scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, outlineColor)
 
 
-        local outlineColor = {0, 0, 0}
-        if self.theme == self.THEMES.THEME_NORMAL then
-            love.graphics.setColor({0, 1, 0})
-        elseif self.theme == self.THEMES.THEME_HARD then
-            love.graphics.setColor(HSV(0, 1, 0.85 + 0.25 * math.sin(GlobalSinAngle / 2)))
-        elseif self.theme == self.THEMES.THEME_SOFT then
-            love.graphics.setColor(HSV(0.95, 0, 1))
-            outlineColor = HSV(0.9, 0.85, 0.6)
-        elseif self.theme == self.THEMES.THEME_BLOOD then
-            love.graphics.setColor({0, 0, 0})
-            outlineColor = {1, 0, 0}
-        elseif self.theme == self.THEMES.THEME_CAT then
-            love.graphics.setColor(HSV(0.5 + 0.5 * math.sin(GlobalSinAngle), 1, 1))
-            outlineColor = {0, 0, 0}
-        end
-        rotAdd = 0.1 * math.sin(GlobalSinAngle)
-        scale = self.currentOptionScale
-        local txt = self.options[self.menuLevel][self.pos]
-
-
-        if gameStuff.lang == "pt-br" then
-            txt = self.optionsPT[self.menuLevel][self.pos]
-        end
-        drawOutlinedText(txt, (Push:getWidth() / 2), (Push:getHeight() / 2) + 64 + 40 * self.pos, 0 + rotAdd, scale, scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, outlineColor)
-
-
-        love.graphics.setColor({1, 1, 1})
-        local txt = "Version: " .. tostring(gameStuff.currentVersion)
-        drawOutlinedText(txt, 8, 600 - 8, 0, 2, 2, 0, love.graphics.getFont():getHeight(txt), 2, {0, 0, 0})
-        if debugStuff.enabled then
-            drawOutlinedText(tostring(self.theme), 8, 600 - 8 - 32, 0, 2, 2, 0, love.graphics.getFont():getHeight(txt), 2, {0, 0, 0})
+            love.graphics.setColor({1, 1, 1})
+            local txt = "Version: " .. tostring(gameStuff.currentVersion)
+            drawOutlinedText(txt, 8, 600 - 8, 0, 2, 2, 0, love.graphics.getFont():getHeight(txt), 2, {0, 0, 0})
+            
+            
+            if debugStuff.enabled then
+                drawOutlinedText(tostring(self.theme), 8, 600 - 8 - 32, 0, 2, 2, 0, love.graphics.getFont():getHeight(txt), 2, {0, 0, 0})
+            end
         end
 
 
@@ -360,6 +398,12 @@ function createMainMenu()
 
         love.graphics.setColor(0, 0, 0, self.blackEnterAlpha)
         love.graphics.rectangle("fill", 0, 0, 800, 600)
+
+
+        if self.showRunConfig then
+            love.graphics.setColor(HSV(0, 0, 0.1 + 0.1 * math.cos(GlobalSinAngle)))
+            drawOutlinedRect(32, 32, 800 - 64, 600 - 64, {0, 0, 0})
+        end
     end
 
 

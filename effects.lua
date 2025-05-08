@@ -45,7 +45,7 @@ function createMoneyGainEffect(amnt, x, y)
 
 
     e:init()
-    table.insert(gameInstances, 1, e)
+    table.insert(gameInstances, #gameInstances + 1, e)
 
 
     return e

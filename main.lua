@@ -120,12 +120,39 @@ GameCars = {
         64,
         {
             seller = true,
-            recieveCooldownDef = 5,
-            recieveCooldown = 5,
+            recieveCooldownDef = 1,
+            recieveCooldown = 1,
+        }
+    ),
+    createCar(
+        "Dinamite Car",
+        "Carro Dinamite",
+        "One dinamite car that makes an big explosion. Where he got these dinamites? no one knows! :)",
+        "Um carro dinamite que faz uma grande explosao. Aonde ele pegou essas dinamites? ninguem sabe! :)",
+        newAnimation(
+            love.graphics.newImage("Sprs/Cars/Explosive Car.png"),
+            20,
+            20,
+            0,
+            0
+        ),
+        3,
+        250,
+        8,
+        1,
+        3,
+        600,
+        0.1,
+        999,
+        512,
+        {
+            explosive = true,
         }
     ),
 }
 upBoxStuff = { x = -1, y = 0, w = 802, h = 128 }
+lastKeyPressed = ""
+keyboardWasPressed = false
 UiStuff = {}
 placingStuff = {
     minX = 0,
@@ -387,8 +414,8 @@ function love.update(dt)
 
 
     if currentRoom ~= rooms.game then
-        gameCam.pos.x = Lume.lerp(gameCam.pos.x, 0, 0.1)
-        gameCam.pos.y = Lume.lerp(gameCam.pos.y, 0, 0.1)
+        gameCam.pos.x = 0
+        gameCam.pos.y = 0
         gameCam.vel.x = 0
         gameCam.vel.y = 0
     end
@@ -424,8 +451,9 @@ function love.update(dt)
             end
         end
     end
-    updateMusicVolume()
 
+
+    updateMusicVolume()
 
 
     if musics[currentMusic]:tell() >= musics[currentMusic]:getDuration() - 1 then
@@ -466,6 +494,8 @@ function love.update(dt)
             Foggs = {}
             gameInstances = {}
             gameStuff.speed = 1
+            mouse.showLMBIcon = false
+            mouse.showRMBIcon = false
 
 
             if mainMenuInstance == nil then
@@ -490,7 +520,7 @@ function love.update(dt)
                 end
             end
         elseif currentRoom == rooms.game then
-            yForCar = Lume.clamp(math.floor(PushsInGameMousePos.y / carGridLockDist) * carGridLockDist, 0, 510)
+            yForCar = transformToCarYPosGrid(PushsInGameMousePos.y)
             xForCar = Lume.clamp(PushsInGameMousePos.x, placingStuff.minX, placingStuff.maxX)
 
 
@@ -1008,7 +1038,6 @@ function love.update(dt)
     end
 
 
-
     gameStuff.sfxVolume = Lume.clamp(gameStuff.sfxVolume, 0, 1)
     gameStuff.musicVolume = Lume.clamp(gameStuff.musicVolume, 0, 1)
 
@@ -1045,6 +1074,7 @@ function love.update(dt)
     pushUpdateDelayTimer = pushUpdateDelayTimer - 1 * dt
     oldMousePos = { x = PushsInGameMousePos.x, y = PushsInGameMousePos.y }
     Flux.update(dt * gameStuff.speed)
+    keyboardWasPressed = false
     gameStuff.timeSinceStart = gameStuff.timeSinceStart + 1
     saveGame(love.window.getFullscreen(), gameStuff.lang, gameStuff.sfxVolume, gameStuff.musicVolume)
 end
@@ -1277,6 +1307,8 @@ function createANewFogg(altX, altY)
 end
 
 function love.keypressed(key)
+    lastKeyPressed = key
+    keyboardWasPressed = true
     if key == "f11" then
         love.window.setFullscreen(not love.window.getFullscreen())
     end
@@ -1337,7 +1369,7 @@ end
 
 function enableScreenShake(force)
     screenShake.enabled = true
-    screenShake.force = force
+    screenShake.force = Lume.clamp(force, 0, 128)
 end
 
 function changeRoom(toWhat)
@@ -1408,6 +1440,7 @@ function updateAllCars()
         end
     end
 end
+
 
 function drawAllCars()
     for c = 1, #GameCarInstances do
@@ -1531,4 +1564,9 @@ function createCoolTransition()
 
 
     return c
+end
+
+
+function transformToCarYPosGrid(posY)
+    return Lume.clamp(math.floor(posY / carGridLockDist) * carGridLockDist, 0, 510)
 end

@@ -32,7 +32,7 @@ function createCar(_name, _namePT, desc, descPT, _spr, _scl, _speed, _damage, _w
 end
 
 
-function createCarInstance(_inheritFrom, _x, _y)
+function createCarInstance(_inheritFrom, _x, _y, _ghostCar)
 	local c = {
 		pos = {x = _x, y = _y},
 		vel = {x = 0, y = 0},
@@ -52,12 +52,13 @@ function createCarInstance(_inheritFrom, _x, _y)
 		spdAddCar = 0,
 		spdDivCar = 1,
 		spdMultCar = 1,
+		isGhostCar = _ghostCar,
 		scaleAdd = 0,
 		startSfx = love.audio.newSource("Sfxs/CarOn.mp3", "static"),
 		walkSfx = love.audio.newSource("Sfxs/CarWalking.mp3", "static"),
-		oldMoney = money,
-		moneyGenerated = 0,
-		timeUntilMoneyRecieve = 5,
+		ghostDisappearTimer = 1,
+		additionalBehaviorFuncs = {},
+		alpha = 0,
 	}
 	
 
@@ -69,11 +70,20 @@ function createCarInstance(_inheritFrom, _x, _y)
 		self.driveParticle:setEmissionRate(10)
 		self.driveParticle:setColors({1, 1, 1, 1}, {1, 1, 1, 0})
 		self.driveParticle:start()
+		Flux.to(self, 1, {alpha=1}):ease("expoout")
 		self.startSfx:play()
 		self.walkSfx:setLooping(true)
 		if gameStuff.speed > 0 then
 			self.walkSfx:play()
 		end
+
+
+		if self.fromCar.especialPropertys.seller then
+			table.insert(self.additionalBehaviorFuncs, 1, sellerCarUpdate)
+			self.fromCar.especialPropertys.froggsKilled = 0
+			self.fromCar.especialPropertys.recieveCooldown = self.fromCar.especialPropertys.recieveCooldownDef
+		end
+		if self.isGhostCar then table.insert(self.additionalBehaviorFuncs, 1, ghostCarUpdate) end
 	end
 
 
@@ -160,6 +170,10 @@ function createCarInstance(_inheritFrom, _x, _y)
 
 
 				self.hp = self.hp - 1
+				if self.fromCar.especialPropertys.explosive then
+					createExplosion(self.pos.x, self.pos.y, self)
+					table.remove(GameCarInstances, tableFind(GameCarInstances, self))
+				end
 
 
 				if self.hp > 0 then
@@ -187,11 +201,6 @@ function createCarInstance(_inheritFrom, _x, _y)
 			table.remove(GameCarInstances, tableFind(GameCarInstances, self))
 			return
 		end
-		
-
-		if self.oldMoney ~= money then
-			self.moneyGenerated = self.moneyGenerated + (self.oldMoney - money) * -1
-		end
 
 
 		self.sclYAdd = 0.25 * math.sin(self.angle * 8)
@@ -201,29 +210,30 @@ function createCarInstance(_inheritFrom, _x, _y)
 		self.driveParticle:setPosition(self.pos.x + 16, self.pos.y + 24)
 		self.driveParticle:update(globalDt)
 		self.angle = self.angle + (1 * gameStuff.speed) * globalDt
-		if self.fromCar.especialPropertys.seller then
-			if self.fromCar.especialPropertys.recieveCooldown <= 0 then
-				money = money + Lume.clamp(((self.moneyGenerated * 0.2) / moneyGainDiv) * moneyGainMult, 0, 9999)
-				table.insert(gameInstances, 1, createMoneyRecievePerCar(tostring(Lume.clamp(((self.moneyGenerated * 0.2) / moneyGainDiv) * moneyGainMult, 0, 9999)), self.pos.x, self.pos.y))
-				self.moneyGenerated = 0
-				self.fromCar.especialPropertys.recieveCooldown = self.fromCar.especialPropertys.recieveCooldownDef
-			end
 
 
-			self.fromCar.especialPropertys.recieveCooldown = self.fromCar.especialPropertys.recieveCooldown - 1 * globalDt
+		for f=1, #self.additionalBehaviorFuncs do
+			self.additionalBehaviorFuncs[f](self)
 		end
+	end
 
 
-		self.oldMoney = money
+	function c:delete()
+		table.remove(GameCarInstances, tableFind(GameCarInstances, c))
 	end
 
 
 	function c:draw()
 		--The particles gets drawn in the main.lua
+		local color = {1, 1, 1, self.alpha}
 
 
-		love.graphics.setColor(1, 1, 1, 1)
-			self.fromCar.spr:draw(self.rot, self.pos.x, self.pos.y, self.fromCar.scale + self.scaleAdd, self.fromCar.scale + self.sclYAdd + self.scaleAdd, self.fromCar.spr.sprWidth / 2, self.fromCar.spr.sprHeight / 2, 4, {0, 0, 0})
+
+		if self.isGhostCar then color = {1, 0.5, 1, self.alpha / 2} end
+
+
+		love.graphics.setColor(color)
+			self.fromCar.spr:draw(self.rot, self.pos.x, self.pos.y, self.fromCar.scale + self.scaleAdd, self.fromCar.scale + self.sclYAdd + self.scaleAdd, self.fromCar.spr.sprWidth / 2, self.fromCar.spr.sprHeight / 2, 4, {0, 0, 0, self.alpha})
 	end
 
 
@@ -233,7 +243,6 @@ function createCarInstance(_inheritFrom, _x, _y)
 
 	return c
 end
-
 
 
 function createExplosion(_x, _y, _fromCar)
@@ -287,6 +296,7 @@ function createCarImpact(_x, _y)
 		spr = newAnimation(love.graphics.newImage("Sprs/Cars/Hit.png"), 16, 16, 3, 20, 1),
 	}
 
+
 	function i:update()
 		self.spr:update(globalDt)
 
@@ -303,4 +313,35 @@ function createCarImpact(_x, _y)
 
 
 	table.insert(gameInstances, 1, i)
+end
+
+
+function ghostCarUpdate(self)
+	if self.ghostDisappearTimer <= 0 then
+		Flux.to(self, 1, {alpha=0}):ease("expoout"):oncomplete(self.delete)
+	end
+
+
+	self.ghostDisappearTimer = self.ghostDisappearTimer - (1 * gameStuff.speed) * globalDt
+end
+function sellerCarUpdate(self)
+	if self.fromCar.especialPropertys.recieveCooldown <= 0 then
+		local moneyGaved = 0
+
+
+		for f=1, self.fromCar.especialPropertys.froggsKilled do
+			moneyGaved = moneyGaved + Lume.clamp(((20) / moneyGainDiv) * moneyGainMult, 0, 9999)
+		end
+
+
+		money = money + moneyGaved
+
+
+		table.insert(gameInstances, #gameInstances + 1, createMoneyRecievePerCar(tostring(moneyGaved)))
+		self.fromCar.especialPropertys.froggsKilled = 0
+		self.fromCar.especialPropertys.recieveCooldown = self.fromCar.especialPropertys.recieveCooldownDef
+	end
+
+
+	self.fromCar.especialPropertys.recieveCooldown = self.fromCar.especialPropertys.recieveCooldown - (1 * gameStuff.speed) * globalDt
 end

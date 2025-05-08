@@ -7,17 +7,20 @@
 function createMoneyPrinter()
     local m = {
         pos = {x = 0, y = 0},
-        spr = newAnimation(love.graphics.newImage("Sprs/Items/MoneyPrinter/PrinterSpr.png"), 32, 40, 28, 5, 1),
-        scale = 4,
+        spr = newAnimation(love.graphics.newImage("Sprs/Items/MoneyPrinter/PrinterSpr.png"), 32, 40, 28, 10, 1),
+        scale = {
+		    x = 4,
+	    	y = 4
+    	},
         col = createRectangle(0, 0, 32, 40),
     }
 
 
     function m:update()
-        self.col.x = self.pos.x - (self.spr.sprWidth * self.scale) / 2
-        self.col.y = self.pos.y - (self.spr.sprHeight * self.scale) / 2
-        self.col.w = self.spr.sprWidth * self.scale
-        self.col.h = self.spr.sprHeight * self.scale
+        self.col.x = self.pos.x - (self.spr.sprWidth * self.scale.x) / 2
+        self.col.y = self.pos.y - (self.spr.sprHeight * self.scale.y) / 2
+        self.col.w = self.spr.sprWidth * self.scale.x
+        self.col.h = self.spr.sprHeight * self.scale.y
 
 
         self.spr:update(globalDt * gameStuff.speed)
@@ -34,11 +37,124 @@ function createMoneyPrinter()
 
     function m:draw()
         love.graphics.setColor(1, 1, 1)
-        self.spr:draw(0, self.pos.x, self.pos.y, self.scale, self.scale + 0.1 * math.sin(GlobalSinAngle), nil, nil, nil, nil)
+        self.spr:draw(0, self.pos.x, self.pos.y, self.scale.x, self.scale.y + 0.1 * math.sin(GlobalSinAngle), nil, nil, nil, nil)
     end
     
 
     return m
+end
+function createCarCreator()
+    local m = {
+        pos = {x = 0, y = 0},
+        spr = newAnimation(love.graphics.newImage("Sprs/Items/MoneyPrinter/CarCreator.png"), 30, 22, 3, 4, 1),
+        scale = {
+            x = 4,
+            y = 4
+        },
+        col = createRectangle(0, 0, 32, 40),
+    }
+
+
+    function m:update()
+        self.col.x = self.pos.x - (self.spr.sprWidth * self.scale.x) / 2
+        self.col.y = self.pos.y - (self.spr.sprHeight * self.scale.y) / 2
+        self.col.w = self.spr.sprWidth * self.scale.x
+        self.col.h = self.spr.sprHeight * self.scale.y
+
+
+        self.spr:update(globalDt * gameStuff.speed)
+
+
+        if self.spr.finished then
+            local puttedX = Lume.random(0, 800 * 1.5)
+            local puttedY = transformToCarYPosGrid(Lume.random(0, 600))
+
+
+            createCarGenerationOrb(self.pos.x, self.pos.y, puttedX, puttedY)
+
+
+            self.spr.currentFrame = 0
+            self.spr.finished = false
+        end
+    end
+
+
+    function m:draw()
+        love.graphics.setColor(1, 1, 1)
+        self.spr:draw(0, self.pos.x, self.pos.y, self.scale.x, self.scale.y + 0.1 * math.sin(GlobalSinAngle), nil, nil, nil, nil)
+    end
+    
+
+    return m
+end
+function createCarGenerationOrb(x, y, targetX, targetY)
+    local o = {
+        pos = {
+            x = x,
+            y = y
+        },
+        targetPos = {
+            x = targetX,
+            y = targetY
+        },
+        timeToReach = 1,
+        spr = newAnimation(love.graphics.newImage("Sprs/Items/MoneyPrinter/CarCreateOrb.png"), 16, 16, 3, 10, 0),
+    }
+
+
+    function o:init()
+        Flux.to(self.pos, self.timeToReach, {x=self.targetPos.x, y=self.targetPos.y}):ease("expoin"):oncomplete(o.destroySelf)
+    end
+
+
+    function o:destroySelf()
+        createCarInstance(GameCars[1], o.pos.x, o.pos.y, true)
+        table.remove(gameInstances, tableFind(gameInstances, o))
+    end
+
+
+    function o:draw()
+        self.spr:draw(0, self.pos.x, self.pos.y, 4, 4)
+    end
+
+
+    o:init()
+
+
+    table.insert(gameInstances, #gameInstances + 1, o)
+end
+function createBombExplosion()
+    while #GameCarInstances > 0 do
+        tableClear(GameCarInstances)
+    end
+    tableClear(Foggs)
+
+
+    local w = {
+        alpha = 1,
+    }
+
+
+    function w:init()
+        Flux.to(self, 1, {alpha=0}):oncomplete(w.destroy)
+    end
+
+
+    function w:destroy()
+        table.remove(onTopGameInstaces, tableFind(onTopGameInstaces, w))
+    end
+
+
+    function w:draw()
+        love.graphics.setColor(1, 1, 1, self.alpha)
+        love.graphics.rectangle("fill", 0, 0, 800, 600)
+    end
+
+
+    w:init()
+
+
+    table.insert(onTopGameInstaces, #onTopGameInstaces + 1, w)
 end
 
 
@@ -58,8 +174,11 @@ bagStuff = {
         h = 256
     },
     currentSelectedItem = nil,
+    currentSlotScaleAdd = 0,
     placingItem = false,
     hoveredId = 0,
+    oldHoveredId = 0,
+    oldHoveringAnItem = false,
     currentPlacingItem = nil,
 }
 
@@ -69,10 +188,15 @@ function placeItem()
     bagStuff.currentPlacingItem = a
     bagStuff.placingItem = true
 end
+function useItem()
+    local a = bagStuff.currentSelectedItem.itemCreateFunction()
+end
 
 
 bagItems = {
-    moneyPrinter = {name = "Money Printer", desc = "Prints 1 Money Per Second", useFuntion = placeItem, itemCreateFunction = createMoneyPrinter}
+    moneyPrinter = {name = "Money Printer", desc = "Prints 1 Money Per Second", useFuntion = placeItem, itemCreateFunction = createMoneyPrinter},
+    carCreator = {name = "Car Creator", desc = "Creates An Temporary Car Every 1 Second", useFuntion = placeItem, itemCreateFunction = createCarCreator},
+    bomb = {name = "Bomb R", desc = "An Bomb, it's self explanatory", useFuntion = useItem, itemCreateFunction = createBombExplosion},
 }
 
 
@@ -86,7 +210,9 @@ function bagStuff:initBag()
     self.bagButton = createButton(800 - 64 - 8, 600 - 32 - 8, 128, 64, "Bag", "Your Bag", true)
     self.showingBag = false
     self.stored = {
-        bagItems.moneyPrinter
+        bagItems.moneyPrinter,
+        bagItems.carCreator,
+        bagItems.bomb,
     }
 
 
@@ -105,6 +231,12 @@ function bagStuff:update()
 
 
     if self.showingBag then
+        if self.oldHoveredId ~= self.hoveredId or self.oldHoveringAnItem ~= self.hoveringAnItem then
+            self.currentSlotScaleAdd = 2
+        end
+
+
+
         if PushsInGameMousePosNoTransform.x < self.bagRect.x then
             self.showingBag = false
         end
@@ -144,15 +276,15 @@ function bagStuff:update()
 
         if canUpdatePos then
             self.currentPlacingItem.pos = PushsInGameMousePosNoTransform
-            self.currentPlacingItem.col.x = self.currentPlacingItem.pos.x - (self.currentPlacingItem.spr.sprWidth * self.currentPlacingItem.scale) / 2
-            self.currentPlacingItem.col.y = self.currentPlacingItem.pos.y - (self.currentPlacingItem.spr.sprHeight * self.currentPlacingItem.scale) / 2
-            self.currentPlacingItem.col.w = self.currentPlacingItem.spr.sprWidth * self.currentPlacingItem.scale
-            self.currentPlacingItem.col.h = (self.currentPlacingItem.spr.sprHeight * self.currentPlacingItem.scale)
+            self.currentPlacingItem.col.x = self.currentPlacingItem.pos.x - (self.currentPlacingItem.spr.sprWidth * self.currentPlacingItem.scale.x) / 2
+            self.currentPlacingItem.col.y = self.currentPlacingItem.pos.y - (self.currentPlacingItem.spr.sprHeight * self.currentPlacingItem.scale.y) / 2
+            self.currentPlacingItem.col.w = self.currentPlacingItem.spr.sprWidth * self.currentPlacingItem.scale.x
+            self.currentPlacingItem.col.h = (self.currentPlacingItem.spr.sprHeight * self.currentPlacingItem.scale.y)
         else
-            self.currentPlacingItem.col.x = PushsInGameMousePosNoTransform.x - (self.currentPlacingItem.spr.sprWidth * self.currentPlacingItem.scale) / 2
-            self.currentPlacingItem.col.y = PushsInGameMousePosNoTransform.y - (self.currentPlacingItem.spr.sprHeight * self.currentPlacingItem.scale) / 2
-            self.currentPlacingItem.col.w = self.currentPlacingItem.spr.sprWidth * self.currentPlacingItem.scale
-            self.currentPlacingItem.col.h = self.currentPlacingItem.spr.sprHeight * self.currentPlacingItem.scale
+            self.currentPlacingItem.col.x = PushsInGameMousePosNoTransform.x - (self.currentPlacingItem.spr.sprWidth * self.currentPlacingItem.scale.x) / 2
+            self.currentPlacingItem.col.y = PushsInGameMousePosNoTransform.y - (self.currentPlacingItem.spr.sprHeight * self.currentPlacingItem.scale.y) / 2
+            self.currentPlacingItem.col.w = self.currentPlacingItem.spr.sprWidth * self.currentPlacingItem.scale.x
+            self.currentPlacingItem.col.h = self.currentPlacingItem.spr.sprHeight * self.currentPlacingItem.scale.y
         end
 
 
@@ -164,6 +296,11 @@ function bagStuff:update()
             self.placingItem = false
         end
     end
+
+
+    self.currentSlotScaleAdd = Lume.lerp(self.currentSlotScaleAdd, 1, 0.1)
+    self.oldHoveredId = self.hoveredId
+    self.oldHoveringAnItem = self.hoveringAnItem
 end
 
 
@@ -182,13 +319,18 @@ function bagStuff:draw()
 
 
 
-        local x = bagStuff.bagRect.x + 16
+        local x = bagStuff.bagRect.x + 80 + 8
         local y = bagStuff.bagRect.y + 70
         local i = 0
         local iDec = 0
         local hoveringOne = false
+        local previousWidth = 0
         while i < #self.stored do
-            x = x + Lume.clamp((32 * (i - iDec)), 0, 32)
+            if previousWidth == 0 then
+                x = x + Lume.clamp((32 * (i - iDec)), 0, 32) + 8
+            else
+                x = x + Lume.clamp((previousWidth * (i - iDec)), 0, previousWidth) + 8
+            end
 
 
             if x > bagStuff.bagRect.w * 1.5 then
@@ -197,14 +339,39 @@ function bagStuff:draw()
                 iDec = iDec + i
             end
 
+		
+            local color = {0.25, 0.25, 0.25}
+            local scale = 2
 
-            drawOutlinedText(self.stored[i + 1].name, x, y, 0, 2, 2, 0, 0, 2, {0, 0, 0})
+
+            if self.hoveredId == i + 1 and self.hoveringAnItem then color = {1, 1, 1}; scale = scale + self.currentSlotScaleAdd end
 
 
-            hoveringOne = PushsInGameMousePosNoTransform.x > x and PushsInGameMousePosNoTransform.x < x + (love.graphics.getFont():getWidth(self.stored[i + 1].name) * 2) and PushsInGameMousePosNoTransform.y > y and PushsInGameMousePosNoTransform.y < y + (love.graphics.getFont():getHeight(self.stored[i + 1].name) * 2)
-            if hoveringOne then
-                self.hoveredId = i + 1
-            end
+            local opX = x - (love.graphics.getFont():getWidth(self.stored[i + 1].name) * scale) / 2
+            local opY = y - (love.graphics.getFont():getHeight(self.stored[i + 1].name) * scale) / 2
+            local opW = opX + (love.graphics.getFont():getWidth(self.stored[i + 1].name) * scale)
+            local opH = opY + (love.graphics.getFont():getHeight(self.stored[i + 1].name) * scale)
+
+
+            love.graphics.setColor(color)
+                drawOutlinedText(self.stored[i + 1].name, x, y, 0, scale, scale, love.graphics.getFont():getWidth(self.stored[i + 1].name) / 2, love.graphics.getFont():getHeight(self.stored[i + 1].name) / 2, 2, {0, 0, 0})
+
+
+                previousWidth = (love.graphics.getFont():getWidth(self.stored[i + 1].name) * scale)
+
+
+                if PushsInGameMousePosNoTransform.x > opX and PushsInGameMousePosNoTransform.x < opW and PushsInGameMousePosNoTransform.y > opY and PushsInGameMousePosNoTransform.y < opH then
+                    hoveringOne = true
+
+
+                    if hoveringOne then
+                        self.hoveredId = i + 1
+                    end
+                end
+
+
+            love.graphics.setColor({1, 1, 1, 0.5})
+            love.graphics.rectangle("fill", opX, opY, opW - opX, opH - opY)
 
 
             i = i + 1
