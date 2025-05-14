@@ -198,6 +198,11 @@ bagItems = {
     carCreator = {name = "Car Creator", desc = "Creates An Temporary Car Every 1 Second", useFuntion = placeItem, itemCreateFunction = createCarCreator},
     bomb = {name = "Bomb R", desc = "An Bomb, it's self explanatory", useFuntion = useItem, itemCreateFunction = createBombExplosion},
 }
+bagItemsIndexed = {
+    bagItems.moneyPrinter,
+    bagItems.carCreator,
+    bagItems.bomb,
+}
 
 
 function bagStuff:restartBag()
@@ -207,13 +212,8 @@ end
 
 
 function bagStuff:initBag()
-    self.bagButton = createButton(800 - 64 - 8, 600 - 32 - 8, 128, 64, "Bag", "Your Bag", true)
+    self.bagButton = createButton(800 - 64 - 16, 600 - 32 - 16, 128, 64, "Bag", "Your Bag", true)
     self.showingBag = false
-    self.stored = {
-        bagItems.moneyPrinter,
-        bagItems.carCreator,
-        bagItems.bomb,
-    }
 
 
     if tableFind(onTopGameInstaces, self) == -1 then
@@ -311,12 +311,10 @@ function bagStuff:draw()
 
 
         love.graphics.setColor(1, 1, 1)
-        drawOutlinedText("BAG", self.bagRect.x + self.bagRect.w / 2, self.bagRect.y + 32, 0, 4, 4, love.graphics.getFont():getWidth("BAG") / 2, love.graphics.getFont():getHeight("BAG") / 2, 4, {0, 0, 0})
-
+        drawOutlinedText("BAG", self.bagRect.x + self.bagRect.w / 2, self.bagRect.y + 32 + 8 * math.sin(GlobalSinAngle), 0, 4, 4, love.graphics.getFont():getWidth("BAG") / 2, love.graphics.getFont():getHeight("BAG") / 2, 4, {0, 0, 0})
 
 
         drawOutlinedText(tostring(#self.stored), 8, 8, 0, 4, 4, nil, nil, 2, {0, 0, 0})
-
 
 
         local x = bagStuff.bagRect.x + 80 + 8
@@ -370,11 +368,13 @@ function bagStuff:draw()
                 end
 
 
-            love.graphics.setColor({1, 1, 1, 0.5})
-            love.graphics.rectangle("fill", opX, opY, opW - opX, opH - opY)
-
-
             i = i + 1
+        end
+
+
+        if #self.stored <= 0 then
+            love.graphics.setColor({1, 1, 1, 1})
+            drawOutlinedText("your bag is empty", self.bagRect.x + self.bagRect.w / 2, self.bagRect.y + self.bagRect.h / 2, 0, 2 + 0.25 * math.cos(GlobalSinAngle), 2 + 0.25 * math.cos(GlobalSinAngle), nil, nil, 4 + 0.25 * math.cos(GlobalSinAngle), {0, 0, 0})
         end
 
 

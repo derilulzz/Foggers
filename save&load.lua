@@ -1,16 +1,17 @@
 require "external librarys.base64"
 
 
-function saveGame(isFullscreen, lang, sfxVol, musVol)
+function saveGame(isFullscreen, lang, sfxVol, musVol, higestRound)
     data = {}
     data.isFullscreen = isFullscreen
     data.lang = lang
     data.sfxVol = sfxVol
     data.musVol = musVol
+    data.higestRound = higestRound
     serialized = Lume.serialize(data)
 
 
-    serialized = enc(serialized)
+    --serialized = enc(serialized)
 
 
     love.filesystem.write("GameSave.FoggersSaveFile", serialized)
@@ -23,7 +24,7 @@ function loadGame()
 
 
     if file == nil then data = {} else
-        file = dec(file)
+        --file = dec(file)
         data = Lume.deserialize(file)
     end
 
@@ -40,6 +41,9 @@ function loadGame()
         end
         if data.musVol ~= nil then
             gameStuff.musicVolume = data.musVol
+        end
+        if data.higestRound ~= nil then
+            gameStuff.higestRound = data.higestRound
         end
     end
 end

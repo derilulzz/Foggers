@@ -58,25 +58,43 @@ function createCamMoveTutorial()
 
 
         if self.state == 1 then
-            drawOutlinedText("WASD To Move", 800 / 2, (600 - self.animsSpr[self.state].sprHeight * 3) - 8, 0, 2, 2, love.graphics.getFont():getWidth("WASD To Move") / 2, love.graphics.getFont():getHeight("WASD To Move"), 4, {0, 0, 0})
+            local text = "WASD To Move"
+
+
+            if gameStuff.lang == "pt-br" then text = "WASD Para Mover" end
+            
+            
+            drawOutlinedText(text, 800 / 2, (600 - self.animsSpr[self.state].sprHeight * 3) - 8, 0, 2, 2, love.graphics.getFont():getWidth(text) / 2, love.graphics.getFont():getHeight(text), 4, {0, 0, 0})
         elseif self.state == 2 then
-            local wrap = {love.graphics.getFont():getWrap("LMB In The Buttons At The Top To Select A Car", 800 / 2)}
+            local text = "LMB In The Buttons At The Top To Select A Car"
+
+
+            if gameStuff.lang == "pt-br" then text = "LMB Nos Botoes Na Parte De Cima Para Selecionar Um Carro" end
+
+
+            local wrap = {love.graphics.getFont():getWrap(text, 800 / 2)}
             local linesNum = #wrap[2]
 
 
             local txtHeight = love.graphics.getFont():getHeight() * linesNum
 
 
-            drawOutlinedTextF("LMB In The Buttons At The Top To Select A Car", 0, (600 - self.animsSpr[self.state].sprHeight * 4) - 8, 800 / 2, "center", 0, 2, 2, 0, txtHeight / 2, 4, {0, 0, 0})
+            drawOutlinedTextF(text, 0, (600 - self.animsSpr[self.state].sprHeight * 4) - 8, 800 / 2, "center", 0, 2, 2, 0, txtHeight / 2, 4, {0, 0, 0})
         elseif self.state == 3 then
-            local wrap = {love.graphics.getFont():getWrap("LMB To Create An Car", 800 / 2)}
+            local text = "LMB To Create An Car"
+
+
+            if gameStuff.lang == "pt-br" then text = "LMB Para Criar Um Carro" end
+            
+            
+            local wrap = {love.graphics.getFont():getWrap(text, 800 / 2)}
             local linesNum = #wrap[2]
 
 
             local txtHeight = love.graphics.getFont():getHeight() * linesNum
 
 
-            drawOutlinedTextF("LMB To Create An Car", 0, (600 - self.animsSpr[self.state].sprHeight * 4) - 8, 800 / 2, "center", 0, 2, 2, 0, txtHeight / 2, 4, {0, 0, 0})
+            drawOutlinedTextF(text, 0, (600 - self.animsSpr[self.state].sprHeight * 4) - 8, 800 / 2, "center", 0, 2, 2, 0, txtHeight / 2, 4, {0, 0, 0})
         end
     end
 

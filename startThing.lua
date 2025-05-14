@@ -19,7 +19,9 @@ function createStartThing()
 
     function s:gotoNextLogo()
         s.currentLogo = s.currentLogo + 1
-        s.tweens:to(s, 1, {logoRot=0, logoScale=0.5}):ease("expoout"):after(s, 0, {}):delay(3):oncomplete(s.gotoMainMenu)
+        if s.tweens ~= nil then
+            s.tweens:to(s, 1, {logoRot=0, logoScale=0.5}):ease("expoout"):after(s, 0, {}):delay(3):oncomplete(s.gotoMainMenu)
+        end
     end
 
 

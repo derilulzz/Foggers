@@ -62,7 +62,7 @@ function createForg(_x, _y, _spr, _jumpSpr, _hp, _jumpTimerDef)
 		end
 
 
-		self.jumping = self.scale > 2
+		self.jumping = self.scale > 2.2
 
 
 		self.targetPos.x = Lume.clamp(self.targetPos.x, 0, 800)
@@ -86,12 +86,17 @@ function createForg(_x, _y, _spr, _jumpSpr, _hp, _jumpTimerDef)
 
 		self.pos.x = Lume.lerp(self.pos.x, self.targetPos.x, 0.2)
 		self.pos.y = Lume.lerp(self.pos.y, self.targetPos.y, 0.2)
-		self.scale = Lume.lerp(self.scale, 2, 0.2)
+		self.scale = Lume.lerp(self.scale, 2, 0.25)
 		self.jumpTimer = self.jumpTimer - ((((1 + self.spdAddFogg) / self.spdDivFogg) * self.spdMultFogg) * gameStuff.speed) * globalDt
 	end
 
 
 	function f:recieveDamage(amnt, x, y)
+		if y == nil then return end
+		if x == nil then return end
+		if amnt == nil then return end
+
+
 		self.hp = self.hp - amnt
 		warningSfx:setPitch(1.5 * math.random())
 		playSound(warningSfx)

@@ -2,6 +2,11 @@ colorSetterShader = love.graphics.newShader("Shaders/setColor.fs")
 
 
 function drawOutlinedSprite(drawable, x, y, r, sx, sy, ox, oy, outlineSize, outlineColor)
+    if drawable == nil then return end
+    ox = ox or drawable:getWidth() / 2
+    oy = oy or drawable:getHeight() / 2
+
+
     if outlineColor == nil then
         outlineColor = {0, 0, 0, 1}
     else
@@ -229,6 +234,10 @@ end
 
 
 function drawOutlinedRect(x, y, width, height, outlineColor)
+    x = x or 0
+    y = y or 0
+    width = width or 0
+    height = height or 0
     love.graphics.rectangle("fill", x, y, width, height)
     love.graphics.setColor(outlineColor)
     love.graphics.rectangle("line", x, y, width, height)

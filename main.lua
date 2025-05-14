@@ -31,6 +31,7 @@ require "colorStuff"
 require "credits"
 require "Tutorial.tutorial"
 require "Bag.bag"
+require "tips"
 
 
 GameCarInstances = {}
@@ -127,8 +128,8 @@ GameCars = {
     createCar(
         "Dinamite Car",
         "Carro Dinamite",
-        "One dinamite car that makes an big explosion. Where he got these dinamites? no one knows! :)",
-        "Um carro dinamite que faz uma grande explosao. Aonde ele pegou essas dinamites? ninguem sabe! :)",
+        "One dinamite car that makes an big explosion. Where he got these dinamites? no one knows! :). Gives no damage",
+        "Um carro dinamite que faz uma grande explosao. Aonde ele pegou essas dinamites? ninguem sabe! :). Não da dano",
         newAnimation(
             love.graphics.newImage("Sprs/Cars/Explosive Car.png"),
             20,
@@ -138,10 +139,10 @@ GameCars = {
         ),
         3,
         250,
-        8,
+        0,
         1,
-        3,
-        600,
+        1,
+        50,
         0.1,
         999,
         512,
@@ -149,11 +150,70 @@ GameCars = {
             explosive = true,
         }
     ),
+    createCar(
+        "Cat Car",
+        "Carro Gato",
+        "One cat car that sometimes lets one cat escape. Cats chases 2 frogs before dying, the car kills only 2 frogs",
+        "Um carro de gatos que deixa um gato escapar algumas vezes. Os gatos matam 2 sapos antes de morrerem, o carro mata apenas 2 sapos",
+        newAnimation(
+            love.graphics.newImage("Sprs/Cars/Cat Car.png"),
+            32,
+            20,
+            0,
+            0
+        ),
+        3,
+        250,
+        0.5,
+        1,
+        4,
+        600,
+        1,
+        2,
+        256,
+        {
+            cats = true,
+            catCreateDelay = 1,
+        }
+    ),
+    createCar(
+        "Tank",
+        "Tanque",
+        "One military grade tank to you annihilate all frogs. Kills ",
+        "Um carro de gatos que deixa um gato escapar algumas vezes. Os gatos matam 2 sapos antes de morrerem, o carro mata apenas 2 sapos",
+        newAnimation(
+            love.graphics.newImage("Sprs/Cars/TankBottom.png"),
+            128,
+            128,
+            0,
+            0
+        ),
+        1,
+        85,
+        20,
+        0,
+        16,
+        1600,
+        999999999,
+        9999999,
+        1080,
+        {
+            shoots = true,
+            cooldown = 1,
+            cooldownDef = 1,
+            weaponRot = 0,
+            isTank = true,
+            bulletCreateFunction = createTankBullet,
+            dir = 0,
+            target = "Frogs",
+        }
+    ),
 }
-upBoxStuff = { x = -1, y = 0, w = 802, h = 128 }
+upBoxStuff = { x = -1, y = 0, w = 802, h = 128, scrollX = 0 }
 lastKeyPressed = ""
 keyboardWasPressed = false
 UiStuff = {}
+mouseScroll = {x = 0, y = 0}
 placingStuff = {
     minX = 0,
     maxX = 800,
@@ -164,6 +224,7 @@ LastLeftMouseButton = false
 oldMainMenuTheme = 0
 LastRightMouseButton = false
 gameCarButtons = {}
+currentSelectedCar = nil
 selectedCar = 1
 placingCar = false
 Foggs = {}
@@ -288,6 +349,7 @@ carsStuff = {
 }
 currentRoom = rooms.start
 oldMousePos = { x = 0, y = 0 }
+tipCreateTimer = 16
 sceneTransition = {
     progress = 0,
     enabled = false,
@@ -297,10 +359,15 @@ gameStuff = {
     paused = false,
     pauseFroggCreation = false,
     canPlaceFroggs = false,
+    hoveringTopBox = false,
     speed = 1,
     lang = "eng",
+    higestRound = 0,
+    currentStartingRound = 0,
     currentFoggGaved = 0,
     hp = 10,
+    useFixedSeed = false,
+    fixedSeed = 0,
     timeSinceStart = 0,
     sfxVolume = 0.25,
     musicVolume = 0.5,
@@ -418,12 +485,21 @@ function love.update(dt)
         gameCam.pos.y = 0
         gameCam.vel.x = 0
         gameCam.vel.y = 0
+        gameStuff.hoveringTopBox = false
     end
 
 
     if not gameStuff.paused then
+        local forceHoverdown = false
+
+
         for b = 1, #UiStuff do
+            if forceHoverdown then
+                UiStuff[b].hovered = false
+            end
             UiStuff[b]:update(dt)
+
+            if UiStuff[b].hovered then forceHoverdown = true end
         end
     end
 
@@ -524,6 +600,32 @@ function love.update(dt)
             xForCar = Lume.clamp(PushsInGameMousePos.x, placingStuff.minX, placingStuff.maxX)
 
 
+            --Get if the player is hovering the car selection box
+            gameStuff.hoveringTopBox = PushsInGameMousePosNoTransform.y < upBoxStuff.y + upBoxStuff.h
+
+            
+            --Let the player scroll the top bar
+            if gameStuff.hoveringTopBox then
+                if PushsInGameMousePosNoTransform.x > 800 - 64 then
+                    upBoxStuff.scrollX = upBoxStuff.scrollX + 25 * dt
+                end
+
+
+                upBoxStuff.scrollX = upBoxStuff.scrollX + mouseScroll.y
+            end
+            for b=1, #gameCarButtons do
+                gameCarButtons[b].pos.x = Lume.lerp(gameCarButtons[b].pos.x, (0 + 128 * b) - 32 * upBoxStuff.scrollX, 0.1)
+
+
+                if gameCarButtons[b].pos.x > 110 then
+                    gameCarButtons[b].alpha = Lume.lerp(gameCarButtons[b].alpha, 1, 0.1)
+                else
+                    gameCarButtons[b].alpha = Lume.lerp(gameCarButtons[b].alpha, 0, 0.1)
+                end
+            end
+
+
+
             --#region Move the camera
                 local inputDirX = 0
                 local inputDirY = 0
@@ -582,8 +684,7 @@ function love.update(dt)
                         if currentBtnSelected == selectedCar then
                             stopCarPlacing()
                         else
-                            selectedCar = currentBtnSelected
-                            placingCar = true
+                            startCarPlacing(currentBtnSelected)
                         end
                     end
 
@@ -613,7 +714,7 @@ function love.update(dt)
 
 
             if pressedAnyBtn == false then
-                if placingCar then
+                if placingCar and currentSelectedCar ~= nil then
                     if love.mouse.isDown(1) and LastLeftMouseButton == false then
                         if money >= GameCars[selectedCar].cost then
                             money = money - GameCars[selectedCar].cost
@@ -673,6 +774,12 @@ function love.update(dt)
             end
 
 
+            if tipCreateTimer <= 0 then
+                createTipRect()
+                tipCreateTimer = math.random(10, 16)
+            end
+
+
             carsStuff.walkSfxAmnt = 0
 
 
@@ -708,6 +815,11 @@ function love.update(dt)
                     mouse.RMBModulate = { 1, 1, 1 }
                 end
                 speedUpButton.text = "x" .. tostring(math.floor(gameStuff.speed))
+            end
+
+
+            if gameStuff.higestRound < gameStuff.currentFoggGaved then
+                gameStuff.higestRound = gameStuff.currentFoggGaved
             end
 
 
@@ -1008,6 +1120,7 @@ function love.update(dt)
         end
 
 
+        tipCreateTimer = tipCreateTimer - (1 * gameStuff.speed) * dt
         gameCam.zoom = Lume.lerp(gameCam.zoom, 1, 0.1)
         local zoomPercent = 1
         if gameCam.zoom ~= 0 then
@@ -1060,9 +1173,16 @@ function love.update(dt)
     gameCam.pos.y = Lume.clamp(gameCam.pos.y, -128, 600 - 600 / 2)
 
 
+    mouseScroll.x = 0
+    mouseScroll.y = 0
     mouse:updateMouse()
-    math.randomseed(gameStuff.timeSinceStart)
-    love.math.setRandomSeed(gameStuff.timeSinceStart)
+    if not gameStuff.useFixedSeed then
+        math.randomseed(gameStuff.timeSinceStart)
+        love.math.setRandomSeed(gameStuff.timeSinceStart)
+    else
+        math.randomseed(gameStuff.fixedSeed)
+        love.math.setRandomSeed(gameStuff.fixedSeed)
+    end
     LastLeftMouseButton = love.mouse.isDown(1)
     LastRightMouseButton = love.mouse.isDown(2)
     GlobalSinAngle = GlobalSinAngle + (1 * gameStuff.speed) * dt
@@ -1076,8 +1196,9 @@ function love.update(dt)
     Flux.update(dt * gameStuff.speed)
     keyboardWasPressed = false
     gameStuff.timeSinceStart = gameStuff.timeSinceStart + 1
-    saveGame(love.window.getFullscreen(), gameStuff.lang, gameStuff.sfxVolume, gameStuff.musicVolume)
+    saveGame(love.window.getFullscreen(), gameStuff.lang, gameStuff.sfxVolume, gameStuff.musicVolume, gameStuff.higestRound)
 end
+
 
 function love.draw()
     Push:start()
@@ -1121,12 +1242,12 @@ function love.draw()
         drawAllCars()
 
 
-        if placingCar then
-            love.graphics.setColor(1, 1, 1, 0.5)
-            GameCars[selectedCar].spr:draw(0.25 * math.cos(GlobalSinAngle),
-            xForCar, yForCar,
-                GameCars[selectedCar].scale, GameCars[selectedCar].scale, nil, nil, 4 + 2 * math.cos(GlobalSinAngle),
-                { 0, 0, 0, 0.5 })
+        if placingCar and GameCars[selectedCar] ~= nil and currentSelectedCar ~= nil then
+            love.graphics.setColor(0.5, 0.5, 0.5, 0.85)
+            currentSelectedCar.pos.x = xForCar
+            currentSelectedCar.pos.y = yForCar
+            currentSelectedCar.rot = 0.25 * math.cos(GlobalSinAngle * 2)
+            currentSelectedCar:draw()
             love.graphics.setColor(1, 1, 1, 1)
 
 
@@ -1200,7 +1321,9 @@ function love.draw()
 
 
     for b = 1, #UiStuff do
-        UiStuff[b]:draw()
+        if UiStuff[b].visible or (UiStuff[b].alpha ~= nil and UiStuff[b].alpha > 0) then
+            UiStuff[b]:draw()
+        end
     end
 
 
@@ -1248,27 +1371,32 @@ function love.draw()
 
     if debugStuff.enabled then
         love.graphics.setColor({1, 1, 1})
-        drawOutlinedText("RedRect: " .. tostring(damageEffectStuff.redRectRGBAdd), 8, 8)
-        drawOutlinedText("FPS: " .. tostring(love.timer.getFPS()), 8, 16 + 4)
-        drawOutlinedText("gameCarsAmnt: " .. tostring(#GameCarInstances), 8, 16 + 8 + 4 + 4)
-        drawOutlinedText("FoggsAmnt: " .. tostring(#Foggs), 8, 16 + 8 + 8 + 4 + 4 + 4)
-        drawOutlinedText("gameInstancesAmnt: " .. tostring(#gameInstances), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4)
+        drawOutlinedText("RedRect: " .. tostring(damageEffectStuff.redRectRGBAdd), 8, 8, 0, 1, 1, 0, 0)
+        drawOutlinedText("FPS: " .. tostring(love.timer.getFPS()), 8, 16 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("gameCarsAmnt: " .. tostring(#GameCarInstances), 8, 16 + 8 + 4 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("FoggsAmnt: " .. tostring(#Foggs), 8, 16 + 8 + 8 + 4 + 4 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("gameInstancesAmnt: " .. tostring(#gameInstances), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4, 0, 1, 1, 0, 0)
         drawOutlinedText("onTopGameInstancesAmnt: " .. tostring(#onTopGameInstaces), 8,
             16 + 8 + 8 + 8 + 8 + 4 + 4 + 4 +
-            4 + 4)
-        drawOutlinedText("timeSinceStartLove2D: " .. tostring(love.timer.getTime()), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4)
-        drawOutlinedText("timeSinceStartFromGame: " .. tostring(gameStuff.timeSinceStart), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4)
-        drawOutlinedText("random Number: " .. tostring(love.math.random(1, 4)), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4)
-        drawOutlinedText("random Number Lua: " .. tostring(math.random(1, 4)), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4)
-        drawOutlinedText("global Random Number: " .. tostring(randomNumber), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4)
-        drawOutlinedText("Ram used: " .. tostring(collectgarbage("count") / 1024 .. " MB used"), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4)
+            4 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("timeSinceStartLove2D: " .. tostring(love.timer.getTime()), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("timeSinceStartFromGame: " .. tostring(gameStuff.timeSinceStart), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("random Number: " .. tostring(love.math.random(1, 4)), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("random Number Lua: " .. tostring(math.random(1, 4)), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("global Random Number: " .. tostring(randomNumber), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("Ram used: " .. tostring(math.floor(collectgarbage("count") / 1024) .. " MB used"), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("Current frog gaved: " .. tostring(gameStuff.currentFoggGaved), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8, 0, 1, 1, 0, 0)
     end
+
+
     Push:finish()
 end
+
 
 function love.resize(w, h)
     Push:resize(w, h)
 end
+
 
 function createANewFogg(altX, altY)
     local x = math.random(0, 800 * 1.5)
@@ -1334,7 +1462,7 @@ function love.keypressed(key)
             end
         end
     end
-    if key == "1" or key == "2" or key == "3" then
+    if tonumber(key) ~= nil and tonumber(key) <= #GameCars then
         if placingCar == false or selectedCar ~= tonumber(key) then
             startCarPlacing(tonumber(key))
         else
@@ -1357,20 +1485,27 @@ function love.keypressed(key)
     end
 end
 
+
 function startCarPlacing(whatCar)
     selectedCar = whatCar
     placingCar = true
+    currentSelectedCar = createCarInstance(GameCars[whatCar], PushsInGameMousePos.x, PushsInGameMousePos.y, false, true)
+    table.remove(GameCarInstances, tableFind(GameCarInstances, currentSelectedCar))
 end
+
 
 function stopCarPlacing()
     selectedCar = nil
     placingCar = false
+    currentSelectedCar = nil
 end
+
 
 function enableScreenShake(force)
     screenShake.enabled = true
     screenShake.force = Lume.clamp(force, 0, 128)
 end
+
 
 function changeRoom(toWhat)
     if sceneTransition.enabled then return end
@@ -1385,9 +1520,11 @@ function changeRoom(toWhat)
         { progress = 0 }):ease("expoout"):oncomplete(disableTransition)
 end
 
+
 function disableTransition()
     sceneTransition.enabled = false
 end
+
 
 function setRoom()
     if currentRoom == rm then return end
@@ -1423,6 +1560,10 @@ function setRoom()
         speedUpButton.disabled = true
         createCamMoveTutorial()
         bagStuff:initBag()
+        if gameStuff.currentStartingRound ~= nil then
+            gameStuff.currentFoggGaved = gameStuff.currentStartingRound
+            money = money + (100 * gameStuff.currentStartingRound)
+        end
 
 
         for c = 1, #GameCars do
@@ -1569,4 +1710,21 @@ end
 
 function transformToCarYPosGrid(posY)
     return Lume.clamp(math.floor(posY / carGridLockDist) * carGridLockDist, 0, 510)
+end
+
+
+function recieveBagItem(whatItem)
+    createBagItemRecieveText(whatItem)
+    table.insert(bagStuff.stored, #bagStuff.stored + 1, whatItem)
+end
+
+
+function love.wheelmoved(x, y)
+    mouseScroll.x = x
+    mouseScroll.y = y
+end
+
+
+function deleteUIInstance(whatInstance)
+    table.remove(UiStuff, tableFind(UiStuff, whatInstance))
 end

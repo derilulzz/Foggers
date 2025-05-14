@@ -13,6 +13,8 @@ function createButton(_x, _y, _w, _h, _text, additionalText, _fixedToScreen)
 		addText = additionalText,
 		oldHovered = false,
 		hoverTime = 0,
+		alpha = 1,
+		visible = true,
 		disabled = false,
 	}
 
@@ -23,7 +25,7 @@ function createButton(_x, _y, _w, _h, _text, additionalText, _fixedToScreen)
 
 
 	function b:draw()
-		buttonDraw(self)
+		buttonDraw(self, nil, self.alpha)
 	end
 
 
@@ -52,6 +54,7 @@ function createDropDownButton(_x, _y, _w, _h, _text, additionalText, _fixedToScr
 		hovered = false,
 		oldHovered = false,
 		hoverTime = 0,
+		visible = true,
 		disabled = false,
 		fixedToScreen = _fixedToScreen,
 		childUis = childUis,
@@ -103,7 +106,10 @@ function createDropDownButton(_x, _y, _w, _h, _text, additionalText, _fixedToScr
 
 	return b
 end
-function createNumberInsertButton(_x, _y, _w, _h, _text, additionalText, _fixedToScreen)
+function createNumberInsertButton(_x, _y, _w, _h, _text, additionalText, _fixedToScreen, _onlyNumbers)
+	_onlyNumbers = _onlyNumbers or false
+	
+	
 	local b = {
 		pos = {
 			x = _x,
@@ -119,11 +125,13 @@ function createNumberInsertButton(_x, _y, _w, _h, _text, additionalText, _fixedT
 		},
 		text = _text,
 		textedText = "",
+		onlyNumbers = _onlyNumbers,
 		addText = additionalText,
 		pressed = false,
 		hovered = false,
 		oldHovered = false,
 		hoverTime = 0,
+		visible = true,
 		disabled = false,
 		fixedToScreen = _fixedToScreen,
 		texting = false,
@@ -132,11 +140,16 @@ function createNumberInsertButton(_x, _y, _w, _h, _text, additionalText, _fixedT
 
 
 	function b:update()
-		buttonUpdate(self)
+		if not self.texting then
+			buttonUpdate(self)
+		else
+			buttonUpdate(self, true)
+		end
 
 
 		if self.pressed then
-			self.texting = true
+			self.texting = not self.texting
+			self.pressed = false
 		end
 		if not self.hovered and love.mouse.isDown(1) and LastLeftMouseButton == false then
 			self.texting = false
@@ -145,8 +158,12 @@ function createNumberInsertButton(_x, _y, _w, _h, _text, additionalText, _fixedT
 
 		if self.texting then
 			if keyboardWasPressed then
-				if lastKeyPressed == "return" then
-					self.textedText = self.textedText .. "\n"
+				if lastKeyPressed == "return" or lastKeyPressed == "kpenter" then
+					if self.onlyNumbers then
+						self.texting = false
+					else
+						self.textedText = self.textedText .. "\n"
+					end
 					return
 				end
 				if lastKeyPressed == "tab" then
@@ -157,6 +174,9 @@ function createNumberInsertButton(_x, _y, _w, _h, _text, additionalText, _fixedT
 					self.textedText = self.textedText .. " "
 					return
 				end
+				if lastKeyPressed == "escape" then
+					self.texting = false
+				end
 				if lastKeyPressed == "backspace" then
 					self.textedText = string.sub(self.textedText, 1, string.len(self.textedText) - 1)
 					return
@@ -164,9 +184,19 @@ function createNumberInsertButton(_x, _y, _w, _h, _text, additionalText, _fixedT
 				if lastKeyPressed == "lshift" or lastKeyPressed == "rshift" or lastKeyPressed == "lctrl" or lastKeyPressed == "rctrl" or lastKeyPressed == "capslock" or lastKeyPressed == "lalt" or lastKeyPressed == "mode" then
 					return
 				end
+				local pos = {string.find(lastKeyPressed, "kp")}
+				if pos[1] ~= nil and pos[2] ~= nil then
+					lastKeyPressed = string.sub(lastKeyPressed, pos[2] + 1, string.len(lastKeyPressed))
+				end
 
 
-				self.textedText = self.textedText .. lastKeyPressed
+				if self.onlyNumbers then
+					if lastKeyPressed == "1" or lastKeyPressed == "2" or lastKeyPressed == "3" or lastKeyPressed == "4" or lastKeyPressed == "5" or lastKeyPressed == "6" or lastKeyPressed == "7" or lastKeyPressed == "8" or lastKeyPressed == "9" or lastKeyPressed == "0" then
+						self.textedText = self.textedText .. lastKeyPressed
+					end
+				else
+					self.textedText = self.textedText .. lastKeyPressed
+				end
 			end
 		end
 	end
@@ -192,12 +222,16 @@ function createNumberInsertButton(_x, _y, _w, _h, _text, additionalText, _fixedT
 end
 
 
-function buttonUpdate(self)
+function buttonUpdate(self, hoverOverride)
 	local realPos = {x = self.pos.x - self.size.w / 2, y = self.pos.y - self.size.h / 2}
 	local usedMousePos = PushsInGameMousePosNoTransform
 
 
-	self.hovered = usedMousePos.x >= realPos.x and usedMousePos.x <= realPos.x + self.size.w and usedMousePos.y >= realPos.y and usedMousePos.y <= realPos.y + self.size.h
+	if not hoverOverride then
+		self.hovered = usedMousePos.x >= realPos.x and usedMousePos.x <= realPos.x + self.size.w and usedMousePos.y >= realPos.y and usedMousePos.y <= realPos.y + self.size.h
+	else
+		self.hovered = true
+	end
 	
 
 	if self.oldHovered == false and self.hovered then
@@ -243,14 +277,15 @@ function buttonUpdate(self)
 end
 
 
-function buttonDraw(self, modText)
+function buttonDraw(self, modText, alpha)
+	alpha = alpha or 1
 	modText = modText or self.text
 
 
 	local realPos = {x = self.pos.x - self.size.w / 2, y = self.pos.y - self.size.h / 2}
-	love.graphics.setColor({1, 1, 1})
+	love.graphics.setColor({1, 1, 1, alpha})
 	love.graphics.rectangle("fill", realPos.x, realPos.y, self.size.w, self.size.h)
-	love.graphics.setColor({0, 0, 0})
+	love.graphics.setColor({0, 0, 0, alpha})
 	love.graphics.rectangle("line", realPos.x, realPos.y, self.size.w, self.size.h)
 
 
@@ -264,10 +299,10 @@ function buttonDraw(self, modText)
 	if self.hoverTime >= 1 and self.addText ~= "" then
 		local wrap = {fnt:getWrap(self.addText, self.size.w / 2)}
 		local txtHeight = fnt:getHeight() * #wrap[2]
-		love.graphics.setColor({0, 0, 0})
-			love.graphics.rectangle("fill", PushsInGameMousePosNoTransform.x, PushsInGameMousePosNoTransform.y, (self.size.w) + 16, ((txtHeight) * 2) + 16)
-		love.graphics.setColor({1, 1, 1})
-			love.graphics.rectangle("line", PushsInGameMousePosNoTransform.x, PushsInGameMousePosNoTransform.y, (self.size.w) + 16, ((txtHeight) * 2) + 16)
-			drawOutlinedTextF(self.addText, PushsInGameMousePosNoTransform.x + 8 + ((self.size.w / 4) * 2), PushsInGameMousePosNoTransform.y + 8 + ((txtHeight / 2) * 2), self.size.w / 2, "center", 0, 2, 2, self.size.w / 4, txtHeight / 2, 4, {0, 0, 0})
+		love.graphics.setColor({0, 0, 0, alpha})
+			love.graphics.rectangle("fill", PushsInGameMousePosNoTransform.x + 32, PushsInGameMousePosNoTransform.y + 32, (self.size.w) + 16, ((txtHeight) * 2) + 16)
+		love.graphics.setColor({1, 1, 1, alpha})
+			love.graphics.rectangle("line", PushsInGameMousePosNoTransform.x + 32, PushsInGameMousePosNoTransform.y + 32, (self.size.w) + 16, ((txtHeight) * 2) + 16)
+			drawOutlinedTextF(self.addText, PushsInGameMousePosNoTransform.x + 32 + 8 + ((self.size.w / 4) * 2), PushsInGameMousePosNoTransform.y + 32 + 8 + ((txtHeight / 2) * 2), self.size.w / 2, "center", 0, 2, 2, self.size.w / 4, txtHeight / 2, 4, {0, 0, 0})
 	end
 end

@@ -32,11 +32,16 @@ function createCar(_name, _namePT, desc, descPT, _spr, _scl, _speed, _damage, _w
 end
 
 
-function createCarInstance(_inheritFrom, _x, _y, _ghostCar)
+function createCarInstance(_inheritFrom, _x, _y, _ghostCar, _example)
+	_example = _example or false
+	if _inheritFrom == nil then return end
+
+
 	local c = {
 		pos = {x = _x, y = _y},
 		vel = {x = 0, y = 0},
 		fromCar = _inheritFrom,
+		isExampleCar = _example,
 		sclYAdd = 0,
 		rot = 0,
 		driveParticle = love.graphics.newParticleSystem(love.graphics.newImage("Sprs/Particles/WhiteBall.png"), 100),
@@ -46,6 +51,7 @@ function createCarInstance(_inheritFrom, _x, _y, _ghostCar)
 		spdAdd = math.random(-50, 50),
 		drifiting = false,
 		trailPoses = {},
+		tankTopSpr = nil,
 		hpAddCar = 0,
 		hpDivCar = 1,
 		hpMultCar = 1,
@@ -63,6 +69,9 @@ function createCarInstance(_inheritFrom, _x, _y, _ghostCar)
 	
 
 	function c:init()
+		if self.isExampleCar then return end
+
+
 		self.driveParticle:setSizes(2, 0)
 		self.driveParticle:setLinearAcceleration(10, -500, 100, -200)
 		self.driveParticle:setParticleLifetime(0.5, 1)
@@ -77,17 +86,28 @@ function createCarInstance(_inheritFrom, _x, _y, _ghostCar)
 			self.walkSfx:play()
 		end
 
-
+		if self.fromCar.especialPropertys.shoots then
+			table.insert(self.additionalBehaviorFuncs, 1, shootUpdateFunc)
+		end
+		if self.fromCar.especialPropertys.cats then
+			table.insert(self.additionalBehaviorFuncs, 1, catCarUpdate)
+		end
 		if self.fromCar.especialPropertys.seller then
 			table.insert(self.additionalBehaviorFuncs, 1, sellerCarUpdate)
 			self.fromCar.especialPropertys.froggsKilled = 0
 			self.fromCar.especialPropertys.recieveCooldown = self.fromCar.especialPropertys.recieveCooldownDef
+		end
+		if self.fromCar.especialPropertys.isTank then
+			self.tankTopSpr = love.graphics.newImage("Sprs/Cars/TankTop.png")
 		end
 		if self.isGhostCar then table.insert(self.additionalBehaviorFuncs, 1, ghostCarUpdate) end
 	end
 
 
 	function c:update()
+		if self.isExampleCar then return end
+
+
 		self.vel.x = Lume.lerp(self.vel.x, (((-self.fromCar.spd + self.spdAdd) + self.spdAddCar) * self.spdMultCar) / self.spdDivCar, 0.1)
 		self.vel.y = Lume.lerp(self.vel.y, 0, 0.1)
 
@@ -225,15 +245,26 @@ function createCarInstance(_inheritFrom, _x, _y, _ghostCar)
 
 	function c:draw()
 		--The particles gets drawn in the main.lua
-		local color = {1, 1, 1, self.alpha}
+		if not self.isExampleCar then
+			local color = {1, 1, 1, self.alpha}
 
 
+			if self.isGhostCar then color = {1, 0.5, 1, self.alpha / 2} end
 
-		if self.isGhostCar then color = {1, 0.5, 1, self.alpha / 2} end
+
+			love.graphics.setColor(color)
+		end
 
 
-		love.graphics.setColor(color)
-			self.fromCar.spr:draw(self.rot, self.pos.x, self.pos.y, self.fromCar.scale + self.scaleAdd, self.fromCar.scale + self.sclYAdd + self.scaleAdd, self.fromCar.spr.sprWidth / 2, self.fromCar.spr.sprHeight / 2, 4, {0, 0, 0, self.alpha})
+		local rot = self.rot
+		local scl = {self.fromCar.scale + self.scaleAdd, self.fromCar.scale + self.sclYAdd + self.scaleAdd}
+		if self.fromCar.especialPropertys.isTank then rot = rot - math.rad(90); self.scaleAdd = 0.1 * math.cos(self.angle); scl = {self.fromCar.scale + self.scaleAdd, self.fromCar.scale + self.scaleAdd} end
+		self.fromCar.spr:draw(rot, self.pos.x, self.pos.y, scl[1], scl[2], self.fromCar.spr.sprWidth / 2, self.fromCar.spr.sprHeight / 2, 4, {0, 0, 0, self.alpha})
+		
+
+		if self.fromCar.especialPropertys.isTank then
+			drawOutlinedSprite(self.tankTopSpr, self.pos.x, self.pos.y, self.fromCar.especialPropertys.weaponRot + math.deg(90), scl[1], scl[2], nil, nil, 4, {0, 0, 0, self.alpha})
+		end
 	end
 
 
@@ -246,6 +277,9 @@ end
 
 
 function createExplosion(_x, _y, _fromCar)
+	if _fromCar.fromCar == nil then return end
+
+	
 	local e = {
 		pos = {x = _x, y = _y},
 		spr = newAnimation(love.graphics.newImage("Sprs/Cars/Explosion.png"), 16, 16, 7, 30, 1),
@@ -344,4 +378,161 @@ function sellerCarUpdate(self)
 
 
 	self.fromCar.especialPropertys.recieveCooldown = self.fromCar.especialPropertys.recieveCooldown - (1 * gameStuff.speed) * globalDt
+end
+function catCarUpdate(self)
+	if self.fromCar.especialPropertys.catCreateDelay <= 0 then
+		createCat(self.pos.x, self.pos.y)
+		self.fromCar.especialPropertys.catCreateDelay = math.random(1, 5)
+	end
+
+
+	self.fromCar.especialPropertys.catCreateDelay = self.fromCar.especialPropertys.catCreateDelay - (1 * gameStuff.speed) * globalDt
+end
+
+
+function createCat(x, y)
+	local c = {
+		pos = {x = x, y = y},
+		vel = {x = 0, y = 0},
+		reverseX = 1,
+		reverseY = 1,
+		rot = 0,
+		scale = {x = 2, y = 2},
+		mspd = 500,
+		spr = newAnimation(love.graphics.newImage("Sprs/Other/CatWalk.png"), 20, 16, 3, 5, 0),
+		hp = 2,
+		targetFrog = 1,
+	}
+
+
+	function c:init()
+		self.targetFrog = 1
+	end
+
+
+	function c:update()
+		self.pos.x = self.pos.x + (self.vel.x * gameStuff.speed) * globalDt
+		self.pos.y = self.pos.y + (self.vel.y * gameStuff.speed) * globalDt
+
+
+		self.rot = 0.1 * math.sin(GlobalSinAngle)
+		self.scale.y = 2 + 0.25 * math.cos(GlobalSinAngle)
+
+
+		if self.vel.x < 0 then
+			self.scale.x = -2
+		else
+			self.scale.x = 2
+		end
+
+
+		if Foggs[self.targetFrog] ~= nil then
+			self.spr:update(globalDt * gameStuff.speed)
+			local dir = Lume.angle(self.pos.x, self.pos.y, Foggs[self.targetFrog].pos.x, Foggs[self.targetFrog].pos.y)
+			self.vel.x = Lume.lerp(self.vel.x, self.mspd * math.cos(dir), 0.1)
+			self.vel.y = Lume.lerp(self.vel.y, self.mspd * math.sin(dir), 0.1)
+			if Lume.distance(self.pos.x, self.pos.y, Foggs[self.targetFrog].pos.x, Foggs[self.targetFrog].pos.y) <= 32 then
+				if Foggs[self.targetFrog].hp == 1 then
+					self.hp = self.hp - 1
+				end
+
+
+				Foggs[self.targetFrog]:recieveDamage(1, self.pos.x, self.pos.y)
+			end
+		else
+			self.vel.x = Lume.lerp(self.vel.x, 0, 0.1)
+			self.vel.y = Lume.lerp(self.vel.y, 0, 0.1)
+		end
+
+
+		if self.hp <= 0 then
+			createBlood(self.pos.x, self.pos.y)
+			table.remove(gameInstances, tableFind(gameInstances, self))
+		end
+	end
+
+
+	function c:draw()
+		love.graphics.setColor(1, 1, 1)
+		self.spr:draw(self.rot, self.pos.x, self.pos.y, self.scale.x, self.scale.y, nil, nil, 4, {0, 0, 0})
+	end
+
+
+	c:init()
+
+
+	table.insert(gameInstances, #gameInstances + 1, c)
+end
+
+
+
+function shootUpdateFunc(self)
+	if self.fromCar.especialPropertys.target == "Frogs" and Foggs[1] ~= nil then
+		local dir = Lume.angle(self.pos.x, self.pos.y, Foggs[1].pos.x, Foggs[1].pos.y)
+		self.fromCar.especialPropertys.dir = dir
+		self.fromCar.especialPropertys.weaponRot = dir
+		self.fromCar.especialPropertys.cooldown = self.fromCar.especialPropertys.cooldown - (1 * gameStuff.speed) * globalDt
+	else	
+		self.fromCar.especialPropertys.dir = Lume.lerp(self.fromCar.especialPropertys.dir, 0, 0.1)
+		self.fromCar.especialPropertys.weaponRot = Lume.lerp(self.fromCar.especialPropertys.weaponRot, 0, 0.1)
+	end
+       
+
+	if self.fromCar.especialPropertys.cooldown <= 0 then
+		self.fromCar.especialPropertys.bulletCreateFunction(self.pos.x, self.pos.y, self.fromCar.especialPropertys.dir)
+
+
+		self.fromCar.especialPropertys.cooldown = self.fromCar.especialPropertys.cooldownDef
+	end
+end
+
+
+function createTankBullet(x, y, dir)
+	local b = {
+		pos = {x = x, y = y},
+		dir = dir,
+		mspd = 500,
+		spr = love.graphics.newImage("Sprs/Bullets/TankBullet.png"),
+		col = createRectangle(x, y, 32, 32),
+		lifeTimer = 1,
+	}
+
+
+	function b:update()
+		self.col.x = self.pos.x - self.spr:getWidth() / 2
+		self.col.y = self.pos.y - self.spr:getHeight() / 2
+		self.col.w = self.spr:getWidth()
+		self.col.h = self.spr:getHeight()
+
+
+		self.pos.x = self.pos.x + (self.mspd * math.cos(self.dir)) * globalDt
+		self.pos.y = self.pos.y + (self.mspd * math.sin(self.dir)) * globalDt
+
+
+		for f=1, #Foggs do
+			if Foggs[f] ~= nil then
+				if self.col:checkCollision(Foggs[f].col) then
+					Foggs[f].hp = 0
+					self:hit()
+				end
+			end
+		end
+
+
+		self.lifeTimer = self.lifeTimer - (1 * gameStuff.speed) * globalDt
+	end
+
+
+	function b:hit()
+		createExplosion(x, y, GameCars[1])
+		table.remove(gameInstances, tableFind(gameInstances, self))
+	end
+
+
+	function b:draw()
+		drawOutlinedSprite(self.spr, self.pos.x, self.pos.y, self.dir, 1, 1, nil, nil, 4, {0, 0, 0})
+	end
+
+
+	table.insert(gameInstances, #gameInstances + 1, b)
 end

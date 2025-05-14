@@ -22,7 +22,7 @@ end
 
 function drawRoad()
     for i=0, (Push:getHeight() / carGridLockDist) - 1 do
-        for x=-8, math.floor(800 / (roadSpr:getWidth() * 3)) + 8 do
+        for x=-16, math.floor(800 / (roadSpr:getWidth() * 3)) + 16 do
             if isPointInsideCam(((roadSpr:getWidth() * 3) * x), (carGridLockDist * i)) then
                 love.graphics.draw(roadSpr, ((roadSpr:getWidth() * 3) * x), (carGridLockDist * i), 0, 3, 3)
             end

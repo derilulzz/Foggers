@@ -54,8 +54,11 @@ function createMainMenu()
         creditsButton = createButton(800 - (64 + 8), 600 - (32 + 8), 128, 64, "Credits", "", true),
         showRunConfig = false,
         runConfigStuff = {
+            boxYOffset = 600,
             startRunButton = nil,
-            numButton = nil,
+            cancelRunButton = nil,
+            startingRoundNumBtn = nil,
+            seedNumBtn = nil,
         }
     }
 
@@ -74,7 +77,7 @@ function createMainMenu()
 
 
         for i=1, #GameCars do
-            createCarInstance(GameCars[i], 800, 128 + 64 * i)
+            createCarInstance(GameCars[i], 800, 128 + 32 * i)
         end
 
 
@@ -183,7 +186,40 @@ function createMainMenu()
                 if love.keyboard.isDown("right", "d") then gameStuff.musicVolume = gameStuff.musicVolume + 0.1 * globalDt end
             end
         else
+            if gameStuff.lang == "pt-br" then
+                self.runConfigStuff.cancelRunButton.text = "Cancelar"
+                self.runConfigStuff.startRunButton.text = "Comecar"
+                self.runConfigStuff.startRunButton.addText = "Comecar A Run"
+                self.runConfigStuff.cancelRunButton.addText = "Cancelar A Run"
+                self.runConfigStuff.seedNumBtn.addText = "O Numero Usado Para Criar Numeros Aleatorios"
+                self.runConfigStuff.startingRoundNumBtn.addText = "O Round Onde O Jogo Comeca"
+                self.runConfigStuff.seedNumBtn.text = "Aleatorio"
+            else
+                self.runConfigStuff.cancelRunButton.text = "Cancel"
+                self.runConfigStuff.startRunButton.text = "Start"
+                self.runConfigStuff.seedNumBtn.text = "Random"
+            end
+
+
+
             if self.runConfigStuff.startRunButton.pressed then
+                if self.runConfigStuff.startingRoundNumBtn.textedText == "" then
+                    gameStuff.currentStartingRound = 0
+                else
+                    if self.runConfigStuff.startingRoundNumBtn.textedText ~= "" then
+                        gameStuff.currentStartingRound = tonumber(self.runConfigStuff.startingRoundNumBtn.textedText)
+                    else
+                        gameStuff.currentStartingRound = 0
+                    end
+                end
+                
+                
+                if self.runConfigStuff.seedNumBtn ~= nil and self.runConfigStuff.seedNumBtn.textedText ~= "" then
+                    gameStuff.useFixedSeed = true
+                    gameStuff.fixedSeed = tonumber(self.runConfigStuff.seedNumBtn.textedText)
+                end
+                
+                
                 changeRoom(rooms.game)
 
 
@@ -195,6 +231,36 @@ function createMainMenu()
 
         if tableFind(UiStuff, self.creditsButton) == -1 and not self.showRunConfig then
             table.insert(UiStuff, 1, self.creditsButton)
+        end
+
+
+        if not self.showRunConfig then
+            if self.runConfigStuff.startRunButton ~= nil then
+                self:unnitRunConfig()
+            end
+        end
+
+
+        if self.showRunConfig then
+            if self.runConfigStuff.startRunButton ~= nil then
+                self.runConfigStuff.startRunButton.pos.y = (600) - 64 - 8 + self.runConfigStuff.boxYOffset
+                self.runConfigStuff.cancelRunButton.pos.y = (600) - 64 - 8 + self.runConfigStuff.boxYOffset
+                self.runConfigStuff.startingRoundNumBtn.pos.y = 64 + 8 + self.runConfigStuff.boxYOffset
+                self.runConfigStuff.seedNumBtn.pos.y = 128 + 16 + self.runConfigStuff.boxYOffset
+            end
+
+
+            if self.runConfigStuff.cancelRunButton ~= nil and self.runConfigStuff.cancelRunButton.pressed then
+                Flux.to(self.runConfigStuff, 0.5, {boxYOffset=600}):ease("expoin"):oncomplete(m.disableRunConf)
+                self.runConfigStuff.cancelRunButton.pressed = false
+            end
+
+
+            if self.runConfigStuff.startingRoundNumBtn ~= nil and string.len(self.runConfigStuff.startingRoundNumBtn.textedText) > 0 then
+                if tonumber(self.runConfigStuff.startingRoundNumBtn.textedText) > gameStuff.higestRound then
+                    self.runConfigStuff.startingRoundNumBtn.textedText = tostring(gameStuff.higestRound)
+                end
+            end
         end
 
 
@@ -210,12 +276,18 @@ function createMainMenu()
     end
 
 
+    function m:disableRunConf()
+        m.showRunConfig = false
+    end
+
+
     function m:selectOption()
         if self.menuLevel == 1 then
             if self.pos == 1 then
                 self.showRunConfig = true
                 UiStuff = {}
                 self:initRunConfig()
+            Flux.to(self.runConfigStuff, 0.5, {boxYOffset=0}):ease("expoout")
             elseif self.pos == 2 then
                 self:setMenuLevel(2)
             elseif self.pos == 3 then
@@ -237,9 +309,25 @@ function createMainMenu()
     end
 
 
+    function m:unnitRunConfig()
+        deleteUIInstance(self.runConfigStuff.startRunButton)
+        deleteUIInstance(self.runConfigStuff.startingRoundNumBtn)
+        deleteUIInstance(self.runConfigStuff.seedNumBtn)
+        deleteUIInstance(self.runConfigStuff.cancelRunButton)
+
+
+        self.runConfigStuff.startRunButton = nil
+        self.runConfigStuff.startingRoundNumBtn = nil
+        self.runConfigStuff.seedNumBtn = nil
+        self.runConfigStuff.cancelRunButton = nil
+    end
+
+
     function m:initRunConfig()
-        self.runConfigStuff.startRunButton = createButton(800 / 2, (600) - 64, 128, 64, "Start", "")
-        self.runConfigStuff.numButton = createNumberInsertButton(800 / 2, 64, 128, 64, "Text", "",  true)
+        self.runConfigStuff.startRunButton = createButton((800 / 2) + 128, (600) - 64, 128, 64, "Start", "Start the run")
+        self.runConfigStuff.startingRoundNumBtn = createNumberInsertButton(800 / 2, 64, 128, 64, "0", "The round that the game will start",  true, true)
+        self.runConfigStuff.seedNumBtn = createNumberInsertButton(800 / 2, 128 + 8, 128, 64, "Random", "The number used to create random numbers",  true, true)
+        self.runConfigStuff.cancelRunButton = createButton((800 / 2) - 128, 600 - 32 - 8, 128, 64, "Cancel", "Cancel run", true)
     end
 
 
@@ -402,7 +490,21 @@ function createMainMenu()
 
         if self.showRunConfig then
             love.graphics.setColor(HSV(0, 0, 0.1 + 0.1 * math.cos(GlobalSinAngle)))
-            drawOutlinedRect(32, 32, 800 - 64, 600 - 64, {0, 0, 0})
+            drawOutlinedRect(32, 32 + self.runConfigStuff.boxYOffset, 800 - 64, 600 - 64, {0, 0, 0})
+            love.graphics.setColor(1, 1, 1)
+
+
+            local text1 = "Starting round: "
+            local text2 = "Seed: "
+
+
+            if gameStuff.lang == "pt-br" then
+                text1 = "Round Inicial: "
+            end
+
+
+            drawOutlinedText(text1, (800 / 2) - (love.graphics.getFont():getWidth(text1) * 2), 68 + self.runConfigStuff.boxYOffset, 0, 2, 2, love.graphics.getFont():getWidth(text1) / 2, love.graphics.getFont():getHeight(text1) / 2, 4, {0, 0, 0})
+            drawOutlinedText(text2, (800 / 2) - (love.graphics.getFont():getWidth(text2) * 3.85), 128 + 8 + self.runConfigStuff.boxYOffset, 0, 2, 2, love.graphics.getFont():getWidth(text2) / 2, love.graphics.getFont():getHeight(text2) / 2, 4, {0, 0, 0})
         end
     end
 

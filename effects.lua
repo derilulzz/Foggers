@@ -235,3 +235,67 @@ function drawShadow(x, y, scaleX, scaleY, rot)
 
     love.graphics.draw(shadowSpr, x, y, rot, scaleX, scaleY, shadowSpr:getWidth() / 2, shadowSpr:getHeight() / 2)
 end
+
+
+function createWarningText(warningText)
+    local w = {
+        scale = 0,
+        rot = 999,
+        text = warningText,
+    }
+
+
+    function w:init()
+        Flux.to(self, 1, {scale = 8, rot = 0}):ease("expoin"):after(self, 1, {scale = 0, rot = -999}):delay(1):ease("expoout"):oncomplete(w.delete)
+    end
+
+
+    function w:delete()
+        table.remove(onTopGameInstaces, tableFind(onTopGameInstaces, w))
+    end
+
+
+    function w:draw()
+        love.graphics.setColor(1, 0, 0, 1)
+        drawOutlinedText(self.text, 800 / 2, 600 / 2, self.rot, self.scale, self.scale, nil, nil, 4, {0, 0, 0})
+    end
+
+
+    w:init()
+
+
+    table.insert(onTopGameInstaces, #onTopGameInstaces + 1, w)
+end
+
+
+function createBagItemRecieveText(whatItem)
+    local w = {
+        scale = 0,
+        rot = 999,
+        item = whatItem,
+    }
+
+
+    function w:init()
+        Flux.to(self, 1, {scale = 8, rot = 0}):ease("expoin"):after(self, 1, {scale = 0, rot = -999}):delay(2):ease("expoout"):oncomplete(w.delete)
+    end
+
+
+    function w:delete()
+        table.remove(onTopGameInstaces, tableFind(onTopGameInstaces, w))
+    end
+
+
+    function w:draw()
+        love.graphics.setColor(HSV(0.5 + 0.5 * math.cos(GlobalSinAngle), 1, 1))
+        drawOutlinedText("item recieved", 800 / 2, (600 / 2) - (love.graphics.getFont():getHeight(self.item.name) * self.scale), self.rot, self.scale / 2, self.scale / 2, nil, nil, 4, {0, 0, 0})
+        drawOutlinedText(self.item.name, 800 / 2, 600 / 2, self.rot, self.scale, self.scale, nil, nil, 4, {0, 0, 0})
+        drawOutlinedText(self.item.desc, 800 / 2, (600 / 2) + (love.graphics.getFont():getHeight(self.item.name) * self.scale), self.rot, self.scale / 2, self.scale / 2, nil, nil, 4, {0, 0, 0})
+    end
+
+
+    w:init()
+
+
+    table.insert(onTopGameInstaces, #onTopGameInstaces + 1, w)
+end

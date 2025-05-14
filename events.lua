@@ -7,10 +7,32 @@ function createCitizen()
 
 
     function c:update()
+        --Do stuff when he reaches the right bottom of the scene
         if self.pos.x >= 800 * 1.5 then
-            createMoneyGainEffect(500, self.pos.x - 64, self.pos.y)
-            money = money + 500
+            local givenMoney = 500 * (gameStuff.currentFoggGaved + 1)
+            createMoneyGainEffect(givenMoney, self.pos.x - 64, self.pos.y)
+            money = money + givenMoney
             table.remove(gameInstances, tableFind(gameInstances, self))
+
+
+            local willReciveve = math.random(0, 1)
+
+
+            if willReciveve == 0 then
+                local itemGaved = math.random(1, #bagItemsIndexed)
+                recieveBagItem(bagItemsIndexed[itemGaved])
+            end
+        end
+
+
+        --Die handling
+        for f=1, #Foggs do
+            if Foggs[f] ~= nil then
+                if Lume.distance(self.pos.x, self.pos.y, Foggs[f].pos.x, Foggs[f].pos.y) <= 32 then
+                    createWarningText("citizen died")
+                    table.remove(gameInstances, tableFind(gameInstances, self))
+                end
+            end
         end
 
 
