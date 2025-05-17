@@ -51,7 +51,7 @@ function createMainMenu()
         currentOptionScale = 5,
         mouseMoved = false,
         blackEnterAlpha = 1,
-        creditsButton = createButton(800 - (64 + 8), 600 - (32 + 8), 128, 64, "Credits", "", true),
+        creditsButton = nil,
         showRunConfig = false,
         runConfigStuff = {
             boxYOffset = 600,
@@ -64,7 +64,16 @@ function createMainMenu()
 
 
     function m:createCreditsButton()
-        self.creditsButton = createButton(800 - (64 + 8), 600 - (32 + 8), 128, 64, "Credits", "", true)
+        local text = "Credits"
+
+
+        if gameStuff.lang == "pt-br" then
+            text = "Creditos"
+        end
+
+
+        deleteUIInstance(self.creditsButton)
+        self.creditsButton = createButton(800 - (64 + 8), 600 - (32 + 8), 128, 64, text, "", true)
     end
 
 
@@ -108,6 +117,11 @@ function createMainMenu()
             if self.pos > #self.options[self.menuLevel] then self.pos = 1 end
 
 
+            if gameStuff.lang == "pt-br" then
+                self.creditsButton.text = "Creditos"
+            else
+                self.creditsButton.text = "Credits"
+            end
             if self.creditsButton.pressed then
                 changeRoom(rooms.credits)
 
@@ -150,13 +164,17 @@ function createMainMenu()
 
 
             if gameStuff.lang == "pt-br" then
+                self.creditsButton.text = "Creditos"
                 self.options[2][2] = "Lenguage: PT-BR"
             else
+                self.creditsButton.text = "Credits"
                 self.options[2][2] = "Lenguage: Eng"
             end
             if gameStuff.lang == "pt-br" then
+                self.creditsButton.text = "Creditos"
                 self.optionsPT[2][2] = "Lingua: PT-BR"
             else
+                self.creditsButton.text = "Credits"
                 self.optionsPT[2][2] = "Lingua: Eng"
             end
 
@@ -228,12 +246,6 @@ function createMainMenu()
         end
 
 
-
-        if tableFind(UiStuff, self.creditsButton) == -1 and not self.showRunConfig then
-            table.insert(UiStuff, 1, self.creditsButton)
-        end
-
-
         if not self.showRunConfig then
             if self.runConfigStuff.startRunButton ~= nil then
                 self:unnitRunConfig()
@@ -263,6 +275,9 @@ function createMainMenu()
             end
         end
 
+        
+        self.creditsButton.visible = self.showRunConfig == false
+
 
         self.angle = self.angle + 1 * globalDt
         if hoveringOne and love.mouse.isDown(1) then
@@ -285,7 +300,6 @@ function createMainMenu()
         if self.menuLevel == 1 then
             if self.pos == 1 then
                 self.showRunConfig = true
-                UiStuff = {}
                 self:initRunConfig()
             Flux.to(self.runConfigStuff, 0.5, {boxYOffset=0}):ease("expoout")
             elseif self.pos == 2 then
@@ -302,6 +316,7 @@ function createMainMenu()
                 else
                     gameStuff.lang = "pt-br"
                 end
+                self:createCreditsButton()
             elseif self.pos == 5 then
                 self:setMenuLevel(1)
             end

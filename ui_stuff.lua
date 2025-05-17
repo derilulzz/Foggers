@@ -223,6 +223,9 @@ end
 
 
 function buttonUpdate(self, hoverOverride)
+	if self.visible == false then return end
+
+
 	local realPos = {x = self.pos.x - self.size.w / 2, y = self.pos.y - self.size.h / 2}
 	local usedMousePos = PushsInGameMousePosNoTransform
 
@@ -280,6 +283,9 @@ end
 function buttonDraw(self, modText, alpha)
 	alpha = alpha or 1
 	modText = modText or self.text
+
+
+	if self.visible == false then return end
 
 
 	local realPos = {x = self.pos.x - self.size.w / 2, y = self.pos.y - self.size.h / 2}

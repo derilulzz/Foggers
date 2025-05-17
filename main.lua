@@ -1481,7 +1481,6 @@ function love.keypressed(key)
     end
     if key == "f1" then
         debugStuff.enabled = not debugStuff.enabled
-        startEvent()
     end
 end
 
@@ -1615,12 +1614,14 @@ function drawAllCars()
     end
 end
 
+
 function recieveDamage(dmg, x, y)
     gameStuff.hp = gameStuff.hp - dmg
     gameCam.zoom = 0.85
     damageEffectStuff.redRectRGBAdd = 1
     createDamageText(x, y)
 end
+
 
 function updateMusicVolume()
     explosionSfx:setVolume(gameStuff.sfxVolume)
@@ -1642,6 +1643,7 @@ function updateMusicVolume()
         musics[m]:setVolume(Lume.clamp(gameStuff.musicVolume + gameStuff.musicVolumeAdd, 0, 1))
     end
 end
+
 
 function isPointInsideCam(x, y)
     return x >= (gameCam.pos.x + gameCam.offset.x) - ((800) * gameCam.zoom) and
