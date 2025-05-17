@@ -1384,11 +1384,15 @@ function love.update(dt)
     end
 
 
+    --Clamp the game speed inside 0 to 4
     gameStuff.speed = Lume.clamp(gameStuff.speed, 0, 4)
+    --Lerp the red rect alpha back to 0
     damageEffectStuff.redRectRGBAdd = Lume.lerp(damageEffectStuff.redRectRGBAdd, 0, 0.1)
 
 
+    --If the game is not paused
     if not gameStuff.paused then
+        --Update the ontop game instances
         for t = 1, #onTopGameInstaces do
             if onTopGameInstaces[t] ~= nil and onTopGameInstaces[t].update ~= nil then
                 onTopGameInstaces[t]:update()
@@ -1397,36 +1401,45 @@ function love.update(dt)
     end
 
 
+    --If the pause menu exists, update it
     if pauseMenuInstance ~= nil then
         pauseMenuInstance:update()
     end
 
 
+    --Clamp the sfx and music volume to 0 and 1
     gameStuff.sfxVolume = Lume.clamp(gameStuff.sfxVolume, 0, 1)
     gameStuff.musicVolume = Lume.clamp(gameStuff.musicVolume, 0, 1)
 
 
+    --If the sceneTransition icon exists, update it
     if sceneTransition.coolIcon ~= nil then
         sceneTransition.coolIcon:update()
     end
 
 
+    --If the timeSinceStart is more than 20000 frames, reset it
     if gameStuff.timeSinceStart > 20000 then
         gameStuff.timeSinceStart = 0
     end
 
 
+    --Add the camera velocity to the camera position
     gameCam.pos.x = gameCam.pos.x + gameCam.vel.x * dt
     gameCam.pos.y = gameCam.pos.y + gameCam.vel.y * dt
 
 
+    --Clamp the camera position
     gameCam.pos.x = Lume.clamp(gameCam.pos.x, -128, 800 - 800 / 2)
     gameCam.pos.y = Lume.clamp(gameCam.pos.y, -128, 600 - 600 / 2)
 
 
+    --Reset the mouse scroll
     mouseScroll.x = 0
     mouseScroll.y = 0
+    --Update the game mouse
     mouse:updateMouse()
+    --Set the random number seed
     if not gameStuff.useFixedSeed then
         math.randomseed(gameStuff.timeSinceStart)
         love.math.setRandomSeed(gameStuff.timeSinceStart)
@@ -1434,55 +1447,73 @@ function love.update(dt)
         math.randomseed(gameStuff.fixedSeed)
         love.math.setRandomSeed(gameStuff.fixedSeed)
     end
+    --Update if the lmb and rmb was pressed in the last frames
     LastLeftMouseButton = love.mouse.isDown(1)
     LastRightMouseButton = love.mouse.isDown(2)
+    --Increase the global angle
     GlobalSinAngle = GlobalSinAngle + (1 * gameStuff.speed) * dt
+    --Crease the frog create timer if the game has not paused the frog creation, else delete all these mfs
     if not gameStuff.pauseFroggCreation then
         foggCreateTimer = foggCreateTimer - (1 * gameStuff.speed) * dt
     else
         tableClear(Foggs)
     end
+    --Decrease the timer to update "Push"s window size
     pushUpdateDelayTimer = pushUpdateDelayTimer - 1 * dt
+    --Update the mouse position in the last frame
     oldMousePos = { x = PushsInGameMousePos.x, y = PushsInGameMousePos.y }
+    --Update the flux library
     Flux.update(dt * gameStuff.speed)
-    keyboardWasPressed = false
+    --Reset if the keyboard was pressed
+    keyboardWasPressed = fals
+    --Increase the time since start
     gameStuff.timeSinceStart = gameStuff.timeSinceStart + 1
+    --Save the game
     saveGame(love.window.getFullscreen(), gameStuff.lang, gameStuff.sfxVolume, gameStuff.musicVolume, gameStuff.higestRound)
 end
 
 
+--The function to draw the game
 function love.draw()
+    --Tell push to start doing his shit
     Push:start()
+    --Apply the camera transform
     love.graphics.applyTransform(gameCam.transform)
 
 
     if currentRoom == rooms.mainMenu then
+        --Crear the game instances
         gameInstances = {}
 
 
+        --If the main menu instance does not exists, then create it, else draw it
         if mainMenuInstance == nil then
             mainMenuInstance = createMainMenu()
         else
             mainMenuInstance:draw()
         end
     elseif currentRoom == rooms.credits then
+        --If the credits instance does not exists, then create it, else draw it
         if creditsInstance == nil then
             creditsInstance = createCredits()
         else
             creditsInstance:draw()
         end
     elseif currentRoom == rooms.start then
+        --If the start thing instance does not exists, then create it, else draw it
         if startThingInstance == nil then
             startThingInstance = createStartThing()
         else
             startThingInstance:draw()
         end
     elseif currentRoom == rooms.game then
+        --Draw the backgrounds
         drawGrass()
         drawRoad()
         drawRoadSide()
 
 
+        --If an game instance wants to get drawn behind, draw it behind everything
         for u = 1, #gameInstances do
             if gameInstances[u].drawBack then
                 gameInstances[u]:draw()
@@ -1490,9 +1521,11 @@ function love.draw()
         end
 
 
+        --Draw the cars
         drawAllCars()
 
 
+        --Draw the car selected example
         if placingCar and GameCars[selectedCar] ~= nil and currentSelectedCar ~= nil then
             love.graphics.setColor(0.5, 0.5, 0.5, 0.85)
             currentSelectedCar.pos.x = xForCar
@@ -1502,6 +1535,7 @@ function love.draw()
             love.graphics.setColor(1, 1, 1, 1)
 
 
+            --Draw the car cost
             love.graphics.setColor(1, 1, 1, 1)
             love.graphics.setFont(secFnt)
             local txt = "Cost: " .. GameCars[selectedCar].cost
@@ -1517,11 +1551,13 @@ function love.draw()
         end
 
 
+        --Draw all the frogs
         for f = 1, #Foggs do
             Foggs[f]:draw()
         end
 
 
+        --Draw all the game instances that dont want to be drawn behind everything
         for u = 1, #gameInstances do
             if not gameInstances[u].drawBack then
                 gameInstances[u]:draw()
@@ -1529,15 +1565,18 @@ function love.draw()
         end
 
 
+        --Reset the transform
         love.graphics.origin()
 
 
+        --Draw the up box
         love.graphics.setColor({ 0.8, 1, 0.8 })
         love.graphics.rectangle("fill", upBoxStuff.x, upBoxStuff.y, upBoxStuff.w, upBoxStuff.h)
         love.graphics.setColor({ 0, 0, 0 })
         love.graphics.rectangle("line", upBoxStuff.x, upBoxStuff.y, upBoxStuff.w, upBoxStuff.h)
 
 
+        --Draw the current money
         love.graphics.setColor(0.1, 0.1, 0.1, 0.5)
         love.graphics.rectangle("fill", upBoxStuff.x + 8, upBoxStuff.y + upBoxStuff.h + 8,
             (love.graphics.getFont():getWidth(tostring(money)) * 4) + 16,
@@ -1552,11 +1591,13 @@ function love.draw()
             love.graphics.getFont():getHeight(tostring(money)) / 2, 8)
 
 
+        --Draw the mega wave timer
         local txt = tostring(math.floor(megaWave.timer))
         drawOutlinedText(txt, 800 - 8, upBoxStuff.y + upBoxStuff.h + 8, 0, 4, 4, love.graphics.getFont():getWidth(txt), 0,
             4, { 0, 0, 0 })
 
 
+        --Draw the player hp
         local txt = tostring(math.floor(gameStuff.hp))
         love.graphics.setColor({ 1, 0, 0 })
         drawOutlinedText(txt, 800 / 2, upBoxStuff.y + upBoxStuff.h + 8, 0, 4 + healthTextStuff.scaleAdd,
@@ -1564,6 +1605,7 @@ function love.draw()
         love.graphics.setColor({ 1, 1, 1 })
 
 
+        --Draw the current modifier
         if modifier.current ~= nil then
             local txt = modifier.current.name
             drawOutlinedText(txt, 8, 600 - 4, 0, 4, 4, 0, love.graphics.getFont():getHeight(txt), 4, { 0, 0, 0 })
@@ -1571,13 +1613,15 @@ function love.draw()
     end
 
 
+    --Draw all the game UI Instance
     for b = 1, #UiStuff do
-        if UiStuff[b].visible or (UiStuff[b].alpha ~= nil and UiStuff[b].alpha > 0) then
+        if UiStuff[b].visible and (UiStuff[b].alpha ~= nil and UiStuff[b].alpha > 0) then
             UiStuff[b]:draw()
         end
     end
 
 
+    --Draw the game instances that are on top of (almost) everything
     for t = 1, #onTopGameInstaces do
         if onTopGameInstaces[t] ~= nil then
             onTopGameInstaces[t]:draw()
@@ -1585,20 +1629,24 @@ function love.draw()
     end
 
 
+    --Draw the main menu instance, if it exists
     if pauseMenuInstance ~= nil then
         pauseMenuInstance:draw()
     end
 
 
+    --Draw the red rect if the alpha for it is more than 0
     if damageEffectStuff.redRectRGBAdd > 0 then
         love.graphics.setColor(damageEffectStuff.redRectRGBAdd, 0, 0, damageEffectStuff.redRectRGBAdd)
         love.graphics.rectangle("fill", 0, 0, 800, 600)
     end
 
 
+    --Draw the mouse
     mouse:drawMouse()
 
 
+    --If the sceneTransition is enabled, draw it
     if sceneTransition.enabled then
         love.graphics.setColor({ 0, 0, 0 })
         love.graphics.rectangle("fill", 0, -1, love.graphics.getWidth() + 256,
@@ -1615,11 +1663,13 @@ function love.draw()
     end
 
 
+    --Draw the transition icon if it exists
     if sceneTransition.coolIcon ~= nil then
         sceneTransition.coolIcon:draw()
     end
 
 
+    --Draw debug info
     if debugStuff.enabled then
         love.graphics.setColor({1, 1, 1})
         drawOutlinedText("RedRect: " .. tostring(damageEffectStuff.redRectRGBAdd), 8, 8, 0, 1, 1, 0, 0)
@@ -1640,15 +1690,19 @@ function love.draw()
     end
 
 
+    --Tell "Push" to finish wtf he was doing
     Push:finish()
 end
 
 
+--Called when the window gets resized
 function love.resize(w, h)
+    --Update "Push"s, it is updated here and in love.update because my linux distro in making this function not run maximizing the window
     Push:resize(w, h)
 end
 
 
+--The function to create one new frog, just creates a new frog
 function createANewFogg(altX, altY)
     local x = math.random(0, 800 * 1.5)
     local y = 632
@@ -1685,9 +1739,16 @@ function createANewFogg(altX, altY)
     end
 end
 
+
+
+--Called when one key gets pressed
 function love.keypressed(key)
+    --Update the key that was pressed and set that the keyboard was pressed in the current frame
     lastKeyPressed = key
     keyboardWasPressed = true
+
+
+    --Do stuff based in the key pressed
     if key == "f11" then
         love.window.setFullscreen(not love.window.getFullscreen())
     end
@@ -1736,6 +1797,7 @@ function love.keypressed(key)
 end
 
 
+--Function to begin the car placing
 function startCarPlacing(whatCar)
     selectedCar = whatCar
     placingCar = true
@@ -1744,6 +1806,7 @@ function startCarPlacing(whatCar)
 end
 
 
+--The function to stop car placing
 function stopCarPlacing()
     selectedCar = nil
     placingCar = false
@@ -1751,12 +1814,14 @@ function stopCarPlacing()
 end
 
 
+--The function to enable screen shake
 function enableScreenShake(force)
     screenShake.enabled = true
     screenShake.force = Lume.clamp(force, 0, 128)
 end
 
 
+--The function to change rooms
 function changeRoom(toWhat)
     if sceneTransition.enabled then return end
 
@@ -1771,11 +1836,13 @@ function changeRoom(toWhat)
 end
 
 
+--The function to disable the transition (set that the transition is not running)
 function disableTransition()
     sceneTransition.enabled = false
 end
 
 
+--The function to set the current room, it needs to be run by the "changeScene" function
 function setRoom()
     if currentRoom == rm then return end
 
@@ -1824,6 +1891,8 @@ function setRoom()
 end
 
 
+
+--The function to update all the cars
 function updateAllCars()
     for c = 1, #GameCarInstances do
         if GameCarInstances[c] ~= nil then
@@ -1833,12 +1902,15 @@ function updateAllCars()
 end
 
 
+
+--The function to draw all cars
 function drawAllCars()
     for c = 1, #GameCarInstances do
         love.graphics.setColor({ 1, 1, 1 })
         love.graphics.draw(GameCarInstances[c].driveParticle)
 
 
+        --Draw drifting trails
         for t = 1, #GameCarInstances[c].trailPoses do
             if t >= #GameCarInstances[c].trailPoses then break end
 
@@ -1855,10 +1927,8 @@ function drawAllCars()
 
             love.graphics.setLineWidth(1)
         end
-    end
 
 
-    for c = 1, #GameCarInstances do
         if GameCarInstances[c] ~= nil then
             GameCarInstances[c]:draw()
         end
@@ -1866,6 +1936,7 @@ function drawAllCars()
 end
 
 
+--The function to make the playe recieve damage
 function recieveDamage(dmg, x, y)
     gameStuff.hp = gameStuff.hp - dmg
     gameCam.zoom = 0.85
@@ -1874,6 +1945,7 @@ function recieveDamage(dmg, x, y)
 end
 
 
+--The function to update the music volume
 function updateMusicVolume()
     explosionSfx:setVolume(gameStuff.sfxVolume)
     moneyGainSfx:setVolume(gameStuff.sfxVolume)
@@ -1896,6 +1968,7 @@ function updateMusicVolume()
 end
 
 
+--Gets if one position is inside the camera
 function isPointInsideCam(x, y)
     return x >= (gameCam.pos.x + gameCam.offset.x) - ((800) * gameCam.zoom) and
         x <= (gameCam.pos.x + gameCam.offset.x) - ((800 / 2) * gameCam.zoom) + 800 * 2 and
@@ -1904,6 +1977,7 @@ function isPointInsideCam(x, y)
 end
 
 
+--Function to create the transition icon
 function createCoolTransition()
     local c = {
         icons = {
@@ -1961,23 +2035,27 @@ function createCoolTransition()
 end
 
 
+--Function to make an y pos translate to one car y position AKA fix one y pos to one grid
 function transformToCarYPosGrid(posY)
     return Lume.clamp(math.floor(posY / carGridLockDist) * carGridLockDist, 0, 510)
 end
 
 
+--Function to use an bag item
 function recieveBagItem(whatItem)
     createBagItemRecieveText(whatItem)
     table.insert(bagStuff.stored, #bagStuff.stored + 1, whatItem)
 end
 
 
+--Function that runs when the mouse gets scrolled
 function love.wheelmoved(x, y)
     mouseScroll.x = x
     mouseScroll.y = y
 end
 
 
+--Function to delete UI Instances
 function deleteUIInstance(whatInstance)
     table.remove(UiStuff, tableFind(UiStuff, whatInstance))
 end
