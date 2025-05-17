@@ -305,7 +305,7 @@ function createMainMenu()
             elseif self.pos == 2 then
                 self:setMenuLevel(2)
             elseif self.pos == 3 then
-                changeRoom(rooms.quit)
+                love.event.quit()
             end
         elseif self.menuLevel == 2 then
             if self.pos == 1 then

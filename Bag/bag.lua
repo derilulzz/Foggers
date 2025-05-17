@@ -188,15 +188,33 @@ function placeItem()
     bagStuff.currentPlacingItem = a
     bagStuff.placingItem = true
 end
+
+
 function useItem()
     local a = bagStuff.currentSelectedItem.itemCreateFunction()
 end
 
 
 bagItems = {
-    moneyPrinter = {name = "Money Printer", desc = "Prints 1 Money Per Second", useFuntion = placeItem, itemCreateFunction = createMoneyPrinter},
-    carCreator = {name = "Car Creator", desc = "Creates An Temporary Car Every 1 Second", useFuntion = placeItem, itemCreateFunction = createCarCreator},
-    bomb = {name = "Bomb R", desc = "An Bomb, it's self explanatory", useFuntion = useItem, itemCreateFunction = createBombExplosion},
+    moneyPrinter = {
+        name = "Money Printer",
+        namePT = "Impressora De Dinheiro",
+        desc = "Faz 1 Dinheiro Por Segundo",
+        useFuntion = placeItem,
+        itemCreateFunction = createMoneyPrinter
+    },
+    carCreator = {
+        name = "Car Creator",
+        desc = "Creates An Temporary Car Every 1 Second",
+        useFuntion = placeItem,
+        itemCreateFunction = createCarCreator
+    },
+    bomb = {
+        name = "Bomb R",
+        desc = "An Bomb, it's self explanatory",
+        useFuntion = useItem,
+        itemCreateFunction = createBombExplosion
+    },
 }
 bagItemsIndexed = {
     bagItems.moneyPrinter,
@@ -374,7 +392,9 @@ function bagStuff:draw()
 
         if #self.stored <= 0 then
             love.graphics.setColor({1, 1, 1, 1})
-            drawOutlinedText("your bag is empty", self.bagRect.x + self.bagRect.w / 2, self.bagRect.y + self.bagRect.h / 2, 0, 2 + 0.25 * math.cos(GlobalSinAngle), 2 + 0.25 * math.cos(GlobalSinAngle), nil, nil, 4 + 0.25 * math.cos(GlobalSinAngle), {0, 0, 0})
+            local text = "your bag is empty"
+            if gameStuff.lang == "pt-br" then text = "sua mochila esta vazia" end
+            drawOutlinedText(text, self.bagRect.x + self.bagRect.w / 2, self.bagRect.y + self.bagRect.h / 2, 0, 2 + 0.25 * math.cos(GlobalSinAngle), 2 + 0.25 * math.cos(GlobalSinAngle), nil, nil, 4 + 0.25 * math.cos(GlobalSinAngle), {0, 0, 0})
         end
 
 

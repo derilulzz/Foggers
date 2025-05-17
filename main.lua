@@ -1,15 +1,15 @@
+--Require the externaal librarys
 Push = require "external librarys.push"
 Lume = require "external librarys.lume"
 Flux = require "external librarys.flux"
 utf8 = require "utf8"
 
 
+--Set the filter to make the textures not look blurry
 love.graphics.setDefaultFilter("nearest", "nearest")
 
 
-if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
-    require("lldebugger").start()
-end
+--Require all the other files in the project
 require "effects"
 require "cars"
 require "animations"
@@ -34,7 +34,9 @@ require "Bag.bag"
 require "tips"
 
 
+--All the game car instances
 GameCarInstances = {}
+--All the cars infos
 GameCars = {
     createCar(
         "Common Car",
@@ -209,46 +211,85 @@ GameCars = {
         }
     ),
 }
+--The propertys of the car selection box
 upBoxStuff = { x = -1, y = 0, w = 802, h = 128, scrollX = 0 }
+--The last key pressed in the keyboard
 lastKeyPressed = ""
+--If the keyboard was pressed or not
 keyboardWasPressed = false
+--All the game ui stuff (buttons, text buttons, etc...)
 UiStuff = {}
+--The current mouse scroll value in the x and y
 mouseScroll = {x = 0, y = 0}
+--The propertys for placing cars (the max x and the min x)
 placingStuff = {
     minX = 0,
     maxX = 800,
 }
+--The game mouse pos passed thro "Push", it needs to be used to make the mouse pos be scaled with the game
+--And the pos is affected by the camera, if you dont want that, use "PushsInGameMousePosNoTransform"
 PushsInGameMousePos = { x = 0, y = 0 }
+--The game pos scaled with "Push" but not transformed by the camera
 PushsInGameMousePosNoTransform = { x = 0, y = 0 }
+--If the mouse left button was pressed in the last frame, used to make someting like the "mouse_check_button_pressed" in game maker
+--But instead you make "if LastLeftMouseButton == false and love.mouse.isDown(1) then"
 LastLeftMouseButton = false
+--The last main menu theme
 oldMainMenuTheme = 0
+--If the mouse right button was pressed in the last frame, used to make someting like the "mouse_check_button_pressed" in game maker
+--But instead you make "if LastRightMouseButton == false and love.mouse.isDown(2) then"
 LastRightMouseButton = false
+--The car buttons that stay at the top of the screen, there is an special table for this just because
+--It is problaby better to make it like this instead of doing some hacky shit
 gameCarButtons = {}
+--The car used to show inside the game as the example car, you know, that transparent thing that shows when you're placing a car
 currentSelectedCar = nil
+--The current car selected id, it is NOT the car showed in the game, this is an number, OK?
 selectedCar = 1
+--If the player is placing an car or not
 placingCar = false
+--All the frogs that are active rn. Dont ask me why they in various places are called "fogs"
 Foggs = {}
+--One global angle is used for "math.sin"s or "math.cos"s functions
+--It is created to make the developing process faster by not creating an "angle"
+--variable in every fucking instace i make
 GlobalSinAngle = 0
+--The distance between the grids to place the cars
 carGridLockDist = 64
+--The default value for the timer to create the frogs
 foggCreateTimerDef = 5
+--The timer for creating a new frog, when it reaches 0, resets to "foggCreateTimerDef"
 foggCreateTimer = foggCreateTimerDef
+--The propertys used for the "mega wave"
 megaWave = {
+    --The timer until the mega wave
     timer = 60,
+    --The default value to reset the mega wave timer AKA "megaWave.timer" to
     timerDef = 60,
+    --The force of the wave, AKA the number of frogs to create
     force = 16,
+    --If the mega wave is running
     enabled = false,
 }
+--One table created to just dump in some shit that will be updated and drawed
 gameInstances = {}
+--The y position used to draw and place the car
 yForCar = math.floor(PushsInGameMousePos.y / carGridLockDist) * carGridLockDist
+--The global delta time, used to make timer decrease in seconds intead of frames
 globalDt = 1
+--One random number, used ONLY for the main menu theme, because apparently love.random and love.math.random dont works well in the main menu init funtion
 randomNumber = math.random(1, 4)
+--THIS VARIABLE IS NOT USED, IM JUST KEEPING IT BECAUSE OF THE JOKE THAT I DID IN THE "trans" PROPERTY OF THIS TABLE, i think it is funny
 camera = {
+    --The offset of the camera, in the game is just used for screen shake
     offset = { x = 0, y = 0 },
+    --Besides it's woke asf name, it is the game camera tranformation
     trans = love.math.newTransform(),
 }
+--The current money the player has
 money = 100
 
---Game Mods
+--All the game mods
 modList = {
     {
         name = "No Mod",
@@ -275,11 +316,11 @@ modList = {
         id = 4,
     },
     {
-        name = "Half Fogg Life",
+        name = "Half Frogg Life",
         id = 5,
     },
     {
-        name = "Times Two Fogg Life",
+        name = "Times Two Frogg Life",
         id = 6,
     },
     {
@@ -305,9 +346,12 @@ modList = {
 }
 
 
---The modifiers vars
+--The mofier propertys
 modifier = {
+    --The current modifier
     current = modList[1],
+    --The name of the modifiers, just used for readability of the code.
+    --The names of the mofiers are self explanatory, i think
     nameList = {
         NO_MOD = modList[1],
         MOD_HALF_CAR_LIFE = modList[9],
@@ -324,93 +368,163 @@ modifier = {
         MOD_TWO_TIMES_MONEY_GAIN = modList[6],
     },
 }
+--The propertys of the screen shake
 screenShake = {
+    --The current force of the screen shake
     force = 0,
+    --If the screen shake is currently enabled
     enabled = false,
 }
+--The. WTF IS THIS???? why there is 2 cameras for this mf game????????????
+--I think this is the main camera, but im not sure, it is the most used at least
 gameCam = {
+    --The current position of the camera
     pos = { x = 0, y = 0 },
+    --The current velocity of the camera
     vel = { x = 0, y = 0 },
+    --The current transformation of the camera
     transform = love.math.newTransform(),
+    --The current offset of the camera, used for screen shake
     offset = { x = 0, y = 0 },
+    --The current zoom of the camera
     zoom = 1,
+    --The current rotation of the camera
     rot = 0,
 }
+--Set the mouse invisible
 love.mouse.setVisible(false)
+--The game rooms, they are just numbers that are checked in the love.update and love.draw functions to make an room system
 rooms = {
+    --The room used for quitting the game, it is used to have an transition on game quit, i think it looks cool
     quit = -1,
+    --The credits room
     credits = 0.25,
+    --The stating thing that shows the "Created by" and the "Created with" texts and icons
     start = 0.5,
+    --The main menu room
     mainMenu = 0,
+    --The main room, used for the actual game
     game = 1,
 }
+--Some additional propertys for cars
 carsStuff = {
+    --The amount of walking sfx of the cars, used to make an limit for the walking car sfxs
     walkSfxAmnt = 0,
 }
+--The current room
 currentRoom = rooms.start
+--The mouse position on the last frame
 oldMousePos = { x = 0, y = 0 }
+--The timer to create an tip
 tipCreateTimer = 16
+--The propertys of the room transition
 sceneTransition = {
+    --The progress of the transition
     progress = 0,
+    --If the room transition is active
     enabled = false,
+    --The icon that gets shown in the transition
     coolIcon = nil,
 }
+--Some global game propertys
 gameStuff = {
+    --If the game is paused
     paused = false,
+    --If the game needs to pause the frog creation
     pauseFroggCreation = false,
+    --If the game can place frogs, used in the mega wave
     canPlaceFroggs = false,
+    --If the player is hovering the top box
     hoveringTopBox = false,
+    --The current game speed
     speed = 1,
+    --The current language of the game
     lang = "eng",
+    --The higest round of the game
     higestRound = 0,
+    --The current starting round
     currentStartingRound = 0,
+    --The current frog gaved, it is more used as an current round var
     currentFoggGaved = 0,
+    --The current hp
     hp = 10,
+    --If the game is using an fixed seed
     useFixedSeed = false,
+    --The fixed seed to the game to use
     fixedSeed = 0,
+    --The time since the game started
     timeSinceStart = 0,
+    --The current sfx volume
     sfxVolume = 0.25,
+    --The current music volume
     musicVolume = 0.5,
+    --One value added to the music volume, used to make the music transition
     musicVolumeAdd = 0,
+    --The current game version
     currentVersion = "0.0.1 Alpha",
 }
+--It is like the "gameInstances" var but they are rendered on top of most instances the game and arent affected by the camera
 onTopGameInstaces = {}
+--The divider of the money
 moneyGainDiv = 1
+--The multiplier (it is not markplier) of the money recieved
 moneyGainMult = 1
+--Some debug related propertys
 debugStuff = {
+    --If the debug is enabled or not
     enabled = false,
 }
+--Some hp text propertys
 healthTextStuff = {
+    --The scale added to the hp text
     scaleAdd = 0,
+    --The timer to make the text "beat" like an heart, (of course it will be like an heart)
     beatTimer = 1,
+    --The value to reset the beat timer
     beatTimerDef = 1,
 }
+--If the player was placing cars in the last frame
 oldPlacingCar = false
+--The damage effect stuff
 damageEffectStuff = {
+    --The red rect alpha
     redRectRGBAdd = 0,
 }
+--The delay for automaticaly updataing "Push" window size in the love.update
 pushUpdateDelayTimer = 0.1
+--The x position of the car placed and drawed
 xForCar = 0
 
 
+--The variable to reference the speed up button
 speedUpButton = nil
+--If the game can peacefuly quit
+canCloseGame = false
+--The target (maximum) fps
+targetFps = 60
 
 
+--The game main loop function, it gonna update the game, draw the game and exit the game, this function dont need to actually exist, it is just here for customization
 function love.run()
+    --Intialize "Push"
     Push:setupScreen(800, 600, 800, 600, {resizable=true})
+    --Set the window title
     love.window.setTitle("Foggers")
 
 
+    --Run the love.load function to load stuff, (it actually just inits other stuff)
     if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
+
 
     -- We don't want the first frame's dt to include time taken by love.load.
     if love.timer then love.timer.step() end
 
 
+    --the delta time var
     local dt = 0
 
 
-    -- Main loop time.
+    -- Main loop
     return function()
         -- Process events.
         if love.event then
@@ -418,7 +532,12 @@ function love.run()
             for name, a, b, c, d, e, f in love.event.poll() do
                 if name == "quit" then
                     if not love.quit or not love.quit() then
-                        return a or 0
+                        --If can close the game, just close it, else transition to the quit room to allow the game to close
+                        if canCloseGame then
+                            return a or 0
+                        else
+                            changeRoom(rooms.quit)
+                        end
                     end
                 end
                 love.handlers[name](a, b, c, d, e, f)
@@ -430,81 +549,121 @@ function love.run()
         if love.timer then dt = love.timer.step() end
 
 
-        -- Call update and draw
+        -- Call update
         if love.update then love.update(dt) end -- will pass 0 if love.timer is disabled
 
 
+        --Handle draw
         if love.graphics and love.graphics.isActive() then
+            --Reset the tranformation
             love.graphics.origin()
+            --Clear the screen
             love.graphics.clear(love.graphics.getBackgroundColor())
 
 
+            --Call the draw function
             if love.draw then love.draw() end
 
 
+            --Show the drawed stuff to the screen
             love.graphics.present()
         end
 
 
-        if love.timer then love.timer.sleep(1 / 60) end
+        --Make the game be limited to he target fps
+        if love.timer then love.timer.sleep(1 / targetFps) end
     end
 end
 
 
+--Inits some stuff
 function love.load(args, unfilteredArgs)
+    --Set the line style to "rough" to make it not blurry
     love.graphics.setLineStyle("rough")
 
 
+    --Update the music volume, AKA set the music volume to all the streams
     updateMusicVolume()
 
 
+    --Play the music 1
     playMusic(1)
 
 
+    --Load the game save file
     loadGame()
 end
 
 
+--Update everything
 function love.update(dt)
+    --Get the mouse positon transformed by the camera and scaled by "Push"
     local mP = { gameCam.transform:inverseTransformPoint(Push:toGame(love.mouse.getX(), love.mouse.getY())) }
+    --Get the mouse position scaled by "Push" but not transformed by the camera
     local realMPos = {Push:toGame(love.mouse.getX(), love.mouse.getY())}
+    --Update the mouse position NOT transformed by the camera
     PushsInGameMousePosNoTransform = {x = realMPos[1], y = realMPos[2]}
+    --Update the mouse position transformed by the camera
     PushsInGameMousePos = { x = mP[1], y = mP[2] }
+    --Update the global delta time
     globalDt = dt
+    --Create a new random number
     randomNumber = math.random(1, 4)
 
 
+    --If the delay for updating the "Push" window size is less than 0
     if pushUpdateDelayTimer <= 0 then
+        --Update "Push"s window size
         Push:resize(love.graphics.getWidth(), love.graphics.getHeight())
+        --Reset the "Push"s update delay
         pushUpdateDelayTimer = 0.1
     end
 
 
+    --If the current room is not the game
     if currentRoom ~= rooms.game then
+        --Reset the camera pos and vel
         gameCam.pos.x = 0
         gameCam.pos.y = 0
         gameCam.vel.x = 0
         gameCam.vel.y = 0
+        --Force that the player is not hovering the top box
         gameStuff.hoveringTopBox = false
     end
 
 
+    --Update UI instances
+
+
+    --If the game is not paused
     if not gameStuff.paused then
+        --If the game should force the button to be not hovered
         local forceHoverdown = false
+        local hoveredId = 1
 
-
+        
+        --Pass thro all the UI instances to get if one is hovered
         for b = 1, #UiStuff do
-            if forceHoverdown then
-                UiStuff[b].hovered = false
-            end
-            UiStuff[b]:update(dt)
+            --if this button is already hovered, then force all the other buttons to be not hovered
+            if UiStuff[b].hovered then forceHoverdown = true; hoveredId = b end
+        end
 
-            if UiStuff[b].hovered then forceHoverdown = true end
+
+        --Pass thro all the UI instances
+        for b = 1, #UiStuff do
+            --Update the UI instances and force the button to be not hovered if another button is already hovered
+            if b ~= hoveredId then
+                UiStuff[b]:update(dt, forceHoverdown)
+            else
+                UiStuff[b]:update(dt, false)
+            end
         end
     end
 
 
+    --If the game is paused
     if gameStuff.paused then
+        --Pause all the musics and sfxs
         explosionSfx:pause()
         moneyGainSfx:pause()
         interactSfx:pause()
@@ -519,6 +678,7 @@ function love.update(dt)
             end
         end
     end
+    --Pass thro all the cars and set the volume of their sfxs
     for c = 1, #GameCarInstances do
         if GameCarInstances[c] ~= nil then
             GameCarInstances[c].walkSfx:setVolume(gameStuff.sfxVolume)
@@ -529,18 +689,25 @@ function love.update(dt)
     end
 
 
+    --Update the music volumes
     updateMusicVolume()
 
 
+    --Music transition
+    --If the music needs more 1 second to end
     if musics[currentMusic]:tell() >= musics[currentMusic]:getDuration() - 1 then
+        --If the "gameStuff.musicVolumeAdd" is 0
         if gameStuff.musicVolumeAdd == 0 then
+            --Make an animation to set "gameStuff.musicVolumeAdd" to -1 after that, play an random music and set "gameStuff.musicVolumeAdd" 0 again
             Flux.to(gameStuff, 1, { musicVolumeAdd = -1 }):oncomplete(playRandomMusic):after(gameStuff, 1,
                 { musicVolumeAdd = 0 })
         end
     end
 
 
+    --If the game is not paused
     if not gameStuff.paused then
+        --Update the game instances
         for u = 1, #gameInstances do
             if gameInstances[u] ~= nil and gameInstances[u].update then
                 gameInstances[u]:update()
@@ -548,25 +715,33 @@ function love.update(dt)
         end
 
 
+        --Delete some special instances if they arent used anymore
         if currentRoom ~= rooms.start then startThingInstance = nil end
         if currentRoom ~= rooms.mainMenu then mainMenuInstance = nil end
 
 
+        --Update stuff based in rooms
+        --I know, very messy code BUT lua has no match or switch functions so it is either if and elseifs or nothing
         if currentRoom == rooms.quit then
+            --Set that the game can close and call the close function again
+            canCloseGame = true
             love.event.quit()
         elseif currentRoom == rooms.credits then
+            --Create the credits instance if he is a null value, otherwise update it
             if creditsInstance == nil then
                 creditsInstance = createCredits()
             else
                 creditsInstance:update()
             end
         elseif currentRoom == rooms.start then
+            --Create the start thing instance if he is a null value, otherwise update it
             if startThingInstance == nil then
                 startThingInstance = createStartThing()
             else
                 startThingInstance:update()
             end
         elseif currentRoom == rooms.mainMenu then
+            --Delete all the frogs and gameInstances, reset the game speed to 1 and dont show the lmb icon and the rmb icon
             Foggs = {}
             gameInstances = {}
             gameStuff.speed = 1
@@ -574,15 +749,18 @@ function love.update(dt)
             mouse.showRMBIcon = false
 
 
+            --Create the main menu instance if he is a null value, otherwise update it
             if mainMenuInstance == nil then
                 mainMenuInstance = createMainMenu()
             else
                 mainMenuInstance:update()
 
 
+                --Update all the cars
                 updateAllCars()
 
 
+                --Make the player able to click on the cars to impulse them up or down
                 for c = 1, #GameCarInstances do
                     if Lume.distance(GameCarInstances[c].pos.x, GameCarInstances[c].pos.y, PushsInGameMousePos.x, PushsInGameMousePos.y) <= 32 then
                         if love.mouse.isDown(1) and LastLeftMouseButton == false then
@@ -596,6 +774,7 @@ function love.update(dt)
                 end
             end
         elseif currentRoom == rooms.game then
+            --Update the y for the car and the x for the car
             yForCar = transformToCarYPosGrid(PushsInGameMousePos.y)
             xForCar = Lume.clamp(PushsInGameMousePos.x, placingStuff.minX, placingStuff.maxX)
 
@@ -606,17 +785,22 @@ function love.update(dt)
             
             --Let the player scroll the top bar
             if gameStuff.hoveringTopBox then
+                --If the mouse position is at the right side of the screen, increase the scroll value
                 if PushsInGameMousePosNoTransform.x > 800 - 64 then
                     upBoxStuff.scrollX = upBoxStuff.scrollX + 25 * dt
                 end
 
 
-                upBoxStuff.scrollX = upBoxStuff.scrollX + mouseScroll.y
+                --Add the mouse scroll to the box scroll
+                upBoxStuff.scrollX = upBoxStuff.scrollX + mouseScroll.y + mouseScroll.x
             end
+            --Pass thro the game car buttons
             for b=1, #gameCarButtons do
+                --Set the buttons positions effected by the scroll value
                 gameCarButtons[b].pos.x = Lume.lerp(gameCarButtons[b].pos.x, (0 + 128 * b) - 32 * upBoxStuff.scrollX, 0.1)
 
 
+                --Decrease or increase the buttons alpha value if he is under the speed up button
                 if gameCarButtons[b].pos.x > 110 then
                     gameCarButtons[b].alpha = Lume.lerp(gameCarButtons[b].alpha, 1, 0.1)
                 else
@@ -625,28 +809,33 @@ function love.update(dt)
             end
 
 
-
             --#region Move the camera
+                --The x direction of the input
                 local inputDirX = 0
+                --The y direction of the input
                 local inputDirY = 0
+                --The camera speed
                 local mspd = 500
 
 
+                --Get the inputs and make them actually set the direction
                 if love.keyboard.isDown("a") then inputDirX = inputDirX - 1 end
                 if love.keyboard.isDown("d") then inputDirX = inputDirX + 1 end
                 if love.keyboard.isDown("w") then inputDirY = inputDirY - 1 end
                 if love.keyboard.isDown("s") then inputDirY = inputDirY + 1 end
 
 
+                --The player has pressed shift, increase the speed
                 if love.keyboard.isDown("lshift") then mspd = 850 end
 
 
+                --Set the camera velocity to the input direction
                 gameCam.vel.x = Lume.lerp(gameCam.vel.x, mspd * inputDirX, 0.1)
                 gameCam.vel.y = Lume.lerp(gameCam.vel.y, mspd * inputDirY, 0.1)
             --#endregion
 
 
-
+            --Pass thro the buttons to select the cars, and update if they gonna show the pt-br text or the english text
             for c = 1, #gameCarButtons do
                 if gameStuff.lang == "pt-br" then
                     gameCarButtons[c].text = GameCars[c].namePT
@@ -658,7 +847,9 @@ function love.update(dt)
             end
 
 
+            --Update all the cars
             updateAllCars()
+            --Update all the frogs
             for f = 1, #Foggs do
                 if Foggs[f] ~= nil then
                     Foggs[f]:update()
@@ -666,57 +857,77 @@ function love.update(dt)
             end
 
 
-            local pressedAnyBtn = false
-            local currentBtnSelected = selectedCar
+            --If the player is hovering the top box
+            if gameStuff.hoveringTopBox then
+                --If the player is hovering one btn
+                pressedAnyBtn = false
+                --The currently selected car
+                local currentBtnSelected = selectedCar
 
 
-            for b = 1, #gameCarButtons do
-                if gameCarButtons[b].hovered then
-                    pressedAnyBtn = true
-                    currentBtnSelected = b
-                end
-
-
-                if gameCarButtons[b].pressed then
-                    if placingCar == false then
-                        startCarPlacing(b)
-                    else
-                        if currentBtnSelected == selectedCar then
-                            stopCarPlacing()
-                        else
-                            startCarPlacing(currentBtnSelected)
-                        end
+                --Pass thro the game car buttons to make it actually select an car by pressing it
+                for b = 1, #gameCarButtons do
+                    --Get if the player is hovering the current button, if yes, set what btn is currently selected
+                    if gameCarButtons[b].hovered then
+                        pressedAnyBtn = true
+                        currentBtnSelected = b
                     end
 
 
-                    gameCarButtons[b].pressed = false
+                    --If the current button is pressed
+                    if gameCarButtons[b].pressed then
+                        --If the player is not placing cars, then start placing the current car
+                        if placingCar == false then
+                            startCarPlacing(b)
+                        --else, if the current car is the same as the car of the button pressed, stop placing cars
+                        --BUT if the player is placing cars and the current car selected is not equals to the car of the button pressed, start placing the car of the button pressed
+                        else
+                            if currentBtnSelected == selectedCar then
+                                stopCarPlacing()
+                            else
+                                startCarPlacing(currentBtnSelected)
+                            end
+                        end
+
+
+                        --Set the button has not pressed, because we already did our job here
+                        gameCarButtons[b].pressed = false
+                    end
+                end
+
+
+                --If the player was not placing cars but is placing now, give him a hint to what button to press
+                if oldPlacingCar == false and placingCar then
+                    mouse.showRMBIcon = true
+                    mouse.showLMBIcon = true
+                    mouse.RMBModulate = { 1, 0.85, 0.85 }
+                    mouse.LMBModulate = { 0.85, 0.85, 1 }
+                end
+                --If the player was placing cars but is not placing now, hide the hint to what button to press
+                if oldPlacingCar and placingCar == false then
+                    mouse.showRMBIcon = false
+                    mouse.showLMBIcon = false
+                    mouse.RMBModulate = { 1, 1, 1 }
+                    mouse.LMBModulate = { 1, 1, 1 }
                 end
             end
 
 
-            if placingCar and love.mouse.isDown(2) then
-                stopCarPlacing()
-            end
+            --If the player is not hovering the top box
+            if not gameStuff.hoveringTopBox then
+                --If the rmb is pressed, stop placing cars, that's if you are placing cars
+                if placingCar and love.mouse.isDown(2) then
+                    stopCarPlacing()
+                end
 
 
-            if oldPlacingCar == false and placingCar then
-                mouse.showRMBIcon = true
-                mouse.showLMBIcon = true
-                mouse.RMBModulate = { 1, 0.85, 0.85 }
-                mouse.LMBModulate = { 0.85, 0.85, 1 }
-            end
-            if oldPlacingCar and placingCar == false then
-                mouse.showRMBIcon = false
-                mouse.showLMBIcon = false
-                mouse.RMBModulate = { 1, 1, 1 }
-                mouse.LMBModulate = { 1, 1, 1 }
-            end
-
-
-            if pressedAnyBtn == false then
+                --If the selected car is not nil and the player is placing cars
                 if placingCar and currentSelectedCar ~= nil then
+                    --If the player has pressed the lmb
                     if love.mouse.isDown(1) and LastLeftMouseButton == false then
+                        --If the player has the money to buy the car
                         if money >= GameCars[selectedCar].cost then
+                            --Create the car, set that the game can place frogs and remove the car price from the current money
                             money = money - GameCars[selectedCar].cost
                             gameStuff.canPlaceFroggs = true
                             createCarInstance(GameCars[selectedCar], xForCar, yForCar)
@@ -726,6 +937,7 @@ function love.update(dt)
             end
 
 
+            --If the megawave is not enabled and the game can place frogs, if the frog create timer is less or equals to 0, create a new frog and reset the timer
             if not megaWave.enabled and gameStuff.canPlaceFroggs then
                 if foggCreateTimer <= 0 then
                     createANewFogg()
@@ -736,6 +948,7 @@ function love.update(dt)
             end
 
 
+            --If the timer for the mega wave is less or equals to 0, start the mega wave
             if megaWave.timer <= 0 then
                 if not megaWave.enabled then
                     megaWave.enabled = true
@@ -743,7 +956,8 @@ function love.update(dt)
                     createMegaWaveWarning()
 
 
-                    for f = 0, megaWave.force * Lume.clamp(gameStuff.currentFoggGaved, 1, 99999) do
+                    --Create all the frogs
+                    for f = 0, megaWave.force * (gameStuff.currentFoggGaved + 1) do
                         local posToPut = math.random(0, 2)
                         local modX = 0
                         local modY = 0
@@ -769,25 +983,30 @@ function love.update(dt)
             end
 
 
+            --If the player died, transition him to the main menu
             if gameStuff.hp <= 0 then
                 changeRoom(rooms.mainMenu)
             end
 
 
+            --If the timer to create an tip has ended, create a new tip and reset the timer
             if tipCreateTimer <= 0 then
                 createTipRect()
                 tipCreateTimer = math.random(10, 16)
             end
 
 
+            --Get the amount of car walking sfxs
+            --Reset the amount
             carsStuff.walkSfxAmnt = 0
 
 
+            --pass thro all the gameCar instances to get the amount and to stop too
             for c = 1, #GameCarInstances do
                 if GameCarInstances[c].walkSfx ~= nil then
                     carsStuff.walkSfxAmnt = carsStuff.walkSfxAmnt + 1
                 end
-                if carsStuff.walkSfxAmnt > 10 then
+                if carsStuff.walkSfxAmnt > 5 then
                     GameCarInstances[c].walkSfx:stop()
                 else
                     if not GameCarInstances[c].walkSfx:isPlaying() then
@@ -798,31 +1017,42 @@ function love.update(dt)
 
 
             if speedUpButton ~= nil then
+                --If the speed up button is hovered and the left or right mouse button is pressed, modify the game speed
                 if speedUpButton.hovered then
                     if love.mouse.isDown(2) then gameStuff.speed = gameStuff.speed + 5 * dt end
                     if love.mouse.isDown(1) then gameStuff.speed = gameStuff.speed - 5 * dt end
                 end
+
+
+                --THIS FUCKING CODE DOES NOT WORKS I DONT FUCKING KNOW WHY
                 if speedUpButton.hovered == false and speedUpButton.hovered then
                     mouse.showLMBIcon = true
                     mouse.showRMBIcon = true
                     mouse.LMBModulate = { 1, 0.5, 0.5 }
                     mouse.RMBModulate = { 1, 0.5, 0.5 }
                 end
+
+
                 if speedUpButton.oldHovered and speedUpButton.hovered == false then
                     mouse.showLMBIcon = false
                     mouse.showRMBIcon = false
                     mouse.LMBModulate = { 1, 1, 1 }
                     mouse.RMBModulate = { 1, 1, 1 }
                 end
+
+
+                --Update the speed up button text
                 speedUpButton.text = "x" .. tostring(math.floor(gameStuff.speed))
             end
 
 
+            --Update the higest round
             if gameStuff.higestRound < gameStuff.currentFoggGaved then
                 gameStuff.higestRound = gameStuff.currentFoggGaved
             end
 
 
+            --Deactivate the mega wave if it has already ended
             if #Foggs <= 0 and megaWave.enabled then
                 megaWave.enabled = false
                 gameStuff.currentFoggGaved = gameStuff.currentFoggGaved + 1
@@ -831,6 +1061,7 @@ function love.update(dt)
                 megaWave.timer = megaWave.timerDef
 
 
+                --Maybe start an event
                 local chance = love.math.random(0, 2)
                 if chance == 0 then
                     startEvent()
@@ -838,26 +1069,33 @@ function love.update(dt)
             end
 
 
-            if gameStuff.canPlaceFroggs then
+            --Decrease the mega wave timer if the game can place frogs and the mega wave is not enabled
+            if gameStuff.canPlaceFroggs and not megaWave.enabled then
                 megaWave.timer = megaWave.timer - (1 * gameStuff.speed) * dt
             end
 
 
-            if not megaWave.enabled then
-                foggCreateTimerDef = foggCreateTimerDef - (0.01 * gameStuff.speed) * dt
-            end
+            --If the health beat timer has ended, increase the hp text scale and reset the timer
             if healthTextStuff.beatTimer <= 0 then
                 healthTextStuff.scaleAdd = 3
                 healthTextStuff.beatTimer = healthTextStuff.beatTimerDef * (10 / gameStuff.hp)
             end
 
 
+            --Decrease the beat timer
             healthTextStuff.beatTimer = healthTextStuff.beatTimer - (1 * gameStuff.speed) * dt
+            --Lerp the health text back to 0
             healthTextStuff.scaleAdd = Lume.lerp(healthTextStuff.scaleAdd, 0, 0.1)
+            --Update if on the last frame the player was placing cars
             oldPlacingCar = placingCar
+            --Drecrease the tip create timer
+            tipCreateTimer = tipCreateTimer - (1 * gameStuff.speed) * dt
 
 
             --#region Make the modifiers work
+            --MESSY ASF CODE BELOW, PROCEED WITH CAUTION
+
+
             if modifier.current == modifier.nameList.NO_MOD then
                 moneyGainDiv = 1
                 moneyGainMult = 1
@@ -1098,34 +1336,47 @@ function love.update(dt)
         end
 
 
+        --If the number of cars is 0 and the player has no money to create one new car, give him the money to create a common car
         if #GameCarInstances <= 0 and money < 100 then
             money = 100
         end
 
 
+        --Screen shake system
         if screenShake.enabled then
+            --Set the camera offset to a random value
             gameCam.offset.x = math.random(-screenShake.force, screenShake.force)
             gameCam.offset.y = math.random(-screenShake.force, screenShake.force)
 
 
+            --If the screen shake force has ended, disable the screen shake
             if screenShake.force <= 0 then
                 screenShake.enabled = false
             end
 
 
+            --Decrease the shake force
             screenShake.force = screenShake.force - (100 * gameStuff.speed) * dt
         else
+            --Reset the offset back to 0
             gameCam.offset.x = Lume.lerp(gameCam.offset.x, 0, 0.1)
             gameCam.offset.y = Lume.lerp(gameCam.offset.y, 0, 0.1)
         end
 
 
-        tipCreateTimer = tipCreateTimer - (1 * gameStuff.speed) * dt
+        --Reset the game zoom
         gameCam.zoom = Lume.lerp(gameCam.zoom, 1, 0.1)
+
+
+        --The zoom percentage
         local zoomPercent = 1
+        --Get the zoom percentage
         if gameCam.zoom ~= 0 then
             zoomPercent = (1 / gameCam.zoom)
         end
+        
+        
+        --Update the game camera transformation
         gameCam.transform:setTransformation(
             -((gameCam.pos.x - gameCam.offset.x + Push:getWidth() / 2)) + ((Push:getWidth() * zoomPercent) / 2),
             -((gameCam.pos.y - gameCam.offset.y + Push:getHeight() / 2)) + ((Push:getHeight() * zoomPercent) / 2),

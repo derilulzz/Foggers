@@ -19,8 +19,8 @@ function createButton(_x, _y, _w, _h, _text, additionalText, _fixedToScreen)
 	}
 
 
-	function b:update()
-		buttonUpdate(self)
+	function b:update(hoverdown)
+		buttonUpdate(self, hoverdown == false)
 	end
 
 
@@ -63,13 +63,13 @@ function createDropDownButton(_x, _y, _w, _h, _text, additionalText, _fixedToScr
 
 
 
-	function b:update()
+	function b:update(hoverdown)
 		for c=1, #self.childUis do
 			if tableFind(UiStuff, self.childUis[c]) > 0 then table.remove(UiStuff, tableFind(UiStuff, self.childUis[c])) end
 		end
 
 
-		buttonUpdate(self)
+		buttonUpdate(self, hoverdown == false)
 
 
 		if self.pressed then
@@ -139,9 +139,9 @@ function createNumberInsertButton(_x, _y, _w, _h, _text, additionalText, _fixedT
 
 
 
-	function b:update()
+	function b:update(hoverdown)
 		if not self.texting then
-			buttonUpdate(self)
+			buttonUpdate(self, hoverdown == false)
 		else
 			buttonUpdate(self, true)
 		end
