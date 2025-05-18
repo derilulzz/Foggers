@@ -6,53 +6,59 @@ function createStartThing()
         logoAlpha = 0,
         logoRot = 16,
         logoScale = 0,
-        blackBarsProgress = 0,
+        blackBarsProgress = 1,
+        state = 0,
+        nextStateTimer = 5,
         oldAccKey = false,
-        tweens = Flux.group(),
     }
-
-
-    function s:init()
-        self.tweens:to(self, 1, {logoAlpha=1, logoRot=0, logoScale=0.1}):ease("expoout"):after(self, 1, {logoRot=16, logoScale=0, blackBarsProgress=1}):ease("expoin"):oncomplete(s.gotoNextLogo):delay(3)
-    end
-
-
-    function s:gotoNextLogo()
-        s.currentLogo = s.currentLogo + 1
-        if s.tweens ~= nil then
-            s.tweens:to(s, 1, {logoRot=0, logoScale=0.5}):ease("expoout"):after(s, 0, {}):delay(3):oncomplete(s.gotoMainMenu)
-        end
-    end
-
-
-    function s:gotoMainMenu()
-        rm = rooms.mainMenu
-        s.tweens:to(s, 1, {logoRot=16, logoScale=0, blackBarsProgress=1}):ease("expoin"):oncomplete(s.removeFluxShit):oncomplete(setRoom)
-    end
-
-
-    function s:removeFluxShit()
-        s.tweens = nil
-    end
 
 
     function s:update()
         if (love.keyboard.isDown("space", "return") and self.oldAccKey == false) or (love.mouse.isDown(1) and LastLeftMouseButton == false) then
-            if self.currentLogo == 0 then
-                s:gotoNextLogo()
-            else
-                s:gotoMainMenu()
-            end
+            self.state = self.state + 1
         end
 
 
-        self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 0.25 + 0.1 * math.sin(GlobalSinAngle), 0.1)
+        if self.state == 0 then
+            self.currentLogo = 0
+            self.logoScale = Lume.lerp(self.logoScale, 0.1, 0.1)
+            self.logoRot = Lume.lerp(self.logoRot, 0, 0.1)
+            self.logoAlpha = Lume.lerp(self.logoAlpha, 1, 0.1)
+            self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 0, 0.15)
+        elseif self.state == 1 then
+            self.logoScale = Lume.lerp(self.logoScale, 0, 0.1)
+            self.logoRot = Lume.lerp(self.logoRot, 16, 0.1)
+            self.logoAlpha = Lume.lerp(self.logoAlpha, 0, 0.1)
+            self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 1, 0.15)
+            if self.blackBarsProgress >= 0.999 then self.state = self.state + 1; self.nextStateTimer = 5 end
+        elseif self.state == 2 then
+            self.currentLogo = 1
+            self.logoScale = Lume.lerp(self.logoScale, 0.5, 0.1)
+            self.logoRot = Lume.lerp(self.logoRot, 0, 0.1)
+            self.logoAlpha = Lume.lerp(self.logoAlpha, 1, 0.1)
+            self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 0, 0.15)
+        elseif self.state == 3 then
+            self.logoScale = Lume.lerp(self.logoScale, 0, 0.1)
+            self.logoRot = Lume.lerp(self.logoRot, 16, 0.1)
+            self.logoAlpha = Lume.lerp(self.logoAlpha, 0, 0.1)
+            self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 1, 0.15)
+            if self.blackBarsProgress >= 0.999 then self.state = self.state + 1; self.nextStateTimer = 5 end
+        elseif self.state == 4 then
+            rm = rooms.mainMenu
+            setRoom()
+        end
+
+
+        if self.nextStateTimer <= 0 then self.state = self.state + 1; self.nextStateTimer = 5 end
+
+
+        if self.state ~= 1 and self.state ~= 3 and and self.state ~= 4 then
+            self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 0.25 + 0.1 * math.sin(GlobalSinAngle), 0.1)
+        end
         self.logoScale = self.logoScale + 0.0001 * math.cos(GlobalSinAngle * 4)
-        self.logoRot = Lume.lerp(self.logoRot, 0.1 * math.cos(GlobalSinAngle * 8), 0.1)
+        self.logoRot = self.logoRot + 0.025 * math.cos(GlobalSinAngle * 4)
         self.oldAccKey = love.keyboard.isDown("space", "return")
-        if self.tweens ~= nil then
-            self.tweens:update(globalDt)
-        end
+        self.nextStateTimer = self.nextStateTimer - 1 * globalDt
     end
 
 
@@ -60,29 +66,37 @@ function createStartThing()
         drawGrass()
 
 
+        love.graphics.setColor(1, 1, 1, self.logoAlpha)
+            if self.currentLogo == 0 then
+                local text = "Made by Deri LULZZ"
+                if gameStuff.lang == "pt-br" then text = "Criado por Deri LULZZ" end
+                love.graphics.draw(self.myLogo, 800 / 2, 600 / 2, self.logoRot, self.logoScale, self.logoScale, self.myLogo:getWidth() / 2, self.myLogo:getHeight() / 2)
+                local scalePerc = self.logoScale / 0.1
+                drawOutlinedText(text, 800 / 2, 200, 0, 4 * scalePerc, 4 * scalePerc, love.graphics.getFont():getWidth(text) / 2, love.graphics.getFont():getHeight(text) / 2, 4, {0, 0, 0, self.logoAlpha})
+            elseif self.currentLogo == 1 then
+                local text = "Made using Love2D"
+                if gameStuff.lang == "pt-br" then text = "Criado usando Love2D" end
+                drawOutlinedSprite(self.loveLogo, 800 / 2, 600 / 2, self.logoRot, self.logoScale, self.logoScale, self.loveLogo:getWidth() / 2, self.loveLogo:getHeight() / 2, 4, {0, 0, 0, self.logoAlpha})
+                local scalePerc = self.logoScale / 0.5
+                drawOutlinedText(text, 800 / 2, 200, 0, 4 * scalePerc, 4 * scalePerc, love.graphics.getFont():getWidth(text) / 2, love.graphics.getFont():getHeight(text) / 2, 4, {0, 0, 0, self.logoAlpha})
+            end
+        love.graphics.setColor(1, 1, 1, 1)
+
+
         love.graphics.setColor({0, 0, 0})
             love.graphics.rectangle("fill", -8, 0, 816, (600 / 2) * self.blackBarsProgress)
             love.graphics.rectangle("fill", -8, 600 - ((600 / 2) * (self.blackBarsProgress)), 816, 600 / 2)
         love.graphics.setColor({1, 1, 1})
             love.graphics.rectangle("line", -8, 0, 816, (600 / 2) * self.blackBarsProgress)
-            love.graphics.rectangle("line", -8, 600 - ((600 / 2) * (self.blackBarsProgress)), 816, 600 / 2)
+            love.graphics.rectangle("line", -8, 600 - ((600 / 2) * (self.blackBarsProgress)), 816, 600)
+        
 
-
-        love.graphics.setColor(1, 1, 1, self.logoAlpha)
-            if self.currentLogo == 0 then
-                love.graphics.draw(self.myLogo, 800 / 2, 600 / 2, self.logoRot, self.logoScale, self.logoScale, self.myLogo:getWidth() / 2, self.myLogo:getHeight() / 2)
-                local scalePerc = self.logoScale / 0.1
-                drawOutlinedText("Made by Deri LULZZ", 800 / 2, 200, 0, 4 * scalePerc, 4 * scalePerc, love.graphics.getFont():getWidth("Made by Deri LULZZ") / 2, love.graphics.getFont():getHeight("Made by Deri LULZZ") / 2, 4, {0, 0, 0})
-            elseif self.currentLogo == 1 then
-                drawOutlinedSprite(self.loveLogo, 800 / 2, 600 / 2, self.logoRot, self.logoScale, self.logoScale, self.loveLogo:getWidth() / 2, self.loveLogo:getHeight() / 2, 4, {0, 0, 0})
-                local scalePerc = self.logoScale / 0.5
-                drawOutlinedText("Made with Love2D", 800 / 2, 200, 0, 4 * scalePerc, 4 * scalePerc, love.graphics.getFont():getWidth("Made with Love2D") / 2, love.graphics.getFont():getHeight("Made with Love2D") / 2, 4, {0, 0, 0})
-            end
-        love.graphics.setColor(1, 1, 1, 1)
+        if debugStuff.enabled then
+            drawOutlinedText(tostring(self.blackBarsProgress), 8, 8, 0, 2, 2, 0, 0, 4, {0, 0, 0})
+        end
     end
 
 
-    s:init()
     return s
 end
 

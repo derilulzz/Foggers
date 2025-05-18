@@ -7,7 +7,7 @@
 function createMoneyPrinter()
     local m = {
         pos = {x = 0, y = 0},
-        spr = newAnimation(love.graphics.newImage("Sprs/Items/MoneyPrinter/PrinterSpr.png"), 32, 40, 28, 10, 1),
+        spr = newAnimation(love.graphics.newImage("Sprs/Items/MoneyPrinter/PrinterSpr.png"), 32, 40, 28, 14.5, 1),
         scale = {
 		    x = 4,
 	    	y = 4
@@ -46,7 +46,7 @@ end
 function createCarCreator()
     local m = {
         pos = {x = 0, y = 0},
-        spr = newAnimation(love.graphics.newImage("Sprs/Items/MoneyPrinter/CarCreator.png"), 30, 22, 3, 4, 1),
+        spr = newAnimation(love.graphics.newImage("Sprs/Items/MoneyPrinter/CarCreator.png"), 30, 22, 3, 1.5, 1),
         scale = {
             x = 4,
             y = 4
@@ -175,7 +175,10 @@ bagStuff = {
     },
     currentSelectedItem = nil,
     currentSlotScaleAdd = 0,
+    currentItemId = 1,
     placingItem = false,
+    showItemDesc = false,
+    showDescTimer = 0,
     hoveredId = 0,
     oldHoveredId = 0,
     oldHoveringAnItem = false,
@@ -192,26 +195,32 @@ end
 
 function useItem()
     local a = bagStuff.currentSelectedItem.itemCreateFunction()
+    table.remove(bagStuff.stored, bagStuff.currentItemId)
 end
 
 
 bagItems = {
     moneyPrinter = {
-        name = "Money Printer",
-        namePT = "Impressora De Dinheiro",
-        desc = "Faz 1 Dinheiro Por Segundo",
+        name = "Non ilegal Money Printer",
+        namePT = "Impressora De Dinheiro não ilegal",
+        desc = "Makes 1 money every 2 seconds, in one totally legal way, trust me :)",
+        descPT = "Faz 1 Dinheiro A Cada 2 Segundos, tudo dentro da lei obviamente",
         useFuntion = placeItem,
         itemCreateFunction = createMoneyPrinter
     },
     carCreator = {
-        name = "Car Creator",
-        desc = "Creates An Temporary Car Every 1 Second",
+        name = "Pirated Cars Creator",
+        namePT = "Criador de carros pirateados",
+        desc = "Uses Torrent To Install And Create An Pirated Car Every 2 Seconds",
+        descPT = "Usa torrent pra baixar e criar um carro pirateado a cada 2 segundos",
         useFuntion = placeItem,
         itemCreateFunction = createCarCreator
     },
     bomb = {
         name = "Bomb R",
-        desc = "An Bomb, it's self explanatory",
+        namePT = "Bomba R",
+        desc = "An Bomb, it's self explanatory, fucking annihilates your cars and all frogs",
+        descPT = "Uma Bomba, o nome já diz tudo, aniquila todos os seus carros e todos os sapos",
         useFuntion = useItem,
         itemCreateFunction = createBombExplosion
     },
@@ -234,6 +243,12 @@ function bagStuff:initBag()
     self.showingBag = false
 
 
+    self.stored = {
+        bagItems.moneyPrinter,
+        bagItems.carCreator,
+        bagItems.bomb,
+    }
+
     if tableFind(onTopGameInstaces, self) == -1 then
         table.insert(onTopGameInstaces, #onTopGameInstaces + 1, self)
     end
@@ -246,11 +261,17 @@ function bagStuff:update()
         self.bagButton.pressed = false
     end
     self.bagButton.disabled = self.showingBag
+    if gameStuff.lang == "pt-br" then 
+        self.bagButton.text = "Bolsa"
+    else
+        self.bagButton.text = "Bag"
+    end
 
 
     if self.showingBag then
         if self.oldHoveredId ~= self.hoveredId or self.oldHoveringAnItem ~= self.hoveringAnItem then
             self.currentSlotScaleAdd = 2
+            self.showDescTimer = 0
         end
 
 
@@ -273,8 +294,12 @@ function bagStuff:update()
     if self.hoveringAnItem then
         if love.mouse.isDown(1) and LastLeftMouseButton == false then
             self.currentSelectedItem = self.stored[self.hoveredId]
+            self.currentItemId = self.hoveredId
             self.currentSelectedItem:useFuntion()
         end
+
+
+        self.showDescTimer = self.showDescTimer + 1 * globalDt
     end
 
 
@@ -310,6 +335,7 @@ function bagStuff:update()
             local newPos = {gameCam.transform:inverseTransformPoint(self.currentPlacingItem.pos.x, self.currentPlacingItem.pos.y)}
             self.currentPlacingItem.pos = {x = newPos[1], y = newPos[2]}
             table.insert(gameInstances, #gameInstances + 1, self.currentPlacingItem)
+            table.remove(bagStuff.stored, self.currentItemId)
             self.currentPlacingItem = nil
             self.placingItem = false
         end
@@ -329,33 +355,32 @@ function bagStuff:draw()
 
 
         love.graphics.setColor(1, 1, 1)
-        drawOutlinedText("BAG", self.bagRect.x + self.bagRect.w / 2, self.bagRect.y + 32 + 8 * math.sin(GlobalSinAngle), 0, 4, 4, love.graphics.getFont():getWidth("BAG") / 2, love.graphics.getFont():getHeight("BAG") / 2, 4, {0, 0, 0})
+        local text = "BAG"
+        if gameStuff.lang == "pt-br" then text = "BOLSA" end
+        drawOutlinedText(text, self.bagRect.x + self.bagRect.w / 2, self.bagRect.y + 32 + 8 * math.sin(GlobalSinAngle), 0, 4, 4, love.graphics.getFont():getWidth(text) / 2, love.graphics.getFont():getHeight(text) / 2, 4, {0, 0, 0})
 
 
-        drawOutlinedText(tostring(#self.stored), 8, 8, 0, 4, 4, nil, nil, 2, {0, 0, 0})
-
-
-        local x = bagStuff.bagRect.x + 80 + 8
+        local x = bagStuff.bagRect.x + 4
         local y = bagStuff.bagRect.y + 70
         local i = 0
         local iDec = 0
         local hoveringOne = false
         local previousWidth = 0
         while i < #self.stored do
-            if previousWidth == 0 then
-                x = x + Lume.clamp((32 * (i - iDec)), 0, 32) + 8
-            else
+            local itemName = self.stored[i + 1].name
+            if gameStuff.lang == "pt-br" then itemName = self.stored[i + 1].namePT end
+            if i - iDec ~= 0 then
                 x = x + Lume.clamp((previousWidth * (i - iDec)), 0, previousWidth) + 8
             end
 
 
             if x > bagStuff.bagRect.w * 1.5 then
                 y = y + 32
-                x = bagStuff.bagRect.x + 16
+                x = bagStuff.bagRect.x + 4
                 iDec = iDec + i
             end
 
-		
+
             local color = {0.25, 0.25, 0.25}
             local scale = 2
 
@@ -363,17 +388,20 @@ function bagStuff:draw()
             if self.hoveredId == i + 1 and self.hoveringAnItem then color = {1, 1, 1}; scale = scale + self.currentSlotScaleAdd end
 
 
-            local opX = x - (love.graphics.getFont():getWidth(self.stored[i + 1].name) * scale) / 2
-            local opY = y - (love.graphics.getFont():getHeight(self.stored[i + 1].name) * scale) / 2
-            local opW = opX + (love.graphics.getFont():getWidth(self.stored[i + 1].name) * scale)
-            local opH = opY + (love.graphics.getFont():getHeight(self.stored[i + 1].name) * scale)
+            local opX = x - (love.graphics.getFont():getWidth(itemName) * scale) / 2
+            local opY = y - (love.graphics.getFont():getHeight(itemName) * scale) / 2
+            local opW = opX + ((love.graphics.getFont():getWidth(itemName) * scale) * 1.5)
+            local opH = opY + (love.graphics.getFont():getHeight(itemName) * scale)
 
 
             love.graphics.setColor(color)
-                drawOutlinedText(self.stored[i + 1].name, x, y, 0, scale, scale, love.graphics.getFont():getWidth(self.stored[i + 1].name) / 2, love.graphics.getFont():getHeight(self.stored[i + 1].name) / 2, 2, {0, 0, 0})
-
-
-                previousWidth = (love.graphics.getFont():getWidth(self.stored[i + 1].name) * scale)
+                if i - iDec == 1 then
+                    drawOutlinedText(itemName, x, y, 0, scale, scale, love.graphics.getFont():getWidth(itemName) / 2, love.graphics.getFont():getHeight(itemName) / 2, 2, {0, 0, 0})
+                    previousWidth = (love.graphics.getFont():getWidth(itemName) * scale)
+                else
+                    drawOutlinedText(itemName, x, y, 0, scale, scale, 0, love.graphics.getFont():getHeight(itemName) / 2, 2, {0, 0, 0})
+                    previousWidth = (love.graphics.getFont():getWidth(itemName) * scale) * 2
+                end
 
 
                 if PushsInGameMousePosNoTransform.x > opX and PushsInGameMousePosNoTransform.x < opW and PushsInGameMousePosNoTransform.y > opY and PushsInGameMousePosNoTransform.y < opH then
@@ -388,12 +416,29 @@ function bagStuff:draw()
 
             i = i + 1
         end
+        if self.showDescTimer >= 1 and self.hoveringAnItem then
+            love.graphics.setColor({0, 0, 0})
+            local text = self.stored[self.hoveredId].desc
+            if gameStuff.lang == "pt-br" then text = self.stored[self.hoveredId].descPT end
+            local xDec = 0
+            local limit = 128
+            local wrap = {love.graphics.getFont():getWrap(text, limit)}
+
+
+            while (PushsInGameMousePosNoTransform.x + 32 + (limit * 2)) - xDec > 800 do
+                xDec = xDec + 1
+            end
+
+
+            drawOutlinedRect(PushsInGameMousePosNoTransform.x + 32 - xDec, PushsInGameMousePosNoTransform.y + 32, limit * 2, ((love.graphics.getFont():getHeight() * #wrap[2]) * 2) + 4, {1, 1, 1})
+            drawOutlinedTextF(text, PushsInGameMousePosNoTransform.x + 32 - xDec, PushsInGameMousePosNoTransform.y + 32, limit, "center", 0, 2, 2, 0, 0, 2, {0, 0, 0})
+        end
 
 
         if #self.stored <= 0 then
             love.graphics.setColor({1, 1, 1, 1})
             local text = "your bag is empty"
-            if gameStuff.lang == "pt-br" then text = "sua mochila esta vazia" end
+            if gameStuff.lang == "pt-br" then text = "sua mochila está vazia" end
             drawOutlinedText(text, self.bagRect.x + self.bagRect.w / 2, self.bagRect.y + self.bagRect.h / 2, 0, 2 + 0.25 * math.cos(GlobalSinAngle), 2 + 0.25 * math.cos(GlobalSinAngle), nil, nil, 4 + 0.25 * math.cos(GlobalSinAngle), {0, 0, 0})
         end
 

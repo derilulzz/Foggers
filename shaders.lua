@@ -192,8 +192,9 @@ function drawOutlinedTextF(text, x, y, limit, align, r, sx, sy, ox, oy, outlineS
     r = r or 0
     sx = sx or 1
     sy = sy or 1
-    ox = ox or love.graphics.getFont():getWidth(text) / 2
-    oy = oy or love.graphics.getFont():getHeight(text) / 2
+    ox = ox or limit / 2
+    local wrap = {love.graphics.getFont():getWrap(text, limit)}
+    oy = oy or (love.graphics.getFont():getHeight() * #wrap[2]) / 2
 
 
     while outlineSize > 0 do

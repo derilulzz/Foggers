@@ -23,8 +23,8 @@ function createMainMenu()
         },
         optionsPT = {
             {
-                "Comecar",
-                "Opcoes",
+                "Começar",
+                "Opções",
                 "Sair",
             },
             {
@@ -206,18 +206,17 @@ function createMainMenu()
         else
             if gameStuff.lang == "pt-br" then
                 self.runConfigStuff.cancelRunButton.text = "Cancelar"
-                self.runConfigStuff.startRunButton.text = "Comecar"
-                self.runConfigStuff.startRunButton.addText = "Comecar A Run"
+                self.runConfigStuff.startRunButton.text = "Começar"
+                self.runConfigStuff.startRunButton.addText = "Começar A Run"
                 self.runConfigStuff.cancelRunButton.addText = "Cancelar A Run"
                 self.runConfigStuff.seedNumBtn.addText = "O Numero Usado Para Criar Numeros Aleatorios"
-                self.runConfigStuff.startingRoundNumBtn.addText = "O Round Onde O Jogo Comeca"
+                self.runConfigStuff.startingRoundNumBtn.addText = "O Round Onde O Jogo Começa"
                 self.runConfigStuff.seedNumBtn.text = "Aleatorio"
             else
                 self.runConfigStuff.cancelRunButton.text = "Cancel"
                 self.runConfigStuff.startRunButton.text = "Start"
                 self.runConfigStuff.seedNumBtn.text = "Random"
             end
-
 
 
             if self.runConfigStuff.startRunButton.pressed then
@@ -487,6 +486,7 @@ function createMainMenu()
 
             love.graphics.setColor({1, 1, 1})
             local txt = "Version: " .. tostring(gameStuff.currentVersion)
+            if gameStuff.lang == "pt-br" then txt = "Versão: " .. tostring(gameStuff.currentVersion) end
             drawOutlinedText(txt, 8, 600 - 8, 0, 2, 2, 0, love.graphics.getFont():getHeight(txt), 2, {0, 0, 0})
             
             

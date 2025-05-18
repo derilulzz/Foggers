@@ -21,19 +21,10 @@ function newAnimation(image, width, height, frames, speed, replayType)
     animation.totalFrames = frames + 1
     animation.duration = frames / speed
 
-    
-    for x = 0, frames do
-        table.insert(animation.quads, love.graphics.newQuad(
-            width * x, 0, width, height, image:getDimensions()
-        ))
-    end
 
-    -- Reset animation (e.g., for replaying)
     function animation:reset()
         self.currentFrame = 1
         self.finished = false
-        self.startTime = love.timer.getTime()
-        self.endTime = self.startTime + self.duration
     end
 
 

@@ -11,7 +11,7 @@ function saveGame(isFullscreen, lang, sfxVol, musVol, higestRound)
     serialized = Lume.serialize(data)
 
 
-    --serialized = enc(serialized)
+    serialized = enc(serialized)
 
 
     love.filesystem.write("GameSave.FoggersSaveFile", serialized)
@@ -23,8 +23,9 @@ function loadGame()
     file = love.filesystem.read("GameSave.FoggersSaveFile")
 
 
-    if file == nil then data = {} else
-        --file = dec(file)
+    if file == nil then data = {}; gameStuff.firstPlay = true else
+        file = dec(file)
+        print("Save stats:\n" .. file)
         data = Lume.deserialize(file)
     end
 

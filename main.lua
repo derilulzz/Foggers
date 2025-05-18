@@ -32,6 +32,7 @@ require "credits"
 require "Tutorial.tutorial"
 require "Bag.bag"
 require "tips"
+require "StartingOptions.startingOptions"
 
 
 --All the game car instances
@@ -397,6 +398,8 @@ love.mouse.setVisible(false)
 rooms = {
     --The room used for quitting the game, it is used to have an transition on game quit, i think it looks cool
     quit = -1,
+    --The room for the starting options, if an save file exists the room is skipped automaticaly
+    startingOptions = 0.1,
     --The credits room
     credits = 0.25,
     --The stating thing that shows the "Created by" and the "Created with" texts and icons
@@ -412,7 +415,7 @@ carsStuff = {
     walkSfxAmnt = 0,
 }
 --The current room
-currentRoom = rooms.start
+currentRoom = rooms.startingOptions
 --The mouse position on the last frame
 oldMousePos = { x = 0, y = 0 }
 --The timer to create an tip
@@ -438,10 +441,14 @@ gameStuff = {
     hoveringTopBox = false,
     --The current game speed
     speed = 1,
+    --If the player is playing for the first time AKA an save file dint existed in game start
+    firstPlay = false,
     --The current language of the game
     lang = "eng",
     --The higest round of the game
     higestRound = 0,
+    --If the game should use the OST
+    useOST = true,
     --The current starting round
     currentStartingRound = 0,
     --The current frog gaved, it is more used as an current round var
@@ -510,6 +517,8 @@ function love.run()
     Push:setupScreen(800, 600, 800, 600, {resizable=true})
     --Set the window title
     love.window.setTitle("Foggers")
+    --Set game identity
+    love.filesystem.setIdentity("Foggers")
 
 
     --Run the love.load function to load stuff, (it actually just inits other stuff)
@@ -582,12 +591,12 @@ function love.load(args, unfilteredArgs)
     love.graphics.setLineStyle("rough")
 
 
+    --Set the window icon
+    love.window.setIcon(love.image.newImageData("Sprs/Fog/Idle.png"))
+
+
     --Update the music volume, AKA set the music volume to all the streams
     updateMusicVolume()
-
-
-    --Play the music 1
-    playMusic(1)
 
 
     --Load the game save file
@@ -718,6 +727,7 @@ function love.update(dt)
         --Delete some special instances if they arent used anymore
         if currentRoom ~= rooms.start then startThingInstance = nil end
         if currentRoom ~= rooms.mainMenu then mainMenuInstance = nil end
+        if currentRoom ~= rooms.startingOptions then startingOptionsInstance = nil end
 
 
         --Update stuff based in rooms
@@ -726,6 +736,13 @@ function love.update(dt)
             --Set that the game can close and call the close function again
             canCloseGame = true
             love.event.quit()
+        elseif currentRoom == rooms.startingOptions then
+            --Create the starting options instance if he is a null value, otherwise update it
+            if startingOptionsInstance == nil then
+                createStartingOptions()
+            else
+                startingOptionsInstance:update()
+            end
         elseif currentRoom == rooms.credits then
             --Create the credits instance if he is a null value, otherwise update it
             if creditsInstance == nil then
@@ -1492,6 +1509,13 @@ function love.draw()
         else
             mainMenuInstance:draw()
         end
+    elseif currentRoom == rooms.startingOptions then
+        --Create the starting options instance if he is a null value, otherwise update it
+        if startingOptionsInstance == nil then
+            startingOptionsInstance = createStartingOptions()
+        else
+            startingOptionsInstance:draw()
+        end
     elseif currentRoom == rooms.credits then
         --If the credits instance does not exists, then create it, else draw it
         if creditsInstance == nil then
@@ -1740,7 +1764,6 @@ function createANewFogg(altX, altY)
 end
 
 
-
 --Called when one key gets pressed
 function love.keypressed(key)
     --Update the key that was pressed and set that the keyboard was pressed in the current frame
@@ -1751,6 +1774,10 @@ function love.keypressed(key)
     --Do stuff based in the key pressed
     if key == "f11" then
         love.window.setFullscreen(not love.window.getFullscreen())
+    end
+    if key == "f2" then
+        love.graphics.captureScreenshot(os.time() .. ".png")
+        local suc = love.window.showMessageBox("screenShot", "screenshot captured succesfully", "info", false)
     end
     if key == "escape" then
         if pauseMenuInstance ~= nil then

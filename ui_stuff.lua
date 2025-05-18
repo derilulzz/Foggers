@@ -132,6 +132,7 @@ function createNumberInsertButton(_x, _y, _w, _h, _text, additionalText, _fixedT
 		oldHovered = false,
 		hoverTime = 0,
 		visible = true,
+		alpha = 1,
 		disabled = false,
 		fixedToScreen = _fixedToScreen,
 		texting = false,
