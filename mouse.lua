@@ -6,7 +6,7 @@ mouse = {
     rot = 0,
     scale = 4,
     oldMousePos = {x = 0, y = 0},
-    rmbPressSpr = newAnimation(love.graphics.newImage("Sprs/Mouse/RMBPress.png"), 8, 8, 1, 10, 0),
+    rmbPressSpr = newAnimation(love.graphics.newImage("Sprs/Mouse/RMBPress.png"), 9, 9, 1, 10, 0),
     showRMBIcon = false,
     showLMBIcon = false,
     RMBModulate = {1, 1, 1},

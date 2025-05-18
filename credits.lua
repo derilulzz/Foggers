@@ -69,8 +69,8 @@ function createCredits()
         drawOutlinedText("Cherry Dev", (800 / 2) - 128, 352 + 8 + (self.icons.cherryDev:getHeight() * 8) / 2, 0.1 * math.cos(GlobalSinAngle), 2, 2, fnt1:getWidth("Cherry Dev") / 2, fnt1:getHeight("Cherry Dev") / 2, 2, {0, 0, 0})
 
 
-        drawOutlinedSprite(self.icons.bolachito, (800 / 2) + 128, 352, 0.25 * math.cos(GlobalSinAngle / 2), 0.25, 0.25, self.icons.bolachito:getWidth() / 2, self.icons.bolachito:getHeight() / 2, 4, {0, 0, 0})
-        drawOutlinedText("Bolachito", (800 / 2) + 128, 352 + 8 + (self.icons.bolachito:getHeight() * 0.25) / 2, 0.1 * math.cos(GlobalSinAngle), 2, 2, fnt1:getWidth("Bolachito") / 2, fnt1:getHeight("Bolachito") / 2, 2, {0, 0, 0})
+        drawOutlinedSprite(self.icons.bolachito, (800 / 2) + 128, 352, 0.25 * math.cos(GlobalSinAngle / 2), 1, 1, self.icons.bolachito:getWidth() / 2, self.icons.bolachito:getHeight() / 2, 4, {0, 0, 0})
+        drawOutlinedText("Bolachito", (800 / 2) + 128, 352 + 8 + (self.icons.bolachito:getHeight()) / 2, 0.1 * math.cos(GlobalSinAngle), 2, 2, fnt1:getWidth("Bolachito") / 2, fnt1:getHeight("Bolachito") / 2, 2, {0, 0, 0})
         
         
         drawOutlinedText(disaggreedmentText, (800 / 2) + 300, 332, 0, 2, 2, love.graphics.getFont():getWidth(disaggreedmentFrText) / 2, love.graphics.getFont():getHeight(disaggreedmentFrText) / 2, 2, {0, 0, 0})
@@ -79,7 +79,7 @@ function createCredits()
         drawOutlinedText(createdText, 800 / 2, 464, 0.1 * math.cos(GlobalSinAngle), 4, 4, fnt1:getWidth(createdText) / 2, fnt1:getHeight(createdText) / 2, 4, {0, 0, 0})
 
 
-        drawOutlinedSprite(self.icons.love, 800 / 2, 512 + 16, 0.25 * math.cos(GlobalSinAngle / 2), 0.25, 0.25, self.icons.love:getWidth() / 2, self.icons.love:getHeight() / 2, 2, {0, 0, 0})
+        drawOutlinedSprite(self.icons.love, 800 / 2, 512 + 16, 0.25 * math.cos(GlobalSinAngle / 2), 0.5, 0.5, self.icons.love:getWidth() / 2, self.icons.love:getHeight() / 2, 2, {0, 0, 0})
         drawOutlinedText("Love2D", (800 / 2), 512 + 32 + 8 + (self.icons.love:getHeight() * 0.25) / 2, 0.1 * math.cos(GlobalSinAngle), 2, 2, fnt1:getWidth("Love2D") / 2, fnt1:getHeight("Love2D") / 2, 2, {0, 0, 0})
         
         

@@ -23,6 +23,9 @@ function drawOutlinedSprite(drawable, x, y, r, sx, sy, ox, oy, outlineSize, outl
     local currentColor = { love.graphics.getColor() }
 
 
+    if gameStuff.drawOutlines == false then love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy) return end
+
+
     while outlineSize > 0 do
         for rt = 0, 4 do
             if rt == 0 then
@@ -71,6 +74,9 @@ function drawOutlinedSpriteQuad(drawable, quad, x, y, r, sx, sy, ox, oy, outline
     sy = sy or 1
     ox = ox or drawable:getWidth() / 2
     oy = oy or drawable:getHeight() / 2
+
+
+    if gameStuff.drawOutlines == false then love.graphics.draw(drawable, quad, x, y, r, sx, sy, ox, oy) return end
 
 
     while outlineSize > 0 do
@@ -136,6 +142,9 @@ function drawOutlinedText(text, x, y, r, sx, sy, ox, oy, outlineSize, outlineCol
     oy = oy or love.graphics.getFont():getHeight(text) / 2
 
 
+    if gameStuff.drawOutlines == false then love.graphics.print(text, x, y, r, sx, sy, ox, oy) return end
+
+
     local add = { x = outlineSize, y = outlineSize }
     local currentColor = { love.graphics.getColor() }
 
@@ -195,6 +204,9 @@ function drawOutlinedTextF(text, x, y, limit, align, r, sx, sy, ox, oy, outlineS
     ox = ox or limit / 2
     local wrap = {love.graphics.getFont():getWrap(text, limit)}
     oy = oy or (love.graphics.getFont():getHeight() * #wrap[2]) / 2
+
+
+    if gameStuff.drawOutlines == false then love.graphics.printf(text, x, y, limit, align, r, sx, sy, ox, oy) return end
 
 
     while outlineSize > 0 do

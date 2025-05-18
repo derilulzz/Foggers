@@ -10,6 +10,7 @@ function createStartThing()
         state = 0,
         nextStateTimer = 5,
         oldAccKey = false,
+        blackbarsWhiteLineAlpha = 1,
     }
 
 
@@ -44,15 +45,20 @@ function createStartThing()
             self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 1, 0.15)
             if self.blackBarsProgress >= 0.999 then self.state = self.state + 1; self.nextStateTimer = 5 end
         elseif self.state == 4 then
-            rm = rooms.mainMenu
-            setRoom()
+            if self.blackBarsProgress >= 0.999 then self.blackbarsWhiteLineAlpha = Lume.lerp(self.blackbarsWhiteLineAlpha, 0, 0.2) end
+            
+            
+            if self.blackbarsWhiteLineAlpha <= 0.01 then
+                rm = rooms.mainMenu
+                setRoom()
+            end
         end
 
 
         if self.nextStateTimer <= 0 then self.state = self.state + 1; self.nextStateTimer = 5 end
 
 
-        if self.state ~= 1 and self.state ~= 3 and and self.state ~= 4 then
+        if self.state ~= 1 and self.state ~= 3 and self.state ~= 4 then
             self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 0.25 + 0.1 * math.sin(GlobalSinAngle), 0.1)
         end
         self.logoScale = self.logoScale + 0.0001 * math.cos(GlobalSinAngle * 4)
@@ -86,7 +92,7 @@ function createStartThing()
         love.graphics.setColor({0, 0, 0})
             love.graphics.rectangle("fill", -8, 0, 816, (600 / 2) * self.blackBarsProgress)
             love.graphics.rectangle("fill", -8, 600 - ((600 / 2) * (self.blackBarsProgress)), 816, 600 / 2)
-        love.graphics.setColor({1, 1, 1})
+        love.graphics.setColor({1, 1, 1, self.blackbarsWhiteLineAlpha})
             love.graphics.rectangle("line", -8, 0, 816, (600 / 2) * self.blackBarsProgress)
             love.graphics.rectangle("line", -8, 600 - ((600 / 2) * (self.blackBarsProgress)), 816, 600)
         

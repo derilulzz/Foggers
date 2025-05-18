@@ -16,8 +16,18 @@ function createMainMenu()
             {
                 "Fullscreen: No",
                 "Lenguage: Eng",
+                "Graphics",
+                "Sounds",
+                "Return",
+            },
+            {
+                "Use Game OST: No",
                 "SFX Volume: 100",
                 "Music Volume: 100",
+                "Return",
+            },
+            {
+                "Draw outlines: Yes",
                 "Return",
             }
         },
@@ -30,8 +40,18 @@ function createMainMenu()
             {
                 "Tela Cheia: Nao",
                 "Lenguage: Eng",
-                "Volume Dos SFX: 100",
-                "Volume Da Musica: 100",
+                "Gráficos",
+                "Sons",
+                "Voltar",
+            },
+            {
+                "Usar a OST do jogo: Não",
+                "Volume dos Effeitos sonoros: 100",
+                "Volume da Musica: 100",
+                "Voltar",
+            },
+            {
+                "Desenhar outlines: Sim",
                 "Voltar",
             }
         },
@@ -161,6 +181,20 @@ function createMainMenu()
             else
                 self.optionsPT[2][1] = "Tela Cheia: Nao"
             end
+            if gameStuff.drawOutlines then
+                self.optionsPT[4][1] = "Desenhar outlines: Sim"
+                self.options[4][1] = "Draw outlines: Yes"
+            else
+                self.optionsPT[4][1] = "Desenhar outlines: Não"
+                self.options[4][1] = "Draw outlines: No"
+            end
+            if gameStuff.useOST then
+                self.optionsPT[3][1] = "Usar a OST do jogo: Sim"
+                self.options[3][1] = "Use Game OST: Yes"
+            else
+                self.optionsPT[3][1] = "Usar a OST do jogo: Não"
+                self.options[3][1] = "Use Game OST: No"
+            end
 
 
             if gameStuff.lang == "pt-br" then
@@ -180,26 +214,26 @@ function createMainMenu()
 
 
             if gameStuff.lang == "eng" then
-                self.options[2][3] = "SFX Volume: " .. math.floor(gameStuff.sfxVolume * 100)
+                self.options[3][2] = "SFX Volume: " .. math.floor(gameStuff.sfxVolume * 100)
             end
             if gameStuff.lang == "pt-br" then
-                self.optionsPT[2][3] = "Volume Dos SFX: " .. math.floor(gameStuff.sfxVolume * 100)
+                self.optionsPT[3][2] = "Volume Dos efeitos sonoros: " .. math.floor(gameStuff.sfxVolume * 100)
             end
 
 
             if gameStuff.lang == "eng" then
-                self.options[2][4] = "Music Volume: " .. math.floor(gameStuff.musicVolume * 100)
+                self.options[3][3] = "Music Volume: " .. math.floor(gameStuff.musicVolume * 100)
             end
             if gameStuff.lang == "pt-br" then
-                self.optionsPT[2][4] = "Volume Da Musica: " .. math.floor(gameStuff.musicVolume * 100)
+                self.optionsPT[3][3] = "Volume Da Musica: " .. math.floor(gameStuff.musicVolume * 100)
             end
 
 
-            if self.menuLevel == 2 and self.pos == 3 then
+            if self.menuLevel == 3 and self.pos == 2 then
                 if love.keyboard.isDown("left", "a") then gameStuff.sfxVolume = gameStuff.sfxVolume - 0.1 * globalDt end
                 if love.keyboard.isDown("right", "d") then gameStuff.sfxVolume = gameStuff.sfxVolume + 0.1 * globalDt end
             end
-            if self.menuLevel == 2 and self.pos == 4 then
+            if self.menuLevel == 3 and self.pos == 3 then
                 if love.keyboard.isDown("left", "a") then gameStuff.musicVolume = gameStuff.musicVolume - 0.1 * globalDt end
                 if love.keyboard.isDown("right", "d") then gameStuff.musicVolume = gameStuff.musicVolume + 0.1 * globalDt end
             end
@@ -316,8 +350,24 @@ function createMainMenu()
                     gameStuff.lang = "pt-br"
                 end
                 self:createCreditsButton()
+            elseif self.pos == 3 then
+                self:setMenuLevel(4)
+            elseif self.pos == 4 then
+                self:setMenuLevel(3)
             elseif self.pos == 5 then
                 self:setMenuLevel(1)
+            end
+        elseif self.menuLevel == 3 then
+            if self.pos == 1 then
+                gameStuff.useOST = not gameStuff.useOST
+            elseif self.pos == 4 then
+                self:setMenuLevel(2)
+            end
+        elseif self.menuLevel == 4 then
+            if self.pos == 1 then
+                gameStuff.drawOutlines = not gameStuff.drawOutlines
+            elseif self.pos == 2 then
+                self:setMenuLevel(2)
             end
         end
     end

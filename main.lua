@@ -459,6 +459,8 @@ gameStuff = {
     useFixedSeed = false,
     --The fixed seed to the game to use
     fixedSeed = 0,
+    --If the game should draw outlines
+    drawOutlines = true,
     --The time since the game started
     timeSinceStart = 0,
     --The current sfx volume
