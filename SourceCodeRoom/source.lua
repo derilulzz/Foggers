@@ -24,7 +24,7 @@ function createSourceInfo()
 
 
         drawOutlinedText("Source Code", 800 / 2, 16 + 8, 0.1 * math.sin(GlobalSinAngle), 4, 4, nil, nil, 2, {0, 0, 0})
-        drawOutlinedTextF("All the game's code is under the MIT licence, that means you can do whatever you want with the game, the only thing you CANT do is say that you creted the original game", 800 / 2, 32 + 64, 800 / 2, "center", 0.01 * math.sin(GlobalSinAngle), 2, 2, nil, nil, 2, {0, 0, 0})
+        drawOutlinedTextF("All the game's code is under the MIT licence, that means you can do whatever you want with the game, the only thing you CANT do is say that you created the original game", 800 / 2, 32 + 64, 800 / 2, "center", 0.01 * math.sin(GlobalSinAngle), 2, 2, nil, nil, 2, {0, 0, 0})
     end
 
 

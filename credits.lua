@@ -42,7 +42,7 @@ function createCredits()
         local createdText = "Created Using:"
         local disaggreedmentText = {{1, 1, 1, 1}, "<- I DID ", {1, 0, 0, 1}, "NOT\n", {1, 1, 1, 1}, " AGREEDED WITH\n THIS ICON"}
         local disaggreedmentFrText = "<- I DID NOT\n AGREEDED WITH\n THIS ICON"
-        local usingTheLibrarysText = "Using the external librarys:\n\t\tFlux,\n\t\tLume,\n\t\tPush,\n\t\tBase64"
+        local usingTheLibrarysText = "Using the external librarys:\nFlux,\nLume,\nPush,\nBase64"
 
 
         if gameStuff.lang == "pt-br" then
@@ -50,7 +50,7 @@ function createCredits()
             createdText = "Criado Usando:"
             disaggreedmentText = {{1, 1, 1, 1}, "<- EU ", {1, 0, 0, 1}, "NAO\n", {1, 1, 1, 1}, " CONCORDEI COM\n ESSE ICONE"}
             disaggreedmentFrText = "<- EU NAO\n CONCORDEI COM\n ESSE ICONE"
-            usingTheLibrarysText = "Usando as librarys:\n\t\tFlux,\n\t\tLume,\n\t\tPush,\n\t\tBase64"
+            usingTheLibrarysText = "Usando as librarys:\nFlux,\nLume,\nPush,\nBase64"
         end
 
 
@@ -76,14 +76,14 @@ function createCredits()
         drawOutlinedText(disaggreedmentText, (800 / 2) + 300, 362, 0, 2, 2, love.graphics.getFont():getWidth(disaggreedmentFrText) / 2, love.graphics.getFont():getHeight(disaggreedmentFrText) / 2, 2, {0, 0, 0})
 
 
-        drawOutlinedText(createdText, 800 / 2, 464, 0.1 * math.cos(GlobalSinAngle), 4, 4, fnt1:getWidth(createdText) / 2, fnt1:getHeight(createdText) / 2, 4, {0, 0, 0})
+        drawOutlinedText(createdText, 800 / 2 - 188, 454, 0.1 * math.cos(GlobalSinAngle), 4, 4, fnt1:getWidth(createdText) / 2, fnt1:getHeight(createdText) / 2, 4, {0, 0, 0})
 
 
-        drawOutlinedSprite(self.icons.love, 800 / 2, 512 + 16, 0.25 * math.cos(GlobalSinAngle / 2), 0.5, 0.5, self.icons.love:getWidth() / 2, self.icons.love:getHeight() / 2, 2, {0, 0, 0})
-        drawOutlinedText("Love2D", (800 / 2), 512 + 32 + 8 + (self.icons.love:getHeight() * 0.25) / 2, 0.1 * math.cos(GlobalSinAngle), 2, 2, fnt1:getWidth("Love2D") / 2, fnt1:getHeight("Love2D") / 2, 2, {0, 0, 0})
+        drawOutlinedSprite(self.icons.love, 800 / 2 - 188, 512 + 8, 0.25 * math.cos(GlobalSinAngle / 2), 0.5, 0.5, self.icons.love:getWidth() / 2, self.icons.love:getHeight() / 2, 2, {0, 0, 0})
+        drawOutlinedText("Love2D", (800 / 2) - 188, 512 + 32 + 8 + (self.icons.love:getHeight() * 0.25) / 2, 0.1 * math.cos(GlobalSinAngle), 2, 2, fnt1:getWidth("Love2D") / 2, fnt1:getHeight("Love2D") / 2, 2, {0, 0, 0})
         
         
-        drawOutlinedText(usingTheLibrarysText, (800 / 2) + 274, 500, 0, 2, 2, fnt1:getWidth(usingTheLibrarysText) / 2, fnt1:getHeight(usingTheLibrarysText) / 2, 2, {0, 0, 0})
+        drawOutlinedTextF(usingTheLibrarysText, (800 / 2) + 216 - 16, 545 - 16, 256, "center", 0.1 * math.cos(GlobalSinAngle), 2, 2, nil, nil, 2, {0, 0, 0})
 
 
         drawOutlinedText("Credits", 800 / 2, 32, 0.01 * math.cos(GlobalSinAngle), 4, 4, nil, nil, 2, {0, 0, 0})
