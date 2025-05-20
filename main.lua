@@ -33,6 +33,7 @@ require "Tutorial.tutorial"
 require "Bag.bag"
 require "tips"
 require "StartingOptions.startingOptions"
+require "SourceCodeRoom.source"
 
 
 --All the game car instances
@@ -400,6 +401,8 @@ rooms = {
     quit = -1,
     --The room for the starting options, if an save file exists the room is skipped automaticaly
     startingOptions = 0.1,
+    --The room for source code info
+    sourceCode = 0.3,
     --The credits room
     credits = 0.25,
     --The stating thing that shows the "Created by" and the "Created with" texts and icons
@@ -751,6 +754,13 @@ function love.update(dt)
                 creditsInstance = createCredits()
             else
                 creditsInstance:update()
+            end
+        elseif currentRoom == rooms.sourceCode then
+            --Create the source code instance if he is a null value, otherwise update it
+            if sourceInfoInstance == nil then
+                createSourceInfo()
+            else
+                sourceInfoInstance:update()
             end
         elseif currentRoom == rooms.start then
             --Create the start thing instance if he is a null value, otherwise update it
@@ -1524,6 +1534,13 @@ function love.draw()
             creditsInstance = createCredits()
         else
             creditsInstance:draw()
+        end
+    elseif currentRoom == rooms.sourceCode then
+        --Create the source code instance if he is a null value, otherwise draw it
+        if sourceInfoInstance == nil then
+            createSourceInfo()
+        else
+            sourceInfoInstance:draw()
         end
     elseif currentRoom == rooms.start then
         --If the start thing instance does not exists, then create it, else draw it

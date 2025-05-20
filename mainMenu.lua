@@ -72,6 +72,7 @@ function createMainMenu()
         mouseMoved = false,
         blackEnterAlpha = 1,
         creditsButton = nil,
+        sourceCodeButton = nil,
         showRunConfig = false,
         runConfigStuff = {
             boxYOffset = 600,
@@ -93,6 +94,8 @@ function createMainMenu()
 
 
         deleteUIInstance(self.creditsButton)
+        deleteUIInstance(self.sourceCodeButton)
+        self.sourceCodeButton = createButton(800 - (64 + 8), 600 - (64 + 32 + 8 + 8), 128, 64, "Source Code", "", true)
         self.creditsButton = createButton(800 - (64 + 8), 600 - (32 + 8), 128, 64, text, "", true)
     end
 
@@ -147,6 +150,10 @@ function createMainMenu()
 
 
                 self.creditsButton.pressed = false
+            end
+            if self.sourceCodeButton.pressed then
+                changeRoom(rooms.sourceCode)
+                self.sourceCodeButton.pressed = false
             end
 
 
@@ -310,6 +317,7 @@ function createMainMenu()
 
         
         self.creditsButton.visible = self.showRunConfig == false
+        self.sourceCodeButton.visible = self.showRunConfig == false
 
 
         self.angle = self.angle + 1 * globalDt

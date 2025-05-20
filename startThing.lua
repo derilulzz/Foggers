@@ -16,7 +16,9 @@ function createStartThing()
 
     function s:update()
         if (love.keyboard.isDown("space", "return") and self.oldAccKey == false) or (love.mouse.isDown(1) and LastLeftMouseButton == false) then
-            self.state = self.state + 1
+            if self.state < 3 then
+                self.state = self.state + 1
+            end
         end
 
 
@@ -65,6 +67,9 @@ function createStartThing()
         self.logoRot = self.logoRot + 0.025 * math.cos(GlobalSinAngle * 4)
         self.oldAccKey = love.keyboard.isDown("space", "return")
         self.nextStateTimer = self.nextStateTimer - 1 * globalDt
+
+
+        self.state = Lume.clamp(self.state, 0, 4)
     end
 
 

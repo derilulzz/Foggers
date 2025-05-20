@@ -55,25 +55,25 @@ function createCredits()
 
 
         local fnt1 = love.graphics.getFont()
-        drawOutlinedText(meText, 800 / 2, 32, 0.1 * math.cos(GlobalSinAngle), 3, 3, fnt1:getWidth(meText) / 2, fnt1:getHeight(meText) / 2, 4, {0, 0, 0})
+        drawOutlinedText(meText, 800 / 2, 90, 0.1 * math.cos(GlobalSinAngle), 3, 3, fnt1:getWidth(meText) / 2, fnt1:getHeight(meText) / 2, 4, {0, 0, 0})
     
     
-        love.graphics.draw(self.icons.me, 800 / 2, 128, 0.05 * math.cos(GlobalSinAngle / 2), 0.1, 0.1, self.icons.me:getWidth() / 2, self.icons.me:getHeight() / 2)
-        drawOutlinedText("Deri LULZZ", 800 / 2, 128 + 8 + (self.icons.me:getHeight() * 0.1) / 2, 0.1 * math.cos(GlobalSinAngle), 2, 2, fnt1:getWidth("Deri LULZZ") / 2, fnt1:getHeight("Deri LULZZ") / 2, 2, {0, 0, 0})
+        love.graphics.draw(self.icons.me, 800 / 2, 175, 0.05 * math.cos(GlobalSinAngle / 2), 0.1, 0.1, self.icons.me:getWidth() / 2, self.icons.me:getHeight() / 2)
+        drawOutlinedText("Deri LULZZ", 800 / 2, 175 + 8 + (self.icons.me:getHeight() * 0.1) / 2, 0.1 * math.cos(GlobalSinAngle), 2, 2, fnt1:getWidth("Deri LULZZ") / 2, fnt1:getHeight("Deri LULZZ") / 2, 2, {0, 0, 0})
 
 
-        drawOutlinedText(playtestText, 800 / 2, 256, 0.1 * math.cos(GlobalSinAngle), 4, 4, fnt1:getWidth(playtestText) / 2, fnt1:getHeight(playtestText) / 2, 4, {0, 0, 0})
+        drawOutlinedText(playtestText, 800 / 2, 290, 0.1 * math.cos(GlobalSinAngle), 4, 4, fnt1:getWidth(playtestText) / 2, fnt1:getHeight(playtestText) / 2, 4, {0, 0, 0})
 
 
-        drawOutlinedSprite(self.icons.cherryDev, (800 / 2) - 128, 352, 0.25 * math.cos(GlobalSinAngle / 2), 8, 8, self.icons.cherryDev:getWidth() / 2, self.icons.cherryDev:getHeight() / 2, 4, {0, 0, 0})
-        drawOutlinedText("Cherry Dev", (800 / 2) - 128, 352 + 8 + (self.icons.cherryDev:getHeight() * 8) / 2, 0.1 * math.cos(GlobalSinAngle), 2, 2, fnt1:getWidth("Cherry Dev") / 2, fnt1:getHeight("Cherry Dev") / 2, 2, {0, 0, 0})
+        drawOutlinedSprite(self.icons.cherryDev, (800 / 2) - 128, 362, 0.25 * math.cos(GlobalSinAngle / 2), 7, 7, self.icons.cherryDev:getWidth() / 2, self.icons.cherryDev:getHeight() / 2, 4, {0, 0, 0})
+        drawOutlinedText("Cherry Dev", (800 / 2) - 128, 362 + 8 + (self.icons.cherryDev:getHeight() * 7) / 2, 0.1 * math.cos(GlobalSinAngle), 2, 2, fnt1:getWidth("Cherry Dev") / 2, fnt1:getHeight("Cherry Dev") / 2, 2, {0, 0, 0})
 
 
-        drawOutlinedSprite(self.icons.bolachito, (800 / 2) + 128, 352, 0.25 * math.cos(GlobalSinAngle / 2), 1, 1, self.icons.bolachito:getWidth() / 2, self.icons.bolachito:getHeight() / 2, 4, {0, 0, 0})
-        drawOutlinedText("Bolachito", (800 / 2) + 128, 352 + 8 + (self.icons.bolachito:getHeight()) / 2, 0.1 * math.cos(GlobalSinAngle), 2, 2, fnt1:getWidth("Bolachito") / 2, fnt1:getHeight("Bolachito") / 2, 2, {0, 0, 0})
+        drawOutlinedSprite(self.icons.bolachito, (800 / 2) + 128, 372, 0.25 * math.cos(GlobalSinAngle / 2), 1, 1, self.icons.bolachito:getWidth() / 2, self.icons.bolachito:getHeight() / 2, 4, {0, 0, 0})
+        drawOutlinedText("Bolachito", (800 / 2) + 128, 372 + 8 + (self.icons.bolachito:getHeight()) / 2, 0.1 * math.cos(GlobalSinAngle), 2, 2, fnt1:getWidth("Bolachito") / 2, fnt1:getHeight("Bolachito") / 2, 2, {0, 0, 0})
         
         
-        drawOutlinedText(disaggreedmentText, (800 / 2) + 300, 332, 0, 2, 2, love.graphics.getFont():getWidth(disaggreedmentFrText) / 2, love.graphics.getFont():getHeight(disaggreedmentFrText) / 2, 2, {0, 0, 0})
+        drawOutlinedText(disaggreedmentText, (800 / 2) + 300, 362, 0, 2, 2, love.graphics.getFont():getWidth(disaggreedmentFrText) / 2, love.graphics.getFont():getHeight(disaggreedmentFrText) / 2, 2, {0, 0, 0})
 
 
         drawOutlinedText(createdText, 800 / 2, 464, 0.1 * math.cos(GlobalSinAngle), 4, 4, fnt1:getWidth(createdText) / 2, fnt1:getHeight(createdText) / 2, 4, {0, 0, 0})
@@ -84,6 +84,9 @@ function createCredits()
         
         
         drawOutlinedText(usingTheLibrarysText, (800 / 2) + 274, 500, 0, 2, 2, fnt1:getWidth(usingTheLibrarysText) / 2, fnt1:getHeight(usingTheLibrarysText) / 2, 2, {0, 0, 0})
+
+
+        drawOutlinedText("Credits", 800 / 2, 32, 0.01 * math.cos(GlobalSinAngle), 4, 4, nil, nil, 2, {0, 0, 0})
     end
 
 

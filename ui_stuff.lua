@@ -300,7 +300,7 @@ function buttonDraw(self, modText, alpha)
 	local sizeAdd = (self.size.w / self.wantedSize.w) + (self.size.h / self.wantedSize.h)
 	local wrap = {fnt:getWrap(modText, self.size.w / 2)}
 	local txtHeight = fnt:getHeight() * #wrap[2]
-	love.graphics.printf(modText, realPos.x + (self.size.w / 2), (realPos.y + self.size.h / 2), self.size.w / 2, "center", 0, 1 * sizeAdd, 1 * sizeAdd, (self.size.w / 2) / 2, txtHeight / 2)
+	drawOutlinedTextF(modText, realPos.x + (self.size.w / 2), (realPos.y + self.size.h / 2), self.size.w / 2, "center", 0, 1 * sizeAdd, 1 * sizeAdd, (self.size.w / 2) / 2, txtHeight / 2, 2 * sizeAdd, {1, 1, 1})
 
 
 	if self.hoverTime >= 1 and self.addText ~= "" then
