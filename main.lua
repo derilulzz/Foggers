@@ -34,6 +34,8 @@ require "Bag.bag"
 require "tips"
 require "StartingOptions.startingOptions"
 require "SourceCodeRoom.source"
+require "CarStatsInstance.carStats"
+require "Mods.mods"
 
 
 --All the game car instances
@@ -51,7 +53,7 @@ GameCars = {
             20,
             0,
             0
-        ),
+        ),{},
         4,
         400,
         1,
@@ -69,7 +71,7 @@ GameCars = {
             20,
             0,
             0
-        ),
+        ),{},
         4.5,
         200,
         2,
@@ -91,7 +93,7 @@ GameCars = {
             20,
             0,
             0
-        ),
+        ),{},
         3,
         1000,
         0.5,
@@ -105,15 +107,15 @@ GameCars = {
     createCar(
         "Seller Car",
         "Carro Vendedor",
-        "One seller car to enforce capitalism and inequality for everyone! Produces 20% of the money you generated in the last 5 seconds, has 1 hp and deals 0 damage",
-        "Um carro vendedor para enforcar o capitalismo e desigualdade para todos! Produz 20% do dinheiro que voce gerou nos ultimos 5 segundos, tem 1 de vida e da 0 de dano",
+        "One seller car to enforce capitalism and inequality for everyone! After 5 seconds it gives you 20 for every frog you killed in that 5 seconds",
+        "Um carro vendedor para enforcar o capitalismo e desigualdade para todos! Depois de 5 segundos te da 20 para cada sapo que você matou nesses 5 segundos",
         newAnimation(
             love.graphics.newImage("Sprs/Cars/Seller Car.png"),
             20,
             20,
             0,
             0
-        ),
+        ),{},
         3,
         50,
         0,
@@ -140,7 +142,7 @@ GameCars = {
             20,
             0,
             0
-        ),
+        ),{},
         3,
         250,
         0,
@@ -157,15 +159,15 @@ GameCars = {
     createCar(
         "Cat Car",
         "Carro Gato",
-        "One cat car that sometimes lets one cat escape. Cats chases 2 frogs before dying, the car kills only 2 frogs",
-        "Um carro de gatos que deixa um gato escapar algumas vezes. Os gatos matam 2 sapos antes de morrerem, o carro mata apenas 2 sapos",
+        "One cat car that sometimes lets one cat escape. Cats chases 2 frogs before dying and the car kills only 2 frogs",
+        "Um carro de gatos que deixa um gato escapar algumas vezes. Os gatos matam 2 sapos antes de morrerem e o carro mata apenas 2 sapos",
         newAnimation(
             love.graphics.newImage("Sprs/Cars/Cat Car.png"),
             32,
             20,
             0,
             0
-        ),
+        ),{},
         3,
         250,
         0.5,
@@ -178,13 +180,14 @@ GameCars = {
         {
             cats = true,
             catCreateDelay = 1,
+            catCreateDelayDef = 1,
         }
     ),
     createCar(
         "Tank",
         "Tanque",
-        "One military grade tank to you annihilate all frogs. Kills ",
-        "Um carro de gatos que deixa um gato escapar algumas vezes. Os gatos matam 2 sapos antes de morrerem, o carro mata apenas 2 sapos",
+        "One military grade tank to you annihilate all frogs. Kills 16 frogs, deals 20 damage",
+        "Um tanque militar para você aniquilar todos os sapos. Mata 16 sapos, da 20 de dano",
         newAnimation(
             love.graphics.newImage("Sprs/Cars/TankBottom.png"),
             128,
@@ -192,6 +195,9 @@ GameCars = {
             0,
             0
         ),
+        {
+            love.graphics.newImage("Sprs/Cars/TankTop.png"),
+        },
         1,
         85,
         20,
@@ -214,7 +220,7 @@ GameCars = {
     ),
 }
 --The propertys of the car selection box
-upBoxStuff = { x = -1, y = 0, w = 802, h = 128, scrollX = 0 }
+upBoxStuff = { x = -1, y = 0, w = 802, h = 128, scrollX = 0, scrollVel = 1 }
 --The last key pressed in the keyboard
 lastKeyPressed = ""
 --If the keyboard was pressed or not
@@ -407,6 +413,8 @@ rooms = {
     credits = 0.25,
     --The stating thing that shows the "Created by" and the "Created with" texts and icons
     start = 0.5,
+    --The mods rooms
+    mods = 0.85,
     --The main menu room
     mainMenu = 0,
     --The main room, used for the actual game
@@ -450,8 +458,6 @@ gameStuff = {
     lang = "eng",
     --The higest round of the game
     higestRound = 0,
-    --If the game should use the OST
-    useOST = true,
     --The current starting round
     currentStartingRound = 0,
     --The current frog gaved, it is more used as an current round var
@@ -462,12 +468,14 @@ gameStuff = {
     useFixedSeed = false,
     --The fixed seed to the game to use
     fixedSeed = 0,
+    --If the music is looping
+    musicLooping = false,
     --If the game should draw outlines
     drawOutlines = true,
     --The time since the game started
     timeSinceStart = 0,
     --The current sfx volume
-    sfxVolume = 0.25,
+    sfxVolume = 0.1,
     --The current music volume
     musicVolume = 0.5,
     --One value added to the music volume, used to make the music transition
@@ -506,14 +514,14 @@ damageEffectStuff = {
 pushUpdateDelayTimer = 0.1
 --The x position of the car placed and drawed
 xForCar = 0
-
-
 --The variable to reference the speed up button
 speedUpButton = nil
 --If the game can peacefuly quit
 canCloseGame = false
 --The target (maximum) fps
 targetFps = 60
+--The list of mods
+mods = {}
 
 
 --The game main loop function, it gonna update the game, draw the game and exit the game, this function dont need to actually exist, it is just here for customization
@@ -598,6 +606,41 @@ function love.load(args, unfilteredArgs)
 
     --Set the window icon
     love.window.setIcon(love.image.newImageData("Sprs/Fog/Idle.png"))
+
+
+    local modsFileInfo = love.filesystem.getInfo("Mods", "directory")
+    if #modsFileInfo == 0 then love.filesystem.createDirectory("Mods") end
+    local requireFolders = "?.lua;?/init.lua;/Mods/?.lua"
+    local files = love.filesystem.getDirectoryItems("Mods")
+    for f=1, #files do
+        local currentFileName = files[f]
+        local extenType = string.find(currentFileName, ".lua")
+
+
+        if extenType == nil then
+            requireFolders = requireFolders .. ";" .. "/" .. currentFileName .. "/?.lua"
+        end
+    end
+
+
+    love.filesystem.setRequirePath(requireFolders)
+
+
+    for f=1, #files do
+        local currentFileName = files[f]
+        local extenType = string.find(currentFileName, ".lua")
+
+
+        if extenType ~= nil then
+            currentFileName = string.sub(currentFileName, 0, extenType - 1)
+
+
+            if currentFileName ~= "mods" then
+                require("Mods." .. currentFileName)
+                table.insert(mods, #mods + 1, currentFileName)
+            end
+        end
+    end
 
 
     --Update the music volume, AKA set the music volume to all the streams
@@ -708,14 +751,23 @@ function love.update(dt)
 
 
     --Music transition
-    --If the music needs more 1 second to end
-    if musics[currentMusic]:tell() >= musics[currentMusic]:getDuration() - 1 then
-        --If the "gameStuff.musicVolumeAdd" is 0
-        if gameStuff.musicVolumeAdd == 0 then
-            --Make an animation to set "gameStuff.musicVolumeAdd" to -1 after that, play an random music and set "gameStuff.musicVolumeAdd" 0 again
-            Flux.to(gameStuff, 1, { musicVolumeAdd = -1 }):oncomplete(playRandomMusic):after(gameStuff, 1,
-                { musicVolumeAdd = 0 })
+    if not gameStuff.musicLooping then
+        --Reset the looping parameter
+        musics[currentMusic]:setLooping(false)
+
+
+        --If the music needs more 1 second to end
+        if musics[currentMusic]:tell() >= musics[currentMusic]:getDuration() - 1 then
+            --If the "gameStuff.musicVolumeAdd" is 0
+            if gameStuff.musicVolumeAdd == 0 then
+                --Make an animation to set "gameStuff.musicVolumeAdd" to -1 after that, play an random music and set "gameStuff.musicVolumeAdd" 0 again
+                Flux.to(gameStuff, 1, { musicVolumeAdd = -1 }):oncomplete(playRandomMusic):after(gameStuff, 1,
+                    { musicVolumeAdd = 0 })
+            end
         end
+    else
+        --Set that the music is looping
+        musics[currentMusic]:setLooping(true)
     end
 
 
@@ -754,6 +806,13 @@ function love.update(dt)
                 creditsInstance = createCredits()
             else
                 creditsInstance:update()
+            end
+        elseif currentRoom == rooms.mods then
+            --Create the mods instance instance if he is a null value, otherwise update it
+            if modManagerInstance == nil then
+                createModsManager()
+            else
+                modManagerInstance:update()
             end
         elseif currentRoom == rooms.sourceCode then
             --Create the source code instance if he is a null value, otherwise update it
@@ -816,12 +875,16 @@ function love.update(dt)
             if gameStuff.hoveringTopBox then
                 --If the mouse position is at the right side of the screen, increase the scroll value
                 if PushsInGameMousePosNoTransform.x > 800 - 64 then
-                    upBoxStuff.scrollX = upBoxStuff.scrollX + 25 * dt
+                    upBoxStuff.scrollX = upBoxStuff.scrollX + (25 * upBoxStuff.scrollVel) * dt
+                    upBoxStuff.scrollVel = upBoxStuff.scrollVel + 1 * dt
+                else
+                    upBoxStuff.scrollVel = 1
                 end
 
 
                 --Add the mouse scroll to the box scroll
                 upBoxStuff.scrollX = upBoxStuff.scrollX + mouseScroll.y + mouseScroll.x
+                upBoxStuff.scrollX = Lume.clamp(upBoxStuff.scrollX, 0, 3.75 * #GameCars)
             end
             --Pass thro the game car buttons
             for b=1, #gameCarButtons do
@@ -997,11 +1060,11 @@ function love.update(dt)
                             modY = math.random(600 / 2, 632)
                         end
                         if posToPut == 1 then
-                            modX = math.random(0, 800)
+                            modX = math.random(0, 800 * 1.5)
                             modY = 632
                         end
                         if posToPut == 2 then
-                            modX = 800
+                            modX = 800 * 1.5
                             modY = math.random(600 / 2, 632)
                         end
 
@@ -1413,8 +1476,8 @@ function love.update(dt)
     end
 
 
-    --Clamp the game speed inside 0 to 4
-    gameStuff.speed = Lume.clamp(gameStuff.speed, 0, 4)
+    --Clamp the game speed inside 1 to 2
+    gameStuff.speed = Lume.clamp(gameStuff.speed, 1, 2)
     --Lerp the red rect alpha back to 0
     damageEffectStuff.redRectRGBAdd = Lume.lerp(damageEffectStuff.redRectRGBAdd, 0, 0.1)
 
@@ -1494,7 +1557,7 @@ function love.update(dt)
     --Update the flux library
     Flux.update(dt * gameStuff.speed)
     --Reset if the keyboard was pressed
-    keyboardWasPressed = fals
+    keyboardWasPressed = false
     --Increase the time since start
     gameStuff.timeSinceStart = gameStuff.timeSinceStart + 1
     --Save the game
@@ -1541,6 +1604,13 @@ function love.draw()
             createSourceInfo()
         else
             sourceInfoInstance:draw()
+        end
+    elseif currentRoom == rooms.mods then
+        --Create the mods instance instance if he is a null value, otherwise update it
+        if modManagerInstance == nil then
+            createModsManager()
+        else
+            modManagerInstance:draw()
         end
     elseif currentRoom == rooms.start then
         --If the start thing instance does not exists, then create it, else draw it
@@ -1730,6 +1800,7 @@ function love.draw()
         drawOutlinedText("global Random Number: " .. tostring(randomNumber), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
         drawOutlinedText("Ram used: " .. tostring(math.floor(collectgarbage("count") / 1024) .. " MB used"), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
         drawOutlinedText("Current frog gaved: " .. tostring(gameStuff.currentFoggGaved), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8, 0, 1, 1, 0, 0)
+        drawOutlinedText("Amount of UI Instances: " .. tostring(#UiStuff), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8 + 4 + 8, 0, 1, 1, 0, 0)
     end
 
 
@@ -1748,7 +1819,7 @@ end
 --The function to create one new frog, just creates a new frog
 function createANewFogg(altX, altY)
     local x = math.random(0, 800 * 1.5)
-    local y = 632
+    local y = 632 + math.random(-128, 256)
     local selectedFogg = Lume.clamp((gameStuff.currentFoggGaved), 0, 3)
 
 
@@ -1799,9 +1870,13 @@ function love.keypressed(key)
         local suc = love.window.showMessageBox("screenShot", "screenshot captured succesfully", "info", false)
     end
     if key == "escape" then
+        if currentRoom == rooms.mainMenu and currentRoom == rooms.start and currentRoom == rooms.startingOptions and currentRoom == rooms.credits and currentRoom == rooms.sourceCode then return end
+
+        
         if pauseMenuInstance ~= nil then
             if pauseMenuInstance.bgAlpha >= 0.85 then
                 gameStuff.paused = not gameStuff.paused
+
 
                 if gameStuff.paused then
                     pauseMenuInstance = createPause()

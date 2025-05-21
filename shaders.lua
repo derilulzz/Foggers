@@ -192,6 +192,7 @@ function drawOutlinedText(text, x, y, r, sx, sy, ox, oy, outlineSize, outlineCol
     end
 end
 
+
 function drawOutlinedTextF(text, x, y, limit, align, r, sx, sy, ox, oy, outlineSize, outlineColor)
     local add = { x = outlineSize, y = outlineSize }
     local currentColor = { love.graphics.getColor() }
@@ -203,7 +204,11 @@ function drawOutlinedTextF(text, x, y, limit, align, r, sx, sy, ox, oy, outlineS
     sy = sy or 1
     ox = ox or limit / 2
     local wrap = {love.graphics.getFont():getWrap(text, limit)}
-    oy = oy or (love.graphics.getFont():getHeight() * #wrap[2]) / 2
+    if oy == nil then
+        oy = oy or (love.graphics.getFont():getHeight() * #wrap[2]) / 2
+    elseif oy == "bottom" then
+        oy = (love.graphics.getFont():getHeight() * #wrap[2])
+    end
 
 
     if gameStuff.drawOutlines == false then love.graphics.printf(text, x, y, limit, align, r, sx, sy, ox, oy) return end
@@ -243,6 +248,9 @@ function drawOutlinedTextF(text, x, y, limit, align, r, sx, sy, ox, oy, outlineS
         end
         outlineSize = outlineSize - 1
     end
+
+
+    return {w = limit, h = (love.graphics.getFont():getHeight() * #wrap[2])}
 end
 
 

@@ -17,6 +17,14 @@ function createSourceInfo()
         end
 
 
+        if tableFind(UiStuff, self.openGitButton) == -1 then
+            self.openGitButton = createButton(800 / 2, 600 / 2, 128, 64, "Go to Source Code", "Open the git web page of the project", true)
+        end
+        if tableFind(UiStuff, self.returnButton) == -1 then
+            self.returnButton = createButton(800 / 2, (600 / 2) + 64 + 8, 128, 64, "Return", "", true)
+        end
+
+
         if self.openGitButton.pressed then
             love.system.openURL(self.gitUrl)
             self.openGitButton.pressed = false

@@ -14,6 +14,11 @@ function createStartThing()
     }
 
 
+    function s:init()
+        playMusic(1)
+    end
+
+
     function s:update()
         if (love.keyboard.isDown("space", "return") and self.oldAccKey == false) or (love.mouse.isDown(1) and LastLeftMouseButton == false) then
             if self.state < 3 then
@@ -46,7 +51,8 @@ function createStartThing()
             self.logoAlpha = Lume.lerp(self.logoAlpha, 0, 0.1)
             self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 1, 0.15)
             if self.blackBarsProgress >= 0.999 then self.state = self.state + 1; self.nextStateTimer = 5 end
-        elseif self.state == 4 then
+        end
+        if self.state == 4 then
             if self.blackBarsProgress >= 0.999 then self.blackbarsWhiteLineAlpha = Lume.lerp(self.blackbarsWhiteLineAlpha, 0, 0.2) end
             
             
@@ -103,9 +109,13 @@ function createStartThing()
         
 
         if debugStuff.enabled then
-            drawOutlinedText(tostring(self.blackBarsProgress), 8, 8, 0, 2, 2, 0, 0, 4, {0, 0, 0})
+            drawOutlinedText(tostring(self.blackBarsProgress), 128, 8, 0, 2, 2, 0, 0, 4, {0, 0, 0})
+            drawOutlinedText(tostring(self.state), 128, 8 + 32, 0, 2, 2, 0, 0, 4, {0, 0, 0})
         end
     end
+
+
+    s:init()
 
 
     return s

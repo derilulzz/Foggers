@@ -2,17 +2,12 @@ function createStartingOptions()
     local o = {
         questions = {
             {"What language you speak?", "Que lingua você fala?"},
-            {"Do you want to use the game OST?", "Você quer usar a OST do jogo?"},
         },
         answers = {
             {
                 "English",
                 "Portuguese (Brasil)",
             },
-            {
-                "Yes",
-                "No",
-            }
         },
         alpha = 0,
         currentQuestion = 1,
@@ -49,7 +44,7 @@ function createStartingOptions()
 
 
         rm = rooms.start
-        if op == 3 then setRoom(); return end
+        if op == 2 then setRoom(); return end
 
 
         for i=1, #o.answers[o.currentQuestion] do
@@ -74,25 +69,6 @@ function createStartingOptions()
                 if self.optionsButtons[2].pressed then
                     gameStuff.lang = "pt-br"
                     self:setCurrentOptions(2)
-                    self.optionsButtons[2].pressed = false
-                end
-            end
-        end
-
-
-        if self.currentQuestion == 2 then
-            print(#self.optionsButtons)
-            if self.optionsButtons[1] ~= nil then
-                if self.optionsButtons[1].pressed then
-                    gameStuff.useOST = true
-                    self:setCurrentOptions(3)
-                    self.optionsButtons[1].pressed = false
-                end
-            end
-            if self.optionsButtons[2] ~= nil then
-                if self.optionsButtons[2].pressed then
-                    gameStuff.useOST = false
-                    self:setCurrentOptions(3)
                     self.optionsButtons[2].pressed = false
                 end
             end

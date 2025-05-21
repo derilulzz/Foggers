@@ -65,8 +65,8 @@ function createForg(_x, _y, _spr, _jumpSpr, _hp, _jumpTimerDef)
 		self.jumping = self.scale > 2.2
 
 
-		self.targetPos.x = Lume.clamp(self.targetPos.x, 0, 800)
-		self.pos.x = Lume.clamp(self.pos.x, 0, 800)
+		self.targetPos.x = Lume.clamp(self.targetPos.x, 0, 800 * 1.5)
+		self.pos.x = Lume.clamp(self.pos.x, 0, 800 * 1.5)
 
 
 		if ((self.hp + self.hpAddFogg) / self.hpDivFogg) * self.hpMultFogg <= 0 then
@@ -133,7 +133,7 @@ function createForg(_x, _y, _spr, _jumpSpr, _hp, _jumpTimerDef)
 
 	function f:die()
 		for c=1, #GameCarInstances do
-			if GameCarInstances[c].fromCar.especialPropertys.seller and GameCarInstances[c].fromCar.especialPropertys.froggsKilled then
+			if GameCarInstances[c].fromCar.especialPropertys.seller and GameCarInstances[c].fromCar.especialPropertys.froggsKilled ~= nil then
 				GameCarInstances[c].fromCar.especialPropertys.froggsKilled = GameCarInstances[c].fromCar.especialPropertys.froggsKilled + 1
 			end
 		end

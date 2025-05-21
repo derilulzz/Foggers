@@ -10,18 +10,19 @@ function createMainMenu()
         options = {
             {
                 "Start",
+                "Cars Info",
                 "Options",
                 "Quit",
             },
             {
                 "Fullscreen: No",
                 "Lenguage: Eng",
+                "Mods",
                 "Graphics",
                 "Sounds",
                 "Return",
             },
             {
-                "Use Game OST: No",
                 "SFX Volume: 100",
                 "Music Volume: 100",
                 "Return",
@@ -34,18 +35,19 @@ function createMainMenu()
         optionsPT = {
             {
                 "Começar",
+                "Informações de carros",
                 "Opções",
                 "Sair",
             },
             {
                 "Tela Cheia: Nao",
                 "Lenguage: Eng",
+                "Mods",
                 "Gráficos",
                 "Sons",
                 "Voltar",
             },
             {
-                "Usar a OST do jogo: Não",
                 "Volume dos Effeitos sonoros: 100",
                 "Volume da Musica: 100",
                 "Voltar",
@@ -80,6 +82,10 @@ function createMainMenu()
             cancelRunButton = nil,
             startingRoundNumBtn = nil,
             seedNumBtn = nil,
+        },
+        showCarsStats = false,
+        carsStats = {
+            statsInstance = nil,
         }
     }
 
@@ -101,6 +107,7 @@ function createMainMenu()
 
 
     function m:init()
+        gameStuff.musicLooping = true
         self.theme = randomNumber
         self:createCreditsButton()
 
@@ -109,6 +116,9 @@ function createMainMenu()
 
 
         for i=1, #GameCars do
+            if 128 + 32 * i > 600 then break end
+
+            
             createCarInstance(GameCars[i], 800, 128 + 32 * i)
         end
 
@@ -122,166 +132,178 @@ function createMainMenu()
         self.rot = Lume.lerp(self.rot, 0.05 * math.cos(self.angle), 0.1)
 
 
-        if not self.showRunConfig then
-            if love.keyboard.isDown("up", "w") and self.oldUpBtn == false then
-                self.pos = self.pos - 1
-                self.currentOptionScale = 6
-            end
-            if love.keyboard.isDown("down", "s") and self.oldDownBtn == false then
-                self.pos = self.pos + 1
-                self.currentOptionScale = 6
-            end
-            if love.keyboard.isDown("return", "space") and self.oldSelectButtonPressed == false then
-                self:selectOption()
-            end
+
+        if not self.showCarsStats then
+            if not self.showRunConfig then
+                if love.keyboard.isDown("up", "w") and self.oldUpBtn == false then
+                    self.pos = self.pos - 1
+                    self.currentOptionScale = 6
+                end
+                if love.keyboard.isDown("down", "s") and self.oldDownBtn == false then
+                    self.pos = self.pos + 1
+                    self.currentOptionScale = 6
+                end
+                if love.keyboard.isDown("return", "space") and self.oldSelectButtonPressed == false then
+                    self:selectOption()
+                end
 
 
-            if self.pos < 1 then self.pos = #self.options[self.menuLevel] end
-            if self.pos > #self.options[self.menuLevel] then self.pos = 1 end
+                if self.pos < 1 then self.pos = #self.options[self.menuLevel] end
+                if self.pos > #self.options[self.menuLevel] then self.pos = 1 end
 
 
-            if gameStuff.lang == "pt-br" then
-                self.creditsButton.text = "Creditos"
-            else
-                self.creditsButton.text = "Credits"
-            end
-            if self.creditsButton.pressed then
-                changeRoom(rooms.credits)
+                if gameStuff.lang == "pt-br" then
+                    self.creditsButton.text = "Creditos"
+                else
+                    self.creditsButton.text = "Credits"
+                end
+                if self.creditsButton.pressed then
+                    changeRoom(rooms.credits)
 
 
-                self.creditsButton.pressed = false
-            end
-            if self.sourceCodeButton.pressed then
-                changeRoom(rooms.sourceCode)
-                self.sourceCodeButton.pressed = false
-            end
+                    self.creditsButton.pressed = false
+                end
+                if self.sourceCodeButton.pressed then
+                    changeRoom(rooms.sourceCode)
+                    self.sourceCodeButton.pressed = false
+                end
 
 
-            local hoveringOne = false
-            for o=1, #self.options[self.menuLevel] do
-                if PushsInGameMousePos.x > (Push:getWidth() / 2) - (love.graphics.getFont():getWidth(self.options[self.menuLevel][o]) * 4) / 2 and PushsInGameMousePos.y > ((Push:getHeight() / 2) + 64 + 40 * o) - (love.graphics.getFont():getHeight(self.options[self.menuLevel][o]) * 4) / 2 then
-                    if PushsInGameMousePos.x < (Push:getWidth() / 2) + (love.graphics.getFont():getWidth(self.options[self.menuLevel][o]) * 4) / 2 and PushsInGameMousePos.y < ((Push:getHeight() / 2) + 64 + 40 * o) + ((love.graphics.getFont():getHeight(self.options[self.menuLevel][o]) * 4) / 2) - 4 then
-                        hoveringOne = true
-                        if self.mouseMoved then
-                            if self.pos ~= o then
-                                self.pos = o
-                                self.currentOptionScale = 6
+                local hoveringOne = false
+                local optionsYRem = 0
+                while ((Push:getHeight() / 2) + 64 + 40 * #self.options[self.menuLevel]) + 32 - optionsYRem > 600 do
+                    optionsYRem = optionsYRem + 1
+                end
+                for o=1, #self.options[self.menuLevel] do
+                    if PushsInGameMousePos.x > (Push:getWidth() / 2) - (love.graphics.getFont():getWidth(self.options[self.menuLevel][o]) * 4) / 2 and PushsInGameMousePos.y > (((Push:getHeight() / 2) + 64 + 40 * o) - (love.graphics.getFont():getHeight(self.options[self.menuLevel][o]) * 4) / 2) - optionsYRem then
+                        if PushsInGameMousePos.x < (Push:getWidth() / 2) + (love.graphics.getFont():getWidth(self.options[self.menuLevel][o]) * 4) / 2 and PushsInGameMousePos.y < ((Push:getHeight() / 2) + 64 + 40 * o) + ((love.graphics.getFont():getHeight(self.options[self.menuLevel][o]) * 4) / 2) - 4 - optionsYRem then
+                            hoveringOne = true
+                            if self.mouseMoved then
+                                if self.pos ~= o then
+                                    self.pos = o
+                                    self.currentOptionScale = 6
+                                end
                             end
                         end
                     end
                 end
-            end
-            if hoveringOne then
-                if love.mouse.isDown(1) == false and LastLeftMouseButton then
-                    self:selectOption()
-                end
-            end
-
-
-            if love.window.getFullscreen() then
-                self.options[2][1] = "Fullscreen: Yes"
-            else
-                self.options[2][1] = "Fullscreen: No"
-            end
-            if love.window.getFullscreen() then
-                self.optionsPT[2][1] = "Tela Cheia: Sim"
-            else
-                self.optionsPT[2][1] = "Tela Cheia: Nao"
-            end
-            if gameStuff.drawOutlines then
-                self.optionsPT[4][1] = "Desenhar outlines: Sim"
-                self.options[4][1] = "Draw outlines: Yes"
-            else
-                self.optionsPT[4][1] = "Desenhar outlines: Não"
-                self.options[4][1] = "Draw outlines: No"
-            end
-            if gameStuff.useOST then
-                self.optionsPT[3][1] = "Usar a OST do jogo: Sim"
-                self.options[3][1] = "Use Game OST: Yes"
-            else
-                self.optionsPT[3][1] = "Usar a OST do jogo: Não"
-                self.options[3][1] = "Use Game OST: No"
-            end
-
-
-            if gameStuff.lang == "pt-br" then
-                self.creditsButton.text = "Creditos"
-                self.options[2][2] = "Lenguage: PT-BR"
-            else
-                self.creditsButton.text = "Credits"
-                self.options[2][2] = "Lenguage: Eng"
-            end
-            if gameStuff.lang == "pt-br" then
-                self.creditsButton.text = "Creditos"
-                self.optionsPT[2][2] = "Lingua: PT-BR"
-            else
-                self.creditsButton.text = "Credits"
-                self.optionsPT[2][2] = "Lingua: Eng"
-            end
-
-
-            if gameStuff.lang == "eng" then
-                self.options[3][2] = "SFX Volume: " .. math.floor(gameStuff.sfxVolume * 100)
-            end
-            if gameStuff.lang == "pt-br" then
-                self.optionsPT[3][2] = "Volume Dos efeitos sonoros: " .. math.floor(gameStuff.sfxVolume * 100)
-            end
-
-
-            if gameStuff.lang == "eng" then
-                self.options[3][3] = "Music Volume: " .. math.floor(gameStuff.musicVolume * 100)
-            end
-            if gameStuff.lang == "pt-br" then
-                self.optionsPT[3][3] = "Volume Da Musica: " .. math.floor(gameStuff.musicVolume * 100)
-            end
-
-
-            if self.menuLevel == 3 and self.pos == 2 then
-                if love.keyboard.isDown("left", "a") then gameStuff.sfxVolume = gameStuff.sfxVolume - 0.1 * globalDt end
-                if love.keyboard.isDown("right", "d") then gameStuff.sfxVolume = gameStuff.sfxVolume + 0.1 * globalDt end
-            end
-            if self.menuLevel == 3 and self.pos == 3 then
-                if love.keyboard.isDown("left", "a") then gameStuff.musicVolume = gameStuff.musicVolume - 0.1 * globalDt end
-                if love.keyboard.isDown("right", "d") then gameStuff.musicVolume = gameStuff.musicVolume + 0.1 * globalDt end
-            end
-        else
-            if gameStuff.lang == "pt-br" then
-                self.runConfigStuff.cancelRunButton.text = "Cancelar"
-                self.runConfigStuff.startRunButton.text = "Começar"
-                self.runConfigStuff.startRunButton.addText = "Começar A Run"
-                self.runConfigStuff.cancelRunButton.addText = "Cancelar A Run"
-                self.runConfigStuff.seedNumBtn.addText = "O Numero Usado Para Criar Numeros Aleatorios"
-                self.runConfigStuff.startingRoundNumBtn.addText = "O Round Onde O Jogo Começa"
-                self.runConfigStuff.seedNumBtn.text = "Aleatorio"
-            else
-                self.runConfigStuff.cancelRunButton.text = "Cancel"
-                self.runConfigStuff.startRunButton.text = "Start"
-                self.runConfigStuff.seedNumBtn.text = "Random"
-            end
-
-
-            if self.runConfigStuff.startRunButton.pressed then
-                if self.runConfigStuff.startingRoundNumBtn.textedText == "" then
-                    gameStuff.currentStartingRound = 0
-                else
-                    if self.runConfigStuff.startingRoundNumBtn.textedText ~= "" then
-                        gameStuff.currentStartingRound = tonumber(self.runConfigStuff.startingRoundNumBtn.textedText)
-                    else
-                        gameStuff.currentStartingRound = 0
+                if hoveringOne then
+                    if love.mouse.isDown(1) == false and LastLeftMouseButton then
+                        self:selectOption()
                     end
                 end
-                
-                
-                if self.runConfigStuff.seedNumBtn ~= nil and self.runConfigStuff.seedNumBtn.textedText ~= "" then
-                    gameStuff.useFixedSeed = true
-                    gameStuff.fixedSeed = tonumber(self.runConfigStuff.seedNumBtn.textedText)
+
+
+                if love.window.getFullscreen() then
+                    self.options[2][1] = "Fullscreen: Yes"
+                else
+                    self.options[2][1] = "Fullscreen: No"
                 end
-                
-                
-                changeRoom(rooms.game)
+                if love.window.getFullscreen() then
+                    self.optionsPT[2][1] = "Tela Cheia: Sim"
+                else
+                    self.optionsPT[2][1] = "Tela Cheia: Nao"
+                end
+                if gameStuff.drawOutlines then
+                    self.optionsPT[4][1] = "Desenhar outlines: Sim"
+                    self.options[4][1] = "Draw outlines: Yes"
+                else
+                    self.optionsPT[4][1] = "Desenhar outlines: Não"
+                    self.options[4][1] = "Draw outlines: No"
+                end
 
 
-                self.runConfigStuff.startRunButton.pressed = false
+                if gameStuff.lang == "pt-br" then
+                    self.creditsButton.text = "Creditos"
+                    self.options[2][2] = "Lenguage: PT-BR"
+                else
+                    self.creditsButton.text = "Credits"
+                    self.options[2][2] = "Lenguage: Eng"
+                end
+                if gameStuff.lang == "pt-br" then
+                    self.creditsButton.text = "Creditos"
+                    self.optionsPT[2][2] = "Lingua: PT-BR"
+                else
+                    self.creditsButton.text = "Credits"
+                    self.optionsPT[2][2] = "Lingua: Eng"
+                end
+
+
+                if gameStuff.lang == "eng" then
+                    self.options[3][1] = "SFX Volume: " .. math.floor(gameStuff.sfxVolume * 100)
+                end
+                if gameStuff.lang == "pt-br" then
+                    self.optionsPT[3][1] = "Volume Dos efeitos sonoros: " .. math.floor(gameStuff.sfxVolume * 100)
+                end
+
+
+                if gameStuff.lang == "eng" then
+                    self.options[3][2] = "Music Volume: " .. math.floor(gameStuff.musicVolume * 100)
+                end
+                if gameStuff.lang == "pt-br" then
+                    self.optionsPT[3][2] = "Volume Da Musica: " .. math.floor(gameStuff.musicVolume * 100)
+                end
+
+
+                if self.menuLevel == 3 and self.pos == 1 then
+                    if love.keyboard.isDown("left", "a") then gameStuff.sfxVolume = gameStuff.sfxVolume - 0.1 * globalDt end
+                    if love.keyboard.isDown("right", "d") then gameStuff.sfxVolume = gameStuff.sfxVolume + 0.1 * globalDt end
+                end
+                if self.menuLevel == 3 and self.pos == 2 then
+                    if love.keyboard.isDown("left", "a") then gameStuff.musicVolume = gameStuff.musicVolume - 0.1 * globalDt end
+                    if love.keyboard.isDown("right", "d") then gameStuff.musicVolume = gameStuff.musicVolume + 0.1 * globalDt end
+                end
+            else
+                if gameStuff.lang == "pt-br" then
+                    self.runConfigStuff.cancelRunButton.text = "Cancelar"
+                    self.runConfigStuff.startRunButton.text = "Começar"
+                    self.runConfigStuff.startRunButton.addText = "Começar A Run"
+                    self.runConfigStuff.cancelRunButton.addText = "Cancelar A Run"
+                    self.runConfigStuff.seedNumBtn.addText = "O Numero Usado Para Criar Numeros Aleatorios"
+                    self.runConfigStuff.startingRoundNumBtn.addText = "O Round Onde O Jogo Começa"
+                    self.runConfigStuff.seedNumBtn.text = "Aleatorio"
+                else
+                    self.runConfigStuff.cancelRunButton.text = "Cancel"
+                    self.runConfigStuff.startRunButton.text = "Start"
+                    self.runConfigStuff.seedNumBtn.text = "Random"
+                end
+
+
+                if self.runConfigStuff.startRunButton.pressed then
+                    if self.runConfigStuff.startingRoundNumBtn.textedText == "" then
+                        gameStuff.currentStartingRound = 0
+                    else
+                        if self.runConfigStuff.startingRoundNumBtn.textedText ~= "" then
+                            gameStuff.currentStartingRound = tonumber(self.runConfigStuff.startingRoundNumBtn.textedText)
+                        else
+                            gameStuff.currentStartingRound = 0
+                        end
+                    end
+                    
+                    
+                    if self.runConfigStuff.seedNumBtn ~= nil and self.runConfigStuff.seedNumBtn.textedText ~= "" then
+                        gameStuff.useFixedSeed = true
+                        gameStuff.fixedSeed = tonumber(self.runConfigStuff.seedNumBtn.textedText)
+                    end
+                    
+                    
+                    changeRoom(rooms.game)
+
+
+                    self.runConfigStuff.startRunButton.pressed = false
+                end
+            end
+        else
+            if self.carsStats.statsInstance == nil then
+                self.carsStats.statsInstance = createCarStats()
+            else
+                self.carsStats.statsInstance:update()
+
+
+                if self.carsStats.statsInstance.died then
+                    self.carsStats.statsInstance = nil
+                    self.showCarsStats = false
+                end
             end
         end
 
@@ -316,8 +338,8 @@ function createMainMenu()
         end
 
         
-        self.creditsButton.visible = self.showRunConfig == false
-        self.sourceCodeButton.visible = self.showRunConfig == false
+        self.creditsButton.visible = self.showRunConfig == false and self.showCarsStats == false
+        self.sourceCodeButton.visible = self.showRunConfig == false and self.showCarsStats == false
 
 
         self.angle = self.angle + 1 * globalDt
@@ -342,10 +364,12 @@ function createMainMenu()
             if self.pos == 1 then
                 self.showRunConfig = true
                 self:initRunConfig()
-            Flux.to(self.runConfigStuff, 0.5, {boxYOffset=0}):ease("expoout")
+                Flux.to(self.runConfigStuff, 0.5, {boxYOffset=0}):ease("expoout")
             elseif self.pos == 2 then
-                self:setMenuLevel(2)
+                self.showCarsStats = true
             elseif self.pos == 3 then
+                self:setMenuLevel(2)
+            elseif self.pos == 4 then
                 love.event.quit()
             end
         elseif self.menuLevel == 2 then
@@ -359,16 +383,16 @@ function createMainMenu()
                 end
                 self:createCreditsButton()
             elseif self.pos == 3 then
-                self:setMenuLevel(4)
+                changeRoom(rooms.mods)
             elseif self.pos == 4 then
-                self:setMenuLevel(3)
+                self:setMenuLevel(4)
             elseif self.pos == 5 then
+                self:setMenuLevel(3)
+            elseif self.pos == 6 then
                 self:setMenuLevel(1)
             end
         elseif self.menuLevel == 3 then
-            if self.pos == 1 then
-                gameStuff.useOST = not gameStuff.useOST
-            elseif self.pos == 4 then
+            if self.pos == 3 then
                 self:setMenuLevel(2)
             end
         elseif self.menuLevel == 4 then
@@ -485,7 +509,13 @@ function createMainMenu()
         end
 
 
-        if not self.showRunConfig then
+        local optionsYRem = 0
+        while ((Push:getHeight() / 2) + 64 + 40 * #self.options[self.menuLevel]) + 32 - optionsYRem > 600 do
+            optionsYRem = optionsYRem + 1
+        end
+
+
+        if not self.showRunConfig and not self.showCarsStats then
             for o=1, #self.options[self.menuLevel] do
                 local scale = 4
                 local rotAdd = 0
@@ -511,7 +541,7 @@ function createMainMenu()
                     end
 
 
-                    drawOutlinedText(txt, (Push:getWidth() / 2), (Push:getHeight() / 2) + 64 + 40 * o, 0 + rotAdd, scale, scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, outlineColor)
+                    drawOutlinedText(txt, (Push:getWidth() / 2), ((Push:getHeight() / 2) + 64 + 40 * o) - optionsYRem, 0 + rotAdd, scale, scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, outlineColor)
                 end
             end
 
@@ -539,7 +569,7 @@ function createMainMenu()
             if gameStuff.lang == "pt-br" then
                 txt = self.optionsPT[self.menuLevel][self.pos]
             end
-            drawOutlinedText(txt, (Push:getWidth() / 2), (Push:getHeight() / 2) + 64 + 40 * self.pos, 0 + rotAdd, scale, scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, outlineColor)
+            drawOutlinedText(txt, (Push:getWidth() / 2), ((Push:getHeight() / 2) + 64 + 40 * self.pos) - optionsYRem, 0 + rotAdd, scale, scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, outlineColor)
 
 
             love.graphics.setColor({1, 1, 1})
@@ -578,6 +608,11 @@ function createMainMenu()
 
             drawOutlinedText(text1, (800 / 2) - (love.graphics.getFont():getWidth(text1) * 2), 68 + self.runConfigStuff.boxYOffset, 0, 2, 2, love.graphics.getFont():getWidth(text1) / 2, love.graphics.getFont():getHeight(text1) / 2, 4, {0, 0, 0})
             drawOutlinedText(text2, (800 / 2) - (love.graphics.getFont():getWidth(text2) * 3.85), 128 + 8 + self.runConfigStuff.boxYOffset, 0, 2, 2, love.graphics.getFont():getWidth(text2) / 2, love.graphics.getFont():getHeight(text2) / 2, 4, {0, 0, 0})
+        end
+        if self.showCarsStats then
+            if self.carsStats.statsInstance ~= nil then
+                self.carsStats.statsInstance:draw()
+            end
         end
     end
 

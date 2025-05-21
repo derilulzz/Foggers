@@ -1,13 +1,17 @@
 require "external librarys.base64"
 
 
-function saveGame(isFullscreen, lang, sfxVol, musVol, higestRound)
+function saveGame(isFullscreen, lang, sfxVol, musVol, higestRound, useGameOST, drawOutlines)
     data = {}
     data.isFullscreen = isFullscreen
     data.lang = lang
     data.sfxVol = sfxVol
     data.musVol = musVol
     data.higestRound = higestRound
+    data.useGameOST = useGameOST
+    data.drawOutlines = drawOutlines
+
+
     serialized = Lume.serialize(data)
 
 
@@ -45,6 +49,12 @@ function loadGame()
         end
         if data.higestRound ~= nil then
             gameStuff.higestRound = data.higestRound
+        end
+        if data.drawOutlines ~= nil then
+            gameStuff.drawOutlines = data.drawOutlines
+        end
+        if data.useGameOST ~= nil then
+            gameStuff.useOST = data.useGameOST
         end
     end
 end

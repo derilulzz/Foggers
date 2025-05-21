@@ -287,6 +287,10 @@ function buttonDraw(self, modText, alpha)
 
 
 	if self.visible == false then return end
+	if self.pos.x - self.size.w / 2 > 800 then return end
+	if self.pos.x + self.size.w / 2 < 0 then return end
+	if self.pos.y - self.size.h / 2 > 600 then return end
+	if self.pos.y + self.size.h / 2 < 0 then return end
 
 
 	local realPos = {x = self.pos.x - self.size.w / 2, y = self.pos.y - self.size.h / 2}
@@ -300,7 +304,7 @@ function buttonDraw(self, modText, alpha)
 	local sizeAdd = (self.size.w / self.wantedSize.w) + (self.size.h / self.wantedSize.h)
 	local wrap = {fnt:getWrap(modText, self.size.w / 2)}
 	local txtHeight = fnt:getHeight() * #wrap[2]
-	drawOutlinedTextF(modText, realPos.x + (self.size.w / 2), (realPos.y + self.size.h / 2), self.size.w / 2, "center", 0, 1 * sizeAdd, 1 * sizeAdd, (self.size.w / 2) / 2, txtHeight / 2, 2 * sizeAdd, {1, 1, 1})
+	drawOutlinedTextF(modText, realPos.x + (self.size.w / 2), (realPos.y + self.size.h / 2), self.size.w / 2, "center", 0, 1 * sizeAdd, 1 * sizeAdd, (self.size.w / 2) / 2, txtHeight / 2, 2 * sizeAdd, {1, 1, 1, alpha})
 
 
 	if self.hoverTime >= 1 and self.addText ~= "" then
@@ -310,6 +314,6 @@ function buttonDraw(self, modText, alpha)
 			love.graphics.rectangle("fill", PushsInGameMousePosNoTransform.x + 32, PushsInGameMousePosNoTransform.y + 32, (self.size.w) + 16, ((txtHeight) * 2) + 16)
 		love.graphics.setColor({1, 1, 1, alpha})
 			love.graphics.rectangle("line", PushsInGameMousePosNoTransform.x + 32, PushsInGameMousePosNoTransform.y + 32, (self.size.w) + 16, ((txtHeight) * 2) + 16)
-			drawOutlinedTextF(self.addText, PushsInGameMousePosNoTransform.x + 32 + 8 + ((self.size.w / 4) * 2), PushsInGameMousePosNoTransform.y + 32 + 8 + ((txtHeight / 2) * 2), self.size.w / 2, "center", 0, 2, 2, self.size.w / 4, txtHeight / 2, 4, {0, 0, 0})
+			drawOutlinedTextF(self.addText, PushsInGameMousePosNoTransform.x + 32 + 8 + ((self.size.w / 4) * 2), PushsInGameMousePosNoTransform.y + 32 + 8 + ((txtHeight / 2) * 2), self.size.w / 2, "center", 0, 2, 2, self.size.w / 4, txtHeight / 2, 4, {0, 0, 0, alpha})
 	end
 end

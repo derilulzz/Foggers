@@ -1,12 +1,15 @@
-function createCar(_name, _namePT, desc, descPT, _spr, _scl, _speed, _damage, _waveForce, _hp, _cost, _impactDiv, _explosiveMult, _explosionArea, especialPropertys)
-	if _damage == nil then _damage = 1 end
-	if _waveForce == nil then _waveForce = 1 end
-	if _hp == nil then _hp = 1 end
-	if _cost == nil then _cost = 100 end
-	if _impactDiv == nil then _impactDiv = 1 end
-	if _explosiveMult == nil then _explosiveMult = 1 end
-	if _explosionArea == nil then _explosionArea = 128 end
-	if especialPropertys == nil then especialPropertys = {} end
+function createCar(_name, _namePT, desc, descPT, _spr, _carAddSprs, _scl, _speed, _damage, _waveForce, _hp, _cost, _impactDiv, _explosiveMult, _explosionArea, especialPropertys)
+	_damage = _damage or 1
+	_waveForce = _waveForce or 1
+	_hp = _hp or 1
+	_cost = _cost or 100
+	_impactDiv = _impactDiv or 1
+	_explosiveMult = _explosiveMult or 1
+	_carAddSprs = _carAddSprs or {}
+	_explosionArea = _explosionArea or 128
+	especialPropertys = especialPropertys or {}
+	_speed = _speed or 500
+	_scl = _scl or 1
 
 
 	local c = {
@@ -15,6 +18,7 @@ function createCar(_name, _namePT, desc, descPT, _spr, _scl, _speed, _damage, _w
 		desc = desc,
 		descPT = descPT,
 		spr = _spr,
+		carAddSprs = _carAddSprs,
 		scale = _scl,
 		spd = _speed,
 		damage = _damage,
@@ -80,11 +84,13 @@ function createCarInstance(_inheritFrom, _x, _y, _ghostCar, _example)
 		self.driveParticle:setColors({1, 1, 1, 1}, {1, 1, 1, 0})
 		self.driveParticle:start()
 		Flux.to(self, 1, {alpha=1}):ease("expoout")
+		self.startSfx:setVolume(gameStuff.sfxVolume)
 		self.startSfx:play()
 		self.walkSfx:setLooping(true)
 		if gameStuff.speed > 0 then
 			self.walkSfx:play()
 		end
+
 
 		if self.fromCar.especialPropertys.shoots then
 			table.insert(self.additionalBehaviorFuncs, 1, shootUpdateFunc)
@@ -257,13 +263,19 @@ function createCarInstance(_inheritFrom, _x, _y, _ghostCar, _example)
 
 
 		local rot = self.rot
+		local addSprsRot = 0
 		local scl = {self.fromCar.scale + self.scaleAdd, self.fromCar.scale + self.sclYAdd + self.scaleAdd}
-		if self.fromCar.especialPropertys.isTank then rot = rot - math.rad(90); self.scaleAdd = 0.1 * math.cos(self.angle); scl = {self.fromCar.scale + self.scaleAdd, self.fromCar.scale + self.scaleAdd} end
+		if self.fromCar.especialPropertys.isTank then self.scaleAdd = 0.1 * math.cos(self.angle); scl = {self.fromCar.scale + self.scaleAdd, self.fromCar.scale + self.scaleAdd} end
 		self.fromCar.spr:draw(rot, self.pos.x, self.pos.y, scl[1], scl[2], self.fromCar.spr.sprWidth / 2, self.fromCar.spr.sprHeight / 2, 4, {0, 0, 0, self.alpha})
 		
 
 		if self.fromCar.especialPropertys.isTank then
-			drawOutlinedSprite(self.tankTopSpr, self.pos.x, self.pos.y, self.fromCar.especialPropertys.weaponRot + math.deg(90), scl[1], scl[2], nil, nil, 4, {0, 0, 0, self.alpha})
+			addSprsRot = self.fromCar.especialPropertys.weaponRot
+		end
+
+
+		for s=1, #self.fromCar.carAddSprs do
+			drawOutlinedSprite(self.tankTopSpr, self.pos.x, self.pos.y, addSprsRot, scl[1], scl[2], nil, nil, 4, {0, 0, 0, self.alpha})
 		end
 	end
 
@@ -379,7 +391,12 @@ function sellerCarUpdate(self)
 
 	self.fromCar.especialPropertys.recieveCooldown = self.fromCar.especialPropertys.recieveCooldown - (1 * gameStuff.speed) * globalDt
 end
+
+
 function catCarUpdate(self)
+	if currentRoom == rooms.mainMenu then return end
+
+
 	if self.fromCar.especialPropertys.catCreateDelay <= 0 then
 		createCat(self.pos.x, self.pos.y)
 		self.fromCar.especialPropertys.catCreateDelay = math.random(1, 5)
@@ -465,8 +482,10 @@ function createCat(x, y)
 end
 
 
-
 function shootUpdateFunc(self)
+	if currentRoom == rooms.mainMenu then self.fromCar.especialPropertys.weaponRot = self.fromCar.especialPropertys.weaponRot + 1 * globalDt; return end
+
+
 	if self.fromCar.especialPropertys.target == "Frogs" and Foggs[1] ~= nil then
 		local dir = Lume.angle(self.pos.x, self.pos.y, Foggs[1].pos.x, Foggs[1].pos.y)
 		self.fromCar.especialPropertys.dir = dir
