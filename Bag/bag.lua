@@ -243,12 +243,6 @@ function bagStuff:initBag()
     self.showingBag = false
 
 
-    self.stored = {
-        bagItems.moneyPrinter,
-        bagItems.carCreator,
-        bagItems.bomb,
-    }
-
     if tableFind(onTopGameInstaces, self) == -1 then
         table.insert(onTopGameInstaces, #onTopGameInstaces + 1, self)
     end

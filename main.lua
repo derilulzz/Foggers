@@ -301,54 +301,67 @@ money = 100
 modList = {
     {
         name = "No Mod",
+        namePT = "Nenhum Mod",
         id = -1,
     },
     {
         name = "Half Screen",
+        namePT = "Metade Da Tela",
         id = 0,
     },
     {
         name = "Half Car Speed",
+        namePT = "Metade Da Velocidade dos carros",
         id = 1,
     },
     {
         name = "Times Two Car Speed",
+        namePT = "x2 A Velocidade Dos carros",
         id = 2,
     },
     {
         name = "Half Money Gain",
+        namePT = "Metade dos ganhos monetarios",
         id = 3,
     },
     {
         name = "Two Times Money Gain",
+        namePT = "x2 Dos ganhos monetarios",
         id = 4,
     },
     {
         name = "Half Frogg Life",
+        namePT = "Metade da vida dos sapos",
         id = 5,
     },
     {
         name = "Times Two Frogg Life",
+        namePT = "x2 A Vida dos sapos",
         id = 6,
     },
     {
         name = "Half Car Life",
+        namePT = "Metade da vida dos sapos",
         id = 7,
     },
     {
         name = "Times Two Car Life",
+        namePT = "x2 A Vida Dos Carros",
         id = 8,
     },
     {
         name = "Times Two Car Size",
+        namePT = "x2 O Tamanho Dos Carros",
         id = 9,
     },
     {
         name = "Times Two Everything",
+        namePT = "x2 Tudo",
         id = 10,
     },
     {
         name = "Half Everything",
+        namePT = "Metade de Tudo",
         id = 11,
     },
 }
@@ -897,14 +910,14 @@ function love.update(dt)
             --Pass thro the game car buttons
             for b=1, #gameCarButtons do
                 --Set the buttons positions effected by the scroll value
-                gameCarButtons[b].pos.x = Lume.lerp(gameCarButtons[b].pos.x, (0 + 128 * b) - 32 * upBoxStuff.scrollX, 0.1)
+                gameCarButtons[b].pos.x = Lume.lerp(gameCarButtons[b].pos.x, (0 + 128 * b) - 32 * upBoxStuff.scrollX, 6)
 
 
                 --Decrease or increase the buttons alpha value if he is under the speed up button
                 if gameCarButtons[b].pos.x > 110 then
-                    gameCarButtons[b].alpha = Lume.lerp(gameCarButtons[b].alpha, 1, 0.1)
+                    gameCarButtons[b].alpha = Lume.lerp(gameCarButtons[b].alpha, 1, 6)
                 else
-                    gameCarButtons[b].alpha = Lume.lerp(gameCarButtons[b].alpha, 0, 0.1)
+                    gameCarButtons[b].alpha = Lume.lerp(gameCarButtons[b].alpha, 0, 6)
                 end
             end
 
@@ -930,8 +943,8 @@ function love.update(dt)
 
 
                 --Set the camera velocity to the input direction
-                gameCam.vel.x = Lume.lerp(gameCam.vel.x, mspd * inputDirX, 0.1)
-                gameCam.vel.y = Lume.lerp(gameCam.vel.y, mspd * inputDirY, 0.1)
+                gameCam.vel.x = Lume.lerp(gameCam.vel.x, mspd * inputDirX, 6)
+                gameCam.vel.y = Lume.lerp(gameCam.vel.y, mspd * inputDirY, 6)
             --#endregion
 
 
@@ -1193,7 +1206,7 @@ function love.update(dt)
             --Decrease the beat timer
             healthTextStuff.beatTimer = healthTextStuff.beatTimer - (1 * gameStuff.speed) * dt
             --Lerp the health text back to 0
-            healthTextStuff.scaleAdd = Lume.lerp(healthTextStuff.scaleAdd, 0, 0.1)
+            healthTextStuff.scaleAdd = Lume.lerp(healthTextStuff.scaleAdd, 0, 6)
             --Update if on the last frame the player was placing cars
             oldPlacingCar = placingCar
             --Drecrease the tip create timer
@@ -1467,13 +1480,13 @@ function love.update(dt)
             screenShake.force = screenShake.force - (100 * gameStuff.speed) * dt
         else
             --Reset the offset back to 0
-            gameCam.offset.x = Lume.lerp(gameCam.offset.x, 0, 0.1)
-            gameCam.offset.y = Lume.lerp(gameCam.offset.y, 0, 0.1)
+            gameCam.offset.x = Lume.lerp(gameCam.offset.x, 0, 6)
+            gameCam.offset.y = Lume.lerp(gameCam.offset.y, 0, 6)
         end
 
 
         --Reset the game zoom
-        gameCam.zoom = Lume.lerp(gameCam.zoom, 1, 0.1)
+        gameCam.zoom = Lume.lerp(gameCam.zoom, 1, 6)
 
 
         --The zoom percentage
@@ -1495,7 +1508,7 @@ function love.update(dt)
     --Clamp the game speed inside 1 to 2
     gameStuff.speed = Lume.clamp(gameStuff.speed, 1, 2)
     --Lerp the red rect alpha back to 0
-    damageEffectStuff.redRectRGBAdd = Lume.lerp(damageEffectStuff.redRectRGBAdd, 0, 0.1)
+    damageEffectStuff.redRectRGBAdd = Lume.lerp(damageEffectStuff.redRectRGBAdd, 0, 6)
 
 
     --If the game is not paused
@@ -1642,6 +1655,14 @@ function love.draw()
         drawRoadSide()
 
 
+        --If an game instance wants to get drawn behind, draw it behind everything
+        for u = 1, #gameInstances do
+            if gameInstances[u].drawBack then
+                gameInstances[u]:draw()
+            end
+        end
+
+
         --Draw the cars
         drawAllCars()
 
@@ -1729,9 +1750,14 @@ function love.draw()
         --Draw the current modifier
         if modifier.current ~= nil then
             local txt = modifier.current.name
+            if gameStuff.lang == "pt-br" then txt = modifier.current.namePT end
             drawOutlinedText(txt, 8, 600 - 4, 0, 4, 4, 0, love.graphics.getFont():getHeight(txt), 4, { 0, 0, 0 })
         end
     end
+
+
+    --Reapply the camera transform
+    love.graphics.applyTransform(gameCam.transform)
 
 
     --Draw mods draw functions that are in the back
@@ -1742,12 +1768,8 @@ function love.draw()
     end
 
 
-    --If an game instance wants to get drawn behind, draw it behind everything
-    for u = 1, #gameInstances do
-        if gameInstances[u].drawBack then
-            gameInstances[u]:draw()
-        end
-    end
+    --Reset the draw transform
+    love.graphics.origin()
 
 
     --Draw all the game UI Instance
@@ -1833,6 +1855,7 @@ function love.draw()
         drawOutlinedText("Ram used: " .. tostring(math.floor(collectgarbage("count") / 1024) .. " MB used"), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
         drawOutlinedText("Current frog gaved: " .. tostring(gameStuff.currentFoggGaved), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8, 0, 1, 1, 0, 0)
         drawOutlinedText("Amount of UI Instances: " .. tostring(#UiStuff), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8 + 4 + 8, 0, 1, 1, 0, 0)
+        drawOutlinedText("Current starting round: " .. tostring(gameStuff.currentStartingRound), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8 + 4 + 8 + 8 + 4, 0, 1, 1, 0, 0)
     end
 
 
@@ -2024,7 +2047,7 @@ function setRoom()
     foggCreateTimerDef = 5
     gameStuff.currentFoggGaved = 0
     gameStuff.hp = 10
-    modifier.current = modList[1]
+    modifier.current = modifier.nameList.NO_MOD
     money = 100
 
 

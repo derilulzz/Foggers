@@ -22,7 +22,7 @@ function createModsManager()
 
 
         if self.hoveringOneMod then
-            self.currentModScaleAdd = Lume.lerp(self.currentModScaleAdd, 2, 0.1)
+            self.currentModScaleAdd = Lume.lerp(self.currentModScaleAdd, 2, 6)
 
 
             if love.mouse.isDown(1) and LastLeftMouseButton == false then
@@ -34,7 +34,7 @@ function createModsManager()
                 if not suc then print("Could not open file: " .. "file://" .. love.filesystem.getSaveDirectory() .. "/Mods/" .. mods[self.modHoveredId]) end
             end
         else
-            self.currentModScaleAdd = Lume.lerp(self.currentModScaleAdd, 0, 0.2)
+            self.currentModScaleAdd = Lume.lerp(self.currentModScaleAdd, 0, 12)
         end
 
 

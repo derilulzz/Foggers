@@ -84,9 +84,9 @@ function createForg(_x, _y, _spr, _jumpSpr, _hp, _jumpTimerDef)
 		self.col.h = self.spr.sprHeight * self.scale
 
 
-		self.pos.x = Lume.lerp(self.pos.x, self.targetPos.x, 0.2)
-		self.pos.y = Lume.lerp(self.pos.y, self.targetPos.y, 0.2)
-		self.scale = Lume.lerp(self.scale, 2, 0.25)
+		self.pos.x = Lume.lerp(self.pos.x, self.targetPos.x, 12)
+		self.pos.y = Lume.lerp(self.pos.y, self.targetPos.y, 12)
+		self.scale = Lume.lerp(self.scale, 2, 15)
 		self.jumpTimer = self.jumpTimer - ((((1 + self.spdAddFogg) / self.spdDivFogg) * self.spdMultFogg) * gameStuff.speed) * globalDt
 	end
 

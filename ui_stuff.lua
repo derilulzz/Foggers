@@ -250,11 +250,11 @@ function buttonUpdate(self, hoverOverride)
 
 	if self.hovered then
 		if love.mouse.isDown(1) then
-			self.size.w = Lume.lerp(self.size.w, self.wantedSize.w, 0.2)
-			self.size.h = Lume.lerp(self.size.h, self.wantedSize.h, 0.2)
+			self.size.w = Lume.lerp(self.size.w, self.wantedSize.w, 12)
+			self.size.h = Lume.lerp(self.size.h, self.wantedSize.h, 12)
 		else
-			self.size.w = Lume.lerp(self.size.w, self.wantedSize.w * 1.5, 0.2)
-			self.size.h = Lume.lerp(self.size.h, self.wantedSize.h * 1.5, 0.2)
+			self.size.w = Lume.lerp(self.size.w, self.wantedSize.w * 1.5, 12)
+			self.size.h = Lume.lerp(self.size.h, self.wantedSize.h * 1.5, 12)
 		end
 
 
@@ -272,8 +272,8 @@ function buttonUpdate(self, hoverOverride)
 		self.hoverTime = self.hoverTime + 1 * globalDt
 	else
 		self.hoverTime = 0
-		self.size.w = Lume.lerp(self.size.w, self.wantedSize.w, 0.2)
-		self.size.h = Lume.lerp(self.size.h, self.wantedSize.h, 0.2)
+		self.size.w = Lume.lerp(self.size.w, self.wantedSize.w, 12)
+		self.size.h = Lume.lerp(self.size.h, self.wantedSize.h, 12)
 	end
 
 

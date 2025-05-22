@@ -129,7 +129,7 @@ function createMainMenu()
 
     function m:update()
         self.mouseMoved = oldMousePos.x ~= PushsInGameMousePos.x or oldMousePos.y ~= PushsInGameMousePos.y
-        self.rot = Lume.lerp(self.rot, 0.05 * math.cos(self.angle), 0.1)
+        self.rot = Lume.lerp(self.rot, 0.05 * math.cos(self.angle), 6)
 
 
 
@@ -347,9 +347,9 @@ function createMainMenu()
 
         self.angle = self.angle + 1 * globalDt
         if hoveringOne and love.mouse.isDown(1) then
-            self.currentOptionScale = Lume.lerp(self.currentOptionScale, 3, 0.4)
+            self.currentOptionScale = Lume.lerp(self.currentOptionScale, 3, 24)
         else
-            self.currentOptionScale = Lume.lerp(self.currentOptionScale, 5, 0.1)
+            self.currentOptionScale = Lume.lerp(self.currentOptionScale, 5, 6)
         end
         self.oldUpBtn = love.keyboard.isDown("up", "w")
         self.oldDownBtn = love.keyboard.isDown("down", "s")

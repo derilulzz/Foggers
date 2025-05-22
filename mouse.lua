@@ -20,7 +20,7 @@ function mouse:updateMouse()
     self.pos.y = mGame[2]
 
 
-    self.rot = Lume.lerp(self.rot, (mGame[1] - self.oldMousePos.x) / 16, 0.1)
+    self.rot = Lume.lerp(self.rot, (mGame[1] - self.oldMousePos.x) / 16, 6)
 
 
     if love.mouse.isDown(1) and LastLeftMouseButton == false then
@@ -37,8 +37,8 @@ function mouse:updateMouse()
     end
 
 
-    self.scale = Lume.lerp(self.scale, 4, 0.1)
-    self.rot = Lume.lerp(self.rot, 0, 0.1)
+    self.scale = Lume.lerp(self.scale, 4, 6)
+    self.rot = Lume.lerp(self.rot, 0, 6)
     self.oldMousePos = {x = mGame[1], y = mGame[2]}
     self.rmbPressSpr:update(globalDt)
 end

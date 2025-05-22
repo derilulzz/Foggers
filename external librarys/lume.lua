@@ -96,7 +96,7 @@ end
 
 
 function lume.lerp(a, b, amount)
-  return a + (b - a) * lume.clamp(amount, 0, 1)
+  return a + (b - a) * (1 - math.exp(-amount * globalDt))
 end
 
 

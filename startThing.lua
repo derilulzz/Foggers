@@ -29,31 +29,31 @@ function createStartThing()
 
         if self.state == 0 then
             self.currentLogo = 0
-            self.logoScale = Lume.lerp(self.logoScale, 0.1, 0.1)
-            self.logoRot = Lume.lerp(self.logoRot, 0, 0.1)
-            self.logoAlpha = Lume.lerp(self.logoAlpha, 1, 0.1)
-            self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 0, 0.15)
+            self.logoScale = Lume.lerp(self.logoScale, 0.1, 6)
+            self.logoRot = Lume.lerp(self.logoRot, 0, 6)
+            self.logoAlpha = Lume.lerp(self.logoAlpha, 1, 6)
+            self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 0, 9)
         elseif self.state == 1 then
-            self.logoScale = Lume.lerp(self.logoScale, 0, 0.1)
-            self.logoRot = Lume.lerp(self.logoRot, 16, 0.1)
-            self.logoAlpha = Lume.lerp(self.logoAlpha, 0, 0.1)
-            self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 1, 0.15)
+            self.logoScale = Lume.lerp(self.logoScale, 0, 6)
+            self.logoRot = Lume.lerp(self.logoRot, 16, 6)
+            self.logoAlpha = Lume.lerp(self.logoAlpha, 0, 6)
+            self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 1, 9)
             if self.blackBarsProgress >= 0.999 then self.state = self.state + 1; self.nextStateTimer = 5 end
         elseif self.state == 2 then
             self.currentLogo = 1
-            self.logoScale = Lume.lerp(self.logoScale, 0.5, 0.1)
-            self.logoRot = Lume.lerp(self.logoRot, 0, 0.1)
-            self.logoAlpha = Lume.lerp(self.logoAlpha, 1, 0.1)
-            self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 0, 0.15)
+            self.logoScale = Lume.lerp(self.logoScale, 0.5, 6)
+            self.logoRot = Lume.lerp(self.logoRot, 0, 6)
+            self.logoAlpha = Lume.lerp(self.logoAlpha, 1, 6)
+            self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 0, 9)
         elseif self.state == 3 then
-            self.logoScale = Lume.lerp(self.logoScale, 0, 0.1)
-            self.logoRot = Lume.lerp(self.logoRot, 16, 0.1)
-            self.logoAlpha = Lume.lerp(self.logoAlpha, 0, 0.1)
-            self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 1, 0.15)
+            self.logoScale = Lume.lerp(self.logoScale, 0, 6)
+            self.logoRot = Lume.lerp(self.logoRot, 16, 6)
+            self.logoAlpha = Lume.lerp(self.logoAlpha, 0, 6)
+            self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 1, 9)
             if self.blackBarsProgress >= 0.999 then self.state = self.state + 1; self.nextStateTimer = 5 end
         end
         if self.state == 4 then
-            if self.blackBarsProgress >= 0.999 then self.blackbarsWhiteLineAlpha = Lume.lerp(self.blackbarsWhiteLineAlpha, 0, 0.2) end
+            if self.blackBarsProgress >= 0.999 then self.blackbarsWhiteLineAlpha = Lume.lerp(self.blackbarsWhiteLineAlpha, 0, 12) end
             
             
             if self.blackbarsWhiteLineAlpha <= 0.01 then
@@ -67,7 +67,7 @@ function createStartThing()
 
 
         if self.state ~= 1 and self.state ~= 3 and self.state ~= 4 then
-            self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 0.25 + 0.1 * math.sin(GlobalSinAngle), 0.1)
+            self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 0.25 + 0.1 * math.sin(GlobalSinAngle), 6)
         end
         self.logoScale = self.logoScale + 0.0001 * math.cos(GlobalSinAngle * 4)
         self.logoRot = self.logoRot + 0.025 * math.cos(GlobalSinAngle * 4)

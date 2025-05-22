@@ -117,9 +117,8 @@ eventTypes = {
 currentEvent = 0
 
 
-
 function startEvent()
-    currentEvent = eventTypes[math.random(1, #eventTypes)]
+    currentEvent = eventTypes[math.random(1, #eventTypes + 1)]
     currentEvent.creationCode()
 
 
@@ -143,6 +142,9 @@ function createEventStartText(whatEvent)
 
 
     function t:init()
+        if gameStuff.lang == "pt-br" then self.text = "EVENTO INICIADO" end
+
+        
         Flux.to(self, 1, {scale=5, rot=0, alpha=1}):after(self, 1, {scale=0, rot=-6, alpha=0}):delay(1):oncomplete(t.destroy)
     end
 

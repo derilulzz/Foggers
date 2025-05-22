@@ -33,8 +33,8 @@ function createCarStats()
         if PushsInGameMousePos.x < self.pos.x + self.size.w / 2 then
             self.wantedScroll = self.wantedScroll + mouseScroll.y * 32
         end
-        self.wantedScroll = Lume.lerp(self.wantedScroll, Lume.clamp(self.wantedScroll, -64 * self.totalCarLines, 0), 0.1)
-        self.scroll = Lume.lerp(self.scroll, self.wantedScroll, 0.1)
+        self.wantedScroll = Lume.lerp(self.wantedScroll, Lume.clamp(self.wantedScroll, -64 * self.totalCarLines, 0), 6)
+        self.scroll = Lume.lerp(self.scroll, self.wantedScroll, 6)
 
 
         if gameStuff.lang == "pt-br" then
@@ -142,11 +142,11 @@ function createCarStats()
 
 
             self.currentShowedCar = hoverId
-            self.alpha = Lume.lerp(self.alpha, 1, 0.1)
-            self.selectedCarScaleAdd = Lume.lerp(self.selectedCarScaleAdd, 1, 0.1)
+            self.alpha = Lume.lerp(self.alpha, 1, 6)
+            self.selectedCarScaleAdd = Lume.lerp(self.selectedCarScaleAdd, 1, 6)
         else
-            self.alpha = Lume.lerp(self.alpha, 0, 0.1)
-            self.selectedCarScaleAdd = Lume.lerp(self.selectedCarScaleAdd, 0, 0.1)
+            self.alpha = Lume.lerp(self.alpha, 0, 6)
+            self.selectedCarScaleAdd = Lume.lerp(self.selectedCarScaleAdd, 0, 6)
 
 
             if self.alpha <= 0.1 then
