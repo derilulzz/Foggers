@@ -285,6 +285,9 @@ function createMainMenu()
                         gameStuff.useFixedSeed = true
                         gameStuff.fixedSeed = tonumber(self.runConfigStuff.seedNumBtn.textedText)
                     end
+
+
+                    stopMusic()
                     
                     
                     changeRoom(rooms.game)

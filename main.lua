@@ -522,6 +522,13 @@ canCloseGame = false
 targetFps = 60
 --The list of mods
 mods = {}
+--Some propertys of the mods
+modsStuff = {
+    updateFunctions = {},
+    nonStopUpdateFunctions = {},
+    behindDrawFunctions = {},
+    frontDrawFunctions = {},
+}
 
 
 --The game main loop function, it gonna update the game, draw the game and exit the game, this function dont need to actually exist, it is just here for customization
@@ -677,6 +684,10 @@ function love.update(dt)
     end
 
 
+    --Update the music
+    musicUpdate()
+
+
     --If the current room is not the game
     if currentRoom ~= rooms.game then
         --Reset the camera pos and vel
@@ -750,29 +761,26 @@ function love.update(dt)
     updateMusicVolume()
 
 
-    --Music transition
-    if not gameStuff.musicLooping then
-        --Reset the looping parameter
-        musics[currentMusic]:setLooping(false)
+    --Set that the music is looping or not
+    musics[currentMusic]:setLooping(gameStuff.musicLooping)
 
 
-        --If the music needs more 1 second to end
-        if musics[currentMusic]:tell() >= musics[currentMusic]:getDuration() - 1 then
-            --If the "gameStuff.musicVolumeAdd" is 0
-            if gameStuff.musicVolumeAdd == 0 then
-                --Make an animation to set "gameStuff.musicVolumeAdd" to -1 after that, play an random music and set "gameStuff.musicVolumeAdd" 0 again
-                Flux.to(gameStuff, 1, { musicVolumeAdd = -1 }):oncomplete(playRandomMusic):after(gameStuff, 1,
-                    { musicVolumeAdd = 0 })
-            end
+    --Update non stop mods update functions
+    for f=1, #modsStuff.nonStopUpdateFunctions do
+        if type(modsStuff.nonStopUpdateFunctions[f]) == "function" then
+            modsStuff.nonStopUpdateFunctions[f](dt)
         end
-    else
-        --Set that the music is looping
-        musics[currentMusic]:setLooping(true)
     end
 
 
     --If the game is not paused
     if not gameStuff.paused then
+        --Update mods update functions
+        for f=1, #modsStuff.updateFunctions do
+            if type(modsStuff.updateFunctions[f]) == "function" then
+                modsStuff.updateFunctions[f](dt)
+            end
+        end
         --Update the game instances
         for u = 1, #gameInstances do
             if gameInstances[u] ~= nil and gameInstances[u].update then
@@ -1021,8 +1029,16 @@ function love.update(dt)
                         if money >= GameCars[selectedCar].cost then
                             --Create the car, set that the game can place frogs and remove the car price from the current money
                             money = money - GameCars[selectedCar].cost
+
+
                             gameStuff.canPlaceFroggs = true
                             createCarInstance(GameCars[selectedCar], xForCar, yForCar)
+
+
+                            --Play the main game music if it is the first car placed
+                            if not gameStuff.canPlaceFroggs then
+                                playMusic(7)
+                            end
                         end
                     end
                 end
@@ -1626,14 +1642,6 @@ function love.draw()
         drawRoadSide()
 
 
-        --If an game instance wants to get drawn behind, draw it behind everything
-        for u = 1, #gameInstances do
-            if gameInstances[u].drawBack then
-                gameInstances[u]:draw()
-            end
-        end
-
-
         --Draw the cars
         drawAllCars()
 
@@ -1726,10 +1734,34 @@ function love.draw()
     end
 
 
+    --Draw mods draw functions that are in the back
+    for f=1, #modsStuff.behindDrawFunctions do
+        if type(modsStuff.behindDrawFunctions[f]) == "function" then
+            modsStuff.behindDrawFunctions[f]()
+        end
+    end
+
+
+    --If an game instance wants to get drawn behind, draw it behind everything
+    for u = 1, #gameInstances do
+        if gameInstances[u].drawBack then
+            gameInstances[u]:draw()
+        end
+    end
+
+
     --Draw all the game UI Instance
     for b = 1, #UiStuff do
         if UiStuff[b].visible and (UiStuff[b].alpha ~= nil and UiStuff[b].alpha > 0) then
             UiStuff[b]:draw()
+        end
+    end
+
+
+    --Draw mods draw functions that are on front
+    for f=1, #modsStuff.frontDrawFunctions do
+        if type(modsStuff.frontDrawFunctions[f]) == "function" then
+            modsStuff.frontDrawFunctions[f]()
         end
     end
 
@@ -1932,6 +1964,10 @@ function stopCarPlacing()
     selectedCar = nil
     placingCar = false
     currentSelectedCar = nil
+    mouse.showRMBIcon = false
+    mouse.showLMBIcon = false
+    mouse.RMBModulate = { 1, 1, 1 }
+    mouse.LMBModulate = { 1, 1, 1 }
 end
 
 

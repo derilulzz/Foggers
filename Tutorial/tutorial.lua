@@ -13,6 +13,9 @@ function createCamMoveTutorial()
     }
 
 
+    playMusic(2)
+
+
     function t:update()
         if gameStuff.canPlaceFroggs then
             table.remove(onTopGameInstaces, tableFind(onTopGameInstaces, self))
@@ -35,14 +38,17 @@ function createCamMoveTutorial()
 
 
             if self.walkedA and self.walkedD and self.walkedW and self.walkedS then
+                playTransitionMusic(3, 4)
                 self.state = 2
             end
         elseif self.state == 2 then
             if placingCar then
+                playTransitionMusic(5, 6)
                 self.state = 3
             end
         elseif self.state == 3 then
             if not placingCar then
+                playTransitionMusic(3, 4)
                 self.state = 2
             end
         end

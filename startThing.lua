@@ -59,7 +59,7 @@ function createStartThing()
             if self.blackbarsWhiteLineAlpha <= 0.01 then
                 rm = rooms.mainMenu
                 setRoom()
-            end
+            end                                             
         end
 
 
