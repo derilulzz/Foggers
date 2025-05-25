@@ -532,7 +532,7 @@ speedUpButton = nil
 --If the game can peacefuly quit
 canCloseGame = false
 --The target (maximum) fps
-targetFps = 60
+targetFps = 120
 --The list of mods
 mods = {}
 --Some propertys of the mods
@@ -542,6 +542,10 @@ modsStuff = {
     behindDrawFunctions = {},
     frontDrawFunctions = {},
 }
+--If the game gonna use v-sync
+useVSync = true
+--The time that one frame stays
+frameTime = 1 / targetFps
 
 
 --The game main loop function, it gonna update the game, draw the game and exit the game, this function dont need to actually exist, it is just here for customization
@@ -560,6 +564,10 @@ function love.run()
 
     -- We don't want the first frame's dt to include time taken by love.load.
     if love.timer then love.timer.step() end
+
+
+    local nextTime = love.timer.getTime() + frameTime
+    local previousTargetFPS = targetFps
 
 
     --the delta time var
@@ -612,8 +620,17 @@ function love.run()
         end
 
 
-        --Make the game be limited to he target fps
-        if love.timer then love.timer.sleep(1 / targetFps) end
+        --Make the game be limited to the target fps, if the fps cap is enabled
+        if targetFps > 0 then
+            local currentTime = love.timer.getTime()
+            local remaining = nextTime - currentTime
+            if remaining > 0 then
+                love.timer.sleep(math.max(0, remaining - 0.001))
+            else
+                nextTime = currentTime
+            end
+            nextTime = nextTime + frameTime
+        end
     end
 end
 
@@ -1090,7 +1107,7 @@ function love.update(dt)
                         end
                         if posToPut == 1 then
                             modX = math.random(0, 800 * 1.5)
-                            modY = 632
+                            modY = 632 + math.random(-64, 64)
                         end
                         if posToPut == 2 then
                             modX = 800 * 1.5
@@ -1505,8 +1522,8 @@ function love.update(dt)
     end
 
 
-    --Clamp the game speed inside 1 to 2
-    gameStuff.speed = Lume.clamp(gameStuff.speed, 1, 2)
+    --Clamp the game speed inside 1 to 3
+    gameStuff.speed = Lume.clamp(gameStuff.speed, 1, 3)
     --Lerp the red rect alpha back to 0
     damageEffectStuff.redRectRGBAdd = Lume.lerp(damageEffectStuff.redRectRGBAdd, 0, 6)
 
@@ -1590,7 +1607,7 @@ function love.update(dt)
     --Increase the time since start
     gameStuff.timeSinceStart = gameStuff.timeSinceStart + 1
     --Save the game
-    saveGame(love.window.getFullscreen(), gameStuff.lang, gameStuff.sfxVolume, gameStuff.musicVolume, gameStuff.higestRound)
+    saveGame(love.window.getFullscreen(), gameStuff.lang, gameStuff.sfxVolume, gameStuff.musicVolume, gameStuff.higestRound, gameStuff.drawOutlines, targetFps, useVSync)
 end
 
 
@@ -1856,6 +1873,7 @@ function love.draw()
         drawOutlinedText("Current frog gaved: " .. tostring(gameStuff.currentFoggGaved), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8, 0, 1, 1, 0, 0)
         drawOutlinedText("Amount of UI Instances: " .. tostring(#UiStuff), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8 + 4 + 8, 0, 1, 1, 0, 0)
         drawOutlinedText("Current starting round: " .. tostring(gameStuff.currentStartingRound), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8 + 4 + 8 + 8 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("Target fps: " .. tostring(targetFps), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8 + 4 + 8 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
     end
 
 
@@ -1874,7 +1892,7 @@ end
 --The function to create one new frog, just creates a new frog
 function createANewFogg(altX, altY)
     local x = math.random(0, 800 * 1.5)
-    local y = 632 + math.random(-128, 256)
+    local y = 632 + math.random(-8, 256)
     local selectedFogg = Lume.clamp((gameStuff.currentFoggGaved), 0, 3)
 
 
@@ -1958,14 +1976,13 @@ function love.keypressed(key)
         end
     end
     if key == "lshift" then
-        if gameStuff.speed == 2 then
-            gameStuff.speed = 1
-        else
+        if gameStuff.speed == 1 then
             gameStuff.speed = 2
+        elseif gameStuff.speed == 2 then
+            gameStuff.speed = 3
+        elseif gameStuff.speed == 3 then
+            gameStuff.speed = 1
         end
-    end
-    if key == "home" then
-        love.event.quit()
     end
     if key == "f1" then
         debugStuff.enabled = not debugStuff.enabled
@@ -2003,7 +2020,7 @@ end
 
 --The function to change rooms
 function changeRoom(toWhat)
-    if sceneTransition.enabled then return end
+    if sceneTransition.enabled or currentRoom == toWhat then return end
 
 
     sceneTransition.coolIcon = createCoolTransition()
@@ -2041,9 +2058,10 @@ function setRoom()
     startThingInstance = nil
     tableClear(Foggs)
     UiStuff = {}
+    pauseMenuInstance = nil
+    gameStuff.paused = false
     onTopGameInstaces = {}
     gameStuff.canPlaceFroggs = false
-    modifier.current = modList[1]
     foggCreateTimerDef = 5
     gameStuff.currentFoggGaved = 0
     gameStuff.hp = 10
@@ -2060,6 +2078,9 @@ function setRoom()
         if gameStuff.currentStartingRound ~= nil then
             gameStuff.currentFoggGaved = gameStuff.currentStartingRound
             money = money + (100 * gameStuff.currentStartingRound)
+        end
+        if gameStuff.currentStartingRound < gameStuff.currentFoggGaved then
+            gameStuff.currentFoggGaved = 0
         end
 
 
@@ -2144,6 +2165,18 @@ function updateMusicVolume()
 
     for m = 1, #musics do
         musics[m]:setVolume(Lume.clamp(gameStuff.musicVolume + gameStuff.musicVolumeAdd, 0, 1))
+    end
+end
+
+
+--Sets if the game gonna use vsync
+function setVSyncUse(Use)
+    if Use then
+        useVSync = true
+        love.window.setVSync(1)
+    else
+        useVSync = false
+        love.window.setVSync(0)
     end
 end
 

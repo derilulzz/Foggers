@@ -166,7 +166,7 @@ function createMegaWaveWarning()
 
     function t:draw()
 		love.graphics.setColor(1, 1, 1, self.alpha)
-        drawOutlinedText("MEGA WAVE\nCOMING", 800 / 2, 600 / 2, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth("MEGA WAVE\nCOMING") / 2, love.graphics.getFont():getHeight("MEGA WAVE\nCOMING") / 2, 4, {0, 0, 0})
+        drawOutlinedTextF("MEGA WAVE COMING", 800 / 2, 600 / 2, 800 / 8, "center", self.rot, self.scale, self.scale, nil, nil, 4, {0, 0, 0})
     end
 
 
@@ -289,8 +289,8 @@ function createBagItemRecieveText(whatItem)
     function w:draw()
         love.graphics.setColor(HSV(0.5 + 0.5 * math.cos(GlobalSinAngle), 1, 1))
         drawOutlinedText("item recieved", 800 / 2, (600 / 2) - (love.graphics.getFont():getHeight(self.item.name) * self.scale), self.rot, self.scale / 2, self.scale / 2, nil, nil, 4, {0, 0, 0})
-        drawOutlinedText(self.item.name, 800 / 2, 600 / 2, self.rot, self.scale, self.scale, nil, nil, 4, {0, 0, 0})
-        drawOutlinedText(self.item.desc, 800 / 2, (600 / 2) + (love.graphics.getFont():getHeight(self.item.name) * self.scale), self.rot, self.scale / 2, self.scale / 2, nil, nil, 4, {0, 0, 0})
+        local txtS = drawOutlinedTextF(self.item.name, 800 / 2, 600 / 2, 800, "center", self.rot, self.scale, self.scale, nil, nil, 4, {0, 0, 0})
+        drawOutlinedText(self.item.desc, 800 / 2, (600 / 2) + (txtS.h * self.scale), self.rot, self.scale / 2, self.scale / 2, nil, nil, 4, {0, 0, 0})
     end
 
 

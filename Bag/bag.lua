@@ -412,20 +412,22 @@ function bagStuff:draw()
         end
         if self.showDescTimer >= 1 and self.hoveringAnItem then
             love.graphics.setColor({0, 0, 0})
-            local text = self.stored[self.hoveredId].desc
-            if gameStuff.lang == "pt-br" then text = self.stored[self.hoveredId].descPT end
-            local xDec = 0
-            local limit = 128
-            local wrap = {love.graphics.getFont():getWrap(text, limit)}
+            if self.stored[self.hoveredId] ~= nil then
+                local text = self.stored[self.hoveredId].desc
+                if gameStuff.lang == "pt-br" then text = self.stored[self.hoveredId].descPT end
+                local xDec = 0
+                local limit = 128
+                local wrap = {love.graphics.getFont():getWrap(text, limit)}
 
 
-            while (PushsInGameMousePosNoTransform.x + 32 + (limit * 2)) - xDec > 800 do
-                xDec = xDec + 1
+                while (PushsInGameMousePosNoTransform.x + 32 + (limit * 2)) - xDec > 800 do
+                    xDec = xDec + 1
+                end
+
+
+                drawOutlinedRect(PushsInGameMousePosNoTransform.x + 32 - xDec, PushsInGameMousePosNoTransform.y + 32, limit * 2, ((love.graphics.getFont():getHeight() * #wrap[2]) * 2) + 4, {1, 1, 1})
+                drawOutlinedTextF(text, PushsInGameMousePosNoTransform.x + 32 - xDec, PushsInGameMousePosNoTransform.y + 32, limit, "center", 0, 2, 2, 0, 0, 2, {0, 0, 0})
             end
-
-
-            drawOutlinedRect(PushsInGameMousePosNoTransform.x + 32 - xDec, PushsInGameMousePosNoTransform.y + 32, limit * 2, ((love.graphics.getFont():getHeight() * #wrap[2]) * 2) + 4, {1, 1, 1})
-            drawOutlinedTextF(text, PushsInGameMousePosNoTransform.x + 32 - xDec, PushsInGameMousePosNoTransform.y + 32, limit, "center", 0, 2, 2, 0, 0, 2, {0, 0, 0})
         end
 
 

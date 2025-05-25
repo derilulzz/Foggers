@@ -177,10 +177,10 @@ function createCarInstance(_inheritFrom, _x, _y, _ghostCar, _example)
 
 
 		if self.pos.y < (upBoxStuff.y + upBoxStuff.h) - 128 then
-			self.vel.y = Lume.lerp(self.vel.y, 100, 0.2)
+			self.vel.y = Lume.lerp(self.vel.y, 100, 12)
 		end
 		if self.pos.y > 600 + 128 then
-			self.vel.y = Lume.lerp(self.vel.y, -100, 0.2)
+			self.vel.y = Lume.lerp(self.vel.y, -100, 12)
 		end
 
 
@@ -446,8 +446,8 @@ function createCat(x, y)
 		if Foggs[self.targetFrog] ~= nil then
 			self.spr:update(globalDt * gameStuff.speed)
 			local dir = Lume.angle(self.pos.x, self.pos.y, Foggs[self.targetFrog].pos.x, Foggs[self.targetFrog].pos.y)
-			self.vel.x = Lume.lerp(self.vel.x, self.mspd * math.cos(dir), 0.1)
-			self.vel.y = Lume.lerp(self.vel.y, self.mspd * math.sin(dir), 0.1)
+			self.vel.x = Lume.lerp(self.vel.x, self.mspd * math.cos(dir), 6)
+			self.vel.y = Lume.lerp(self.vel.y, self.mspd * math.sin(dir), 6)
 			if Lume.distance(self.pos.x, self.pos.y, Foggs[self.targetFrog].pos.x, Foggs[self.targetFrog].pos.y) <= 32 then
 				if Foggs[self.targetFrog].hp == 1 then
 					self.hp = self.hp - 1
@@ -457,8 +457,8 @@ function createCat(x, y)
 				Foggs[self.targetFrog]:recieveDamage(1, self.pos.x, self.pos.y)
 			end
 		else
-			self.vel.x = Lume.lerp(self.vel.x, 0, 0.1)
-			self.vel.y = Lume.lerp(self.vel.y, 0, 0.1)
+			self.vel.x = Lume.lerp(self.vel.x, 0, 6)
+			self.vel.y = Lume.lerp(self.vel.y, 0, 6)
 		end
 
 
@@ -492,8 +492,8 @@ function shootUpdateFunc(self)
 		self.fromCar.especialPropertys.weaponRot = dir
 		self.fromCar.especialPropertys.cooldown = self.fromCar.especialPropertys.cooldown - (1 * gameStuff.speed) * globalDt
 	else	
-		self.fromCar.especialPropertys.dir = Lume.lerp(self.fromCar.especialPropertys.dir, 0, 0.1)
-		self.fromCar.especialPropertys.weaponRot = Lume.lerp(self.fromCar.especialPropertys.weaponRot, 0, 0.1)
+		self.fromCar.especialPropertys.dir = Lume.lerp(self.fromCar.especialPropertys.dir, 0, 6)
+		self.fromCar.especialPropertys.weaponRot = Lume.lerp(self.fromCar.especialPropertys.weaponRot, 0, 6)
 	end
        
 

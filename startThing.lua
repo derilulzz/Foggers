@@ -10,6 +10,7 @@ function createStartThing()
         state = 0,
         nextStateTimer = 5,
         oldAccKey = false,
+        forcePassTimer = 1,
         blackbarsWhiteLineAlpha = 1,
     }
 
@@ -56,10 +57,13 @@ function createStartThing()
             if self.blackBarsProgress >= 0.999 then self.blackbarsWhiteLineAlpha = Lume.lerp(self.blackbarsWhiteLineAlpha, 0, 12) end
             
             
-            if self.blackbarsWhiteLineAlpha <= 0.01 then
+            if self.blackbarsWhiteLineAlpha <= 0.01 or self.forcePassTimer <= 0 then
                 rm = rooms.mainMenu
                 setRoom()
-            end                                             
+            end
+            
+            
+            self.forcePassTimer = self.forcePassTimer - 1 * globalDt
         end
 
 
@@ -67,7 +71,7 @@ function createStartThing()
 
 
         if self.state ~= 1 and self.state ~= 3 and self.state ~= 4 then
-            self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 0.25 + 0.1 * math.sin(GlobalSinAngle), 6)
+            self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 0.25 + 0.1 * math.sin(GlobalSinAngle / 4), 6)
         end
         self.logoScale = self.logoScale + 0.0001 * math.cos(GlobalSinAngle * 4)
         self.logoRot = self.logoRot + 0.025 * math.cos(GlobalSinAngle * 4)

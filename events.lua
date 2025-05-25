@@ -118,7 +118,7 @@ currentEvent = 0
 
 
 function startEvent()
-    currentEvent = eventTypes[math.random(1, #eventTypes + 1)]
+    currentEvent = eventTypes[math.floor(math.random(1, #eventTypes))]
     currentEvent.creationCode()
 
 

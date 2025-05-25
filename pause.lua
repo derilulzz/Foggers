@@ -47,7 +47,7 @@ function createPause()
 
     function p:update()
         self.mouseMoved = oldMousePos.x ~= PushsInGameMousePosNoTransform.x or oldMousePos.y ~= PushsInGameMousePosNoTransform.y
-        self.rot = Lume.lerp(self.rot, 0.05 * math.cos(self.angle), 0.1)
+        self.rot = Lume.lerp(self.rot, 0.05 * math.cos(self.angle), 6)
 
 
         if love.keyboard.isDown("up", "w") and self.oldUpBtn == false then
@@ -139,7 +139,7 @@ function createPause()
 
 
         self.angle = self.angle + 1 * globalDt
-        self.currentOptionScale = Lume.lerp(self.currentOptionScale, 4, 0.1)
+        self.currentOptionScale = Lume.lerp(self.currentOptionScale, 4, 6)
         self.oldUpBtn = love.keyboard.isDown("up", "w")
         self.oldDownBtn = love.keyboard.isDown("down", "s")
         self.oldSelectButtonPressed = love.keyboard.isDown("return", "space")

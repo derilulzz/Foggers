@@ -178,8 +178,8 @@ function createBlood(_x, _y)
 		end
 
 
-		self.scale.x = Lume.lerp(self.scale.x, 4, 0.1)
-		self.scale.y = Lume.lerp(self.scale.y, 4, 0.1)
+		self.scale.x = Lume.lerp(self.scale.x, 4, 6)
+		self.scale.y = Lume.lerp(self.scale.y, 4, 6)
 		self.alpha = self.alpha - 0.1 * globalDt
 	end
 

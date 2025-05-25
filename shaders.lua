@@ -1,265 +1,157 @@
-colorSetterShader = love.graphics.newShader("Shaders/setColor.fs")
+local colorSetterShader = love.graphics.newShader("Shaders/setColor.fs")
 
+local function processOutlineColor(color)
+    if not color then
+        return {0, 0, 0, 1}
+    end
+    return {
+        color[1] or 0,
+        color[2] or 0,
+        color[3] or 0,
+        color[4] or 1
+    }
+end
+
+local Dirs = {
+    {x=0,  y=-1},
+    {x=-1, y=0},
+    {x=0,  y=1},
+    {x=1,  y=0},
+}
 
 function drawOutlinedSprite(drawable, x, y, r, sx, sy, ox, oy, outlineSize, outlineColor)
-    if drawable == nil then return end
+    if not drawable then return end
+    if not gameStuff.drawOutlines then
+        love.graphics.draw(drawable, x, y, r, sx, sy, ox or drawable:getWidth()/2, oy or drawable:getHeight()/2)
+        return
+    end
+    
     ox = ox or drawable:getWidth() / 2
     oy = oy or drawable:getHeight() / 2
+    outlineColor = processOutlineColor(outlineColor)
+    local currentColor = {love.graphics.getColor()}
 
-
-    if outlineColor == nil then
-        outlineColor = {0, 0, 0, 1}
-    else
-        for i=1, #outlineColor do
-            if outlineColor[i] == nil or type(outlineColor[i]) ~= "number" then
-                outlineColor[i] = 1
-            end
-        end
-        if outlineColor[4] == nil then
-            outlineColor[4] = 1
-        end
-    end
-    local add = { x = outlineSize, y = outlineSize }
-    local currentColor = { love.graphics.getColor() }
-
-
-    if gameStuff.drawOutlines == false then love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy) return end
-
+    colorSetterShader:send("colorToSet", outlineColor)
+    love.graphics.setShader(colorSetterShader)
+    love.graphics.setColor(outlineColor)
 
     while outlineSize > 0 do
-        for rt = 0, 4 do
-            if rt == 0 then
-                add.x = 0; add.y = -outlineSize
-            end
-            if rt == 1 then
-                add.x = -outlineSize; add.y = 0
-            end
-            if rt == 2 then
-                add.x = 0; add.y = outlineSize
-            end
-            if rt == 3 then
-                add.x = outlineSize; add.y = 0
-            end
-            if rt == 4 then
-                add.x = 0; add.y = 0
-            end
-
-
-            if rt < 4 then
-                colorSetterShader:send("colorToSet", outlineColor)
-                love.graphics.setShader(colorSetterShader)
-                love.graphics.setColor(outlineColor)
-            else
-                love.graphics.setShader()
-                love.graphics.setColor(currentColor)
-            end
-
-
-            love.graphics.draw(drawable, x + add.x, y + add.y, r, sx, sy, ox, oy)
+        for _, dir in ipairs(Dirs) do
+            local addX = dir.x * outlineSize
+            local addY = dir.y * outlineSize
+            love.graphics.draw(drawable, x + addX, y + addY, r, sx, sy, ox, oy)
         end
-
-
         outlineSize = outlineSize - 8
     end
+
+    love.graphics.setShader()
+    love.graphics.setColor(currentColor)
+    love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy)
 end
 
 function drawOutlinedSpriteQuad(drawable, quad, x, y, r, sx, sy, ox, oy, outlineSize, outlineColor)
-    local add = { x = outlineSize, y = outlineSize }
-    local currentColor = { love.graphics.getColor() }
-    x = x or 0
-    y = y or 0
-    text = text or ""
-    r = r or 0
-    sx = sx or 1
-    sy = sy or 1
+    if not drawable or not quad then return end
+    if not gameStuff.drawOutlines then
+        love.graphics.draw(drawable, quad, x, y, r, sx, sy, ox or drawable:getWidth()/2, oy or drawable:getHeight()/2)
+        return
+    end
+
     ox = ox or drawable:getWidth() / 2
     oy = oy or drawable:getHeight() / 2
+    local currentColor = {love.graphics.getColor()}
+    local processedOutlineColor = processOutlineColor(outlineColor)
 
-
-    if gameStuff.drawOutlines == false then love.graphics.draw(drawable, quad, x, y, r, sx, sy, ox, oy) return end
-
+    colorSetterShader:send("colorToSet", processedOutlineColor)
+    love.graphics.setShader(colorSetterShader)
+    love.graphics.setColor(processedOutlineColor)
 
     while outlineSize > 0 do
-        for rt = 0, 4 do
-            if rt == 0 then
-                add.x = 0; add.y = -outlineSize
-            end
-            if rt == 1 then
-                add.x = -outlineSize; add.y = 0
-            end
-            if rt == 2 then
-                add.x = 0; add.y = outlineSize
-            end
-            if rt == 3 then
-                add.x = outlineSize; add.y = 0
-            end
-            if rt == 4 then
-                add.x = 0; add.y = 0
-            end
-
-
-            if rt < 4 then
-                if outlineColor == nil then
-                    love.graphics.setColor({ currentColor[1] / 8, currentColor[2] / 8, currentColor[3] / 8 })
-                else
-                    love.graphics.setColor(outlineColor)
-                end
-            else
-                love.graphics.setColor(currentColor)
-            end
-
-
-            love.graphics.draw(drawable, quad, x + add.x, y + add.y, r, sx, sy, ox, oy)
+        for _, dir in ipairs(Dirs) do
+            local addX = dir.x * outlineSize
+            local addY = dir.y * outlineSize
+            love.graphics.draw(drawable, quad, x + addX, y + addY, r, sx, sy, ox, oy)
         end
-
-
         outlineSize = outlineSize - 8
     end
-end
 
+    love.graphics.setShader()
+    love.graphics.setColor(currentColor)
+    love.graphics.draw(drawable, quad, x, y, r, sx, sy, ox, oy)
+end
 
 function drawOutlinedText(text, x, y, r, sx, sy, ox, oy, outlineSize, outlineColor)
-    if outlineColor == nil then
-        outlineColor = {0, 0, 0, 1}
-    else
-        for i=1, #outlineColor do
-            if outlineColor[i] == nil or type(outlineColor[i]) ~= "number" then
-                outlineColor[i] = 1
-            end
-        end
-        if outlineColor[4] == nil then
-            outlineColor[4] = 1
-        end
+    if not text or text == "" then return end
+    if not gameStuff.drawOutlines then
+        love.graphics.print(text, x, y, r, sx, sy, ox, oy)
+        return
     end
-    if outlineSize == nil then outlineSize = 1 * (sx or 1) end
-    x = x or 0
-    y = y or 0
-    text = text or ""
-    r = r or 0
-    sx = sx or 1
-    sy = sy or 1
-    ox = ox or love.graphics.getFont():getWidth(text) / 2
-    oy = oy or love.graphics.getFont():getHeight(text) / 2
 
+    outlineSize = outlineSize or 1 * (sx or 1)
+    outlineColor = processOutlineColor(outlineColor)
+    local currentColor = {love.graphics.getColor()}
+    local font = love.graphics.getFont()
+    ox = ox or font:getWidth(text) / 2
+    oy = oy or font:getHeight() / 2
 
-    if gameStuff.drawOutlines == false then love.graphics.print(text, x, y, r, sx, sy, ox, oy) return end
-
-
-    local add = { x = outlineSize, y = outlineSize }
-    local currentColor = { love.graphics.getColor() }
-
+    love.graphics.push("all")
+    love.graphics.setShader(colorSetterShader)
+    colorSetterShader:send("colorToSet", outlineColor)
 
     while outlineSize > 0 do
-        for rt = 0, 4 do
-            if rt == 0 then
-                add.x = 0; add.y = -outlineSize
-            end
-            if rt == 1 then
-                add.x = -outlineSize; add.y = 0
-            end
-            if rt == 2 then
-                add.x = 0; add.y = outlineSize
-            end
-            if rt == 3 then
-                add.x = outlineSize; add.y = 0
-            end
-            if rt == 4 then
-                add.x = 0; add.y = 0
-            end
-
-
-            if rt < 4 then
-                if outlineColor then
-                    for i=1, #outlineColor do
-                        if outlineColor[i] == nil or type(outlineColor[i]) ~= "number" then
-                            outlineColor[i] = 1
-                        end
-                    end
-
-
-                    love.graphics.setColor(outlineColor)
-                else
-                    love.graphics.setColor({ currentColor[1] / 8, currentColor[2] / 8, currentColor[3] / 8 })
-                end
-            else
-                love.graphics.setColor(currentColor)
-            end
-
-
-            love.graphics.print(text, x + add.x, y + add.y, r, sx, sy, ox, oy)
+        for _, dir in ipairs(Dirs) do
+            love.graphics.setColor(outlineColor)
+            local addX = dir.x * outlineSize
+            local addY = dir.y * outlineSize
+            love.graphics.print(text, x + addX, y + addY, r, sx, sy, ox, oy)
         end
         outlineSize = outlineSize - 1
     end
-end
+    love.graphics.pop()
 
+    love.graphics.setColor(currentColor)
+    love.graphics.print(text, x, y, r, sx, sy, ox, oy)
+end
 
 function drawOutlinedTextF(text, x, y, limit, align, r, sx, sy, ox, oy, outlineSize, outlineColor)
-    local add = { x = outlineSize, y = outlineSize }
-    local currentColor = { love.graphics.getColor() }
-    x = x or 0
-    y = y or 0
-    text = text or ""
-    r = r or 0
-    sx = sx or 1
-    sy = sy or 1
-    ox = ox or limit / 2
-    local wrap = {love.graphics.getFont():getWrap(text, limit)}
-    if oy == nil then
-        oy = oy or (love.graphics.getFont():getHeight() * #wrap[2]) / 2
-    elseif oy == "bottom" then
-        oy = (love.graphics.getFont():getHeight() * #wrap[2])
+    if not text or text == "" then return {w=0, h=0} end
+    if not gameStuff.drawOutlines then
+        local wrap = {love.graphics.getFont():getWrap(text, limit)}
+        love.graphics.printf(text, x, y, limit, align, r, sx, sy, ox, oy)
+        return {w=limit, h=love.graphics.getFont():getHeight() * #wrap[2]}
     end
 
+    outlineSize = outlineSize or 1 * (sx or 1)
+    outlineColor = processOutlineColor(outlineColor)
+    local currentColor = {love.graphics.getColor()}
+    local font = love.graphics.getFont()
+    local wrap = {font:getWrap(text, limit)}
+    ox = ox or limit / 2
+    oy = oy or (font:getHeight() * #wrap[2]) / 2
 
-    if gameStuff.drawOutlines == false then love.graphics.printf(text, x, y, limit, align, r, sx, sy, ox, oy) return end
-
-
+    love.graphics.push("all")
+    colorSetterShader:send("colorToSet", outlineColor)
+    love.graphics.setShader(colorSetterShader)
+    
     while outlineSize > 0 do
-        for rt = 0, 4 do
-            if rt == 0 then
-                add.x = 0; add.y = -outlineSize
-            end
-            if rt == 1 then
-                add.x = -outlineSize; add.y = 0
-            end
-            if rt == 2 then
-                add.x = 0; add.y = outlineSize
-            end
-            if rt == 3 then
-                add.x = outlineSize; add.y = 0
-            end
-            if rt == 4 then
-                add.x = 0; add.y = 0
-            end
-
-
-            if rt < 4 then
-                if outlineColor == nil then
-                    love.graphics.setColor({ currentColor[1] / 8, currentColor[2] / 8, currentColor[3] / 8 })
-                else
-                    love.graphics.setColor(outlineColor)
-                end
-            else
-                love.graphics.setColor(currentColor)
-            end
-
-
-            love.graphics.printf(text, x + add.x, y + add.y, limit, align, r, sx, sy, ox, oy)
+        for _, dir in ipairs(Dirs) do
+            local addX = dir.x * outlineSize
+            local addY = dir.y * outlineSize
+            love.graphics.printf(text, x + addX, y + addY, limit, align, r, sx, sy, ox, oy)
         end
         outlineSize = outlineSize - 1
     end
+    love.graphics.pop()
 
+    love.graphics.setColor(currentColor)
+    love.graphics.printf(text, x, y, limit, align, r, sx, sy, ox, oy)
 
-    return {w = limit, h = (love.graphics.getFont():getHeight() * #wrap[2])}
+    return {w=limit, h=font:getHeight() * #wrap[2]}
 end
 
-
 function drawOutlinedRect(x, y, width, height, outlineColor)
-    x = x or 0
-    y = y or 0
-    width = width or 0
-    height = height or 0
+    local currentColor = {love.graphics.getColor()}
     love.graphics.rectangle("fill", x, y, width, height)
-    love.graphics.setColor(outlineColor)
+    love.graphics.setColor(processOutlineColor(outlineColor))
     love.graphics.rectangle("line", x, y, width, height)
+    love.graphics.setColor(currentColor)
 end

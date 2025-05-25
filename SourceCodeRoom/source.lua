@@ -11,9 +11,11 @@ function createSourceInfo()
         if gameStuff.lang == "pt-br" then
             self.openGitButton.text = "Ir para o source code"
             self.openGitButton.addText = "Abrir a pagina da web do git aonde o codigo do jogo está"
+            self.returnButton.text = "Voltar"
         else
             self.openGitButton.text = "Go to Source Code"
             self.openGitButton.addText = "Open the git web page of the project"
+            self.returnButton.text = "Return"
         end
 
 

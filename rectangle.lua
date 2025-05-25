@@ -8,12 +8,13 @@ function createRectangle(_x, _y, _w, _h)
 
 
     function r:checkCollision(otherRect)
-        local left = math.max(self.x, otherRect.x)
-        local right = math.min(self.x + self.w, otherRect.x + otherRect.w)
-        local top = math.max(self.y, otherRect.y)
-        local bottom = math.min(self.y + self.h, otherRect.y + otherRect.h)
-    
-        return right > left and bottom > top
+        local dx = math.abs(self.x - otherRect.x)
+        local dy = math.abs(self.y - otherRect.y)
+        local mx = (self.w / 2) + (otherRect.w / 2)
+        local my = (self.h / 2) + (otherRect.h / 2)
+
+
+        return dx < mx and dy < my
     end
 
 
