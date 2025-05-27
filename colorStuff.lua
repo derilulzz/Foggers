@@ -1,6 +1,7 @@
-function HSV(h, s, v)
+function HSV(h, s, v, a)
     if s <= 0 then return v,v,v end
     h = h*6
+    a = a or 1
     local c = v*s
     local x = (1-math.abs((h%2)-1))*c
     local m,r,g,b = (v-c), 0, 0, 0
@@ -17,5 +18,5 @@ function HSV(h, s, v)
     else
         r, g, b = c, 0, x
     end
-    return {r+m, g+m, b+m}
+    return {r+m, g+m, b+m, a}
 end

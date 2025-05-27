@@ -105,6 +105,7 @@ function createCarStats()
 
                 love.graphics.setColor(0.25, 0.25, 0.25)
                 drawOutlinedRect(x, self.pos.y + 8 + yAdd + self.scroll, sizeW, 64, {1, 1, 1})
+                love.graphics.setColor(1, 1, 1)
                 GameCars[c + 1].spr:draw(0.1 * math.sin(GlobalSinAngle + c), x + (sizeW / 2), self.pos.y + 8 + yAdd + self.scroll + 32 - 16, carScale, carScale)
                 for sAdd=1, #GameCars[c + 1].carAddSprs do
                     drawOutlinedSprite(GameCars[c + 1].carAddSprs[sAdd], x + (sizeW / 2), self.pos.y + 8 + self.scroll + yAdd + 32 - 16, 0.1 * math.sin(GlobalSinAngle + c), carScale, carScale, nil, nil, 2, {0, 0, 0})

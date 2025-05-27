@@ -22,7 +22,7 @@ local Dirs = {
 function drawOutlinedSprite(drawable, x, y, r, sx, sy, ox, oy, outlineSize, outlineColor)
     if not drawable then return end
     if not gameStuff.drawOutlines then
-        love.graphics.draw(drawable, x, y, r, sx, sy, ox or drawable:getWidth()/2, oy or drawable:getHeight()/2)
+        love.graphics.draw(drawable, x, y, r, sx, sy, ox or drawable:getWidth() / 2, oy or drawable:getHeight() / 2)
         return
     end
     
@@ -52,7 +52,7 @@ end
 function drawOutlinedSpriteQuad(drawable, quad, x, y, r, sx, sy, ox, oy, outlineSize, outlineColor)
     if not drawable or not quad then return end
     if not gameStuff.drawOutlines then
-        love.graphics.draw(drawable, quad, x, y, r, sx, sy, ox or drawable:getWidth()/2, oy or drawable:getHeight()/2)
+        love.graphics.draw(drawable, quad, x, y, r, sx, sy, ox or drawable:getWidth() / 2, oy or drawable:getHeight() / 2)
         return
     end
 
@@ -90,6 +90,8 @@ function drawOutlinedText(text, x, y, r, sx, sy, ox, oy, outlineSize, outlineCol
     outlineColor = processOutlineColor(outlineColor)
     local currentColor = {love.graphics.getColor()}
     local font = love.graphics.getFont()
+    x = x or 0
+    y = y or 0
     ox = ox or font:getWidth(text) / 2
     oy = oy or font:getHeight() / 2
 
@@ -127,6 +129,9 @@ function drawOutlinedTextF(text, x, y, limit, align, r, sx, sy, ox, oy, outlineS
     local wrap = {font:getWrap(text, limit)}
     ox = ox or limit / 2
     oy = oy or (font:getHeight() * #wrap[2]) / 2
+    if oy == "bottom" then
+        oy = font:getHeight() * #wrap[2]
+    end
 
     love.graphics.push("all")
     colorSetterShader:send("colorToSet", outlineColor)

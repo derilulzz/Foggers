@@ -9,7 +9,10 @@ utf8 = require "utf8"
 love.graphics.setDefaultFilter("nearest", "nearest")
 
 
---Require all the other files in the project
+--Require all the other files in the project and the debugger
+if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
+	require("lldebugger").start()
+end
 require "effects"
 require "cars"
 require "animations"
@@ -52,6 +55,7 @@ GameCars = {
             20,
             20,
             0,
+            0,
             0
         ),{},
         4,
@@ -69,6 +73,7 @@ GameCars = {
             love.graphics.newImage("Sprs/Cars/Truck.png"),
             20,
             20,
+            0,
             0,
             0
         ),{},
@@ -92,6 +97,7 @@ GameCars = {
             21,
             20,
             0,
+            0,
             0
         ),{},
         3,
@@ -113,6 +119,7 @@ GameCars = {
             love.graphics.newImage("Sprs/Cars/Seller Car.png"),
             20,
             20,
+            0,
             0,
             0
         ),{},
@@ -141,6 +148,7 @@ GameCars = {
             20,
             20,
             0,
+            0,
             0
         ),{},
         3,
@@ -165,6 +173,7 @@ GameCars = {
             love.graphics.newImage("Sprs/Cars/Cat Car.png"),
             32,
             20,
+            0,
             0,
             0
         ),{},
@@ -192,6 +201,7 @@ GameCars = {
             love.graphics.newImage("Sprs/Cars/TankBottom.png"),
             128,
             128,
+            0,
             0,
             0
         ),
@@ -495,12 +505,14 @@ gameStuff = {
     musicVolumeAdd = 0,
     --The current game version
     currentVersion = "0.0.1 Alpha",
+    --If the game should pause for an event or something like that
+    eventPause = false,
 }
 --It is like the "gameInstances" var but they are rendered on top of most instances the game and arent affected by the camera
 onTopGameInstaces = {}
 --The divider of the money
 moneyGainDiv = 1
---The multiplier (it is not markplier) of the money recieved
+--The multiplier (it is not markplier) of + gameplayStuff.moneyMult the money recieved
 moneyGainMult = 1
 --Some debug related propertys
 debugStuff = {
@@ -531,6 +543,13 @@ xForCar = 0
 speedUpButton = nil
 --If the game can peacefuly quit
 canCloseGame = false
+--An table to hold gameplay info
+gameplayStuff = {
+    --The real money multiplier (it is not markplier)
+    moneyMult = 1,
+    --The real money divider
+    moneyDiv = 1,
+}
 --The target (maximum) fps
 targetFps = 120
 --The list of mods
@@ -645,38 +664,9 @@ function love.load(args, unfilteredArgs)
     love.window.setIcon(love.image.newImageData("Sprs/Fog/Idle.png"))
 
 
-    local modsFileInfo = love.filesystem.getInfo("Mods", "directory")
-    if #modsFileInfo == 0 then love.filesystem.createDirectory("Mods") end
-    local requireFolders = "?.lua;?/init.lua;/Mods/?.lua"
-    local files = love.filesystem.getDirectoryItems("Mods")
-    for f=1, #files do
-        local currentFileName = files[f]
-        local extenType = string.find(currentFileName, ".lua")
-
-
-        if extenType == nil then
-            requireFolders = requireFolders .. ";" .. "/" .. currentFileName .. "/?.lua"
-        end
-    end
-
-
-    love.filesystem.setRequirePath(requireFolders)
-
-
-    for f=1, #files do
-        local currentFileName = files[f]
-        local extenType = string.find(currentFileName, ".lua")
-
-
-        if extenType ~= nil then
-            currentFileName = string.sub(currentFileName, 0, extenType - 1)
-
-
-            if currentFileName ~= "mods" then
-                require("Mods." .. currentFileName)
-                table.insert(mods, #mods + 1, currentFileName)
-            end
-        end
+    --Load game mods from the folder if it is not the first play
+    if not gameStuff.firstPlay then
+        loadMods()
     end
 
 
@@ -686,6 +676,14 @@ function love.load(args, unfilteredArgs)
 
     --Load the game save file
     loadGame()
+
+
+    --Create the example mod if it is the first play
+    if gameStuff.firstPlay then
+        local exampleCode = 'function modDraw()\n\tif debugStuff.enabled then \n\t\tlove.graphics.setColor(1, 1, 1); drawOutlinedText("EXAMPLE MOD ENABLED", 800 / 2, 8, 0.1 * math.cos(GlobalSinAngle), 2, 2, nil, 0, 4, {0, 0, 0})\n\tend\nend\n\n\ntable.insert(modsStuff.frontDrawFunctions, 1, modDraw)'
+        love.filesystem.write("Mods/ExampleMod.lua", exampleCode)
+        loadMods()
+    end
 end
 
 
@@ -804,7 +802,7 @@ function love.update(dt)
 
 
     --If the game is not paused
-    if not gameStuff.paused then
+    if not gameStuff.paused and not gameStuff.eventPause then
         --Update mods update functions
         for f=1, #modsStuff.updateFunctions do
             if type(modsStuff.updateFunctions[f]) == "function" then
@@ -1235,8 +1233,8 @@ function love.update(dt)
 
 
             if modifier.current == modifier.nameList.NO_MOD then
-                moneyGainDiv = 1
-                moneyGainMult = 1
+                moneyGainDiv = 1 + gameplayStuff.moneyDiv
+                moneyGainMult = 1 + gameplayStuff.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 1
@@ -1253,8 +1251,8 @@ function love.update(dt)
                     Foggs[f].hpMultFogg = 1
                 end
             elseif modifier.current == modifier.nameList.MOD_HALF_CAR_LIFE then
-                moneyGainDiv = 1
-                moneyGainMult = 1
+                moneyGainDiv = 1 + gameplayStuff.moneyDiv
+                moneyGainMult = 1 + gameplayStuff.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 2
                     GameCarInstances[c].spdDivCar = 1
@@ -1271,8 +1269,8 @@ function love.update(dt)
                     Foggs[f].hpMultFogg = 1
                 end
             elseif modifier.current == modifier.nameList.MOD_HALF_CAR_SPEED then
-                moneyGainDiv = 1
-                moneyGainMult = 1
+                moneyGainDiv = 1 + gameplayStuff.moneyDiv
+                moneyGainMult = 1 + gameplayStuff.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 2
@@ -1289,8 +1287,8 @@ function love.update(dt)
                     Foggs[f].hpMultFogg = 1
                 end
             elseif modifier.current == modifier.nameList.MOD_HALF_EVERYTHING then
-                moneyGainDiv = 2
-                moneyGainMult = 1
+                moneyGainDiv = 2 + gameplayStuff.moneyDiv
+                moneyGainMult = 1 + gameplayStuff.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 2
                     GameCarInstances[c].spdDivCar = 2
@@ -1307,8 +1305,8 @@ function love.update(dt)
                     Foggs[f].hpMultFogg = 1
                 end
             elseif modifier.current == modifier.nameList.MOD_HALF_FOGG_LIFE then
-                moneyGainDiv = 1
-                moneyGainMult = 1
+                moneyGainDiv = 1 + gameplayStuff.moneyDiv
+                moneyGainMult = 1 + gameplayStuff.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 1
@@ -1325,8 +1323,8 @@ function love.update(dt)
                     Foggs[f].hpMultFogg = 1
                 end
             elseif modifier.current == modifier.nameList.MOD_HALF_MONEY_GAIN then
-                moneyGainDiv = 2
-                moneyGainMult = 1
+                moneyGainDiv = 2 + gameplayStuff.moneyDiv
+                moneyGainMult = 1 + gameplayStuff.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 1
@@ -1343,8 +1341,8 @@ function love.update(dt)
                     Foggs[f].hpMultFogg = 1
                 end
             elseif modifier.current == modifier.nameList.MOD_HALF_SCREEN then
-                moneyGainDiv = 1
-                moneyGainMult = 1
+                moneyGainDiv = 1 + gameplayStuff.moneyDiv
+                moneyGainMult = 1 + gameplayStuff.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 1
@@ -1352,8 +1350,8 @@ function love.update(dt)
                     GameCarInstances[c].spdMultCar = 1
                     GameCarInstances[c].scaleAdd = 0
                 end
-                placingStuff.minX = 800 / 2
-                placingStuff.maxX = 800 * 1.5
+                placingStuff.minX = gameCam.pos.x + 800 / 2
+                placingStuff.maxX = gameCam.pos.x + 800 * 1.5
                 for f = 1, #Foggs do
                     Foggs[f].spdDivFogg = 1
                     Foggs[f].hpDivFogg = 1
@@ -1361,8 +1359,8 @@ function love.update(dt)
                     Foggs[f].hpMultFogg = 1
                 end
             elseif modifier.current == modifier.nameList.MOD_TIMES_TWO_CAR_LIFE then
-                moneyGainDiv = 1
-                moneyGainMult = 1
+                moneyGainDiv = 1 + gameplayStuff.moneyDiv
+                moneyGainMult = 1 + gameplayStuff.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 1
@@ -1379,14 +1377,13 @@ function love.update(dt)
                     Foggs[f].hpMultFogg = 1
                 end
             elseif modifier.current == modifier.nameList.MOD_TIMES_TWO_CAR_SIZE then
-                moneyGainDiv = 1
-                moneyGainMult = 1
+                moneyGainDiv = 1 + gameplayStuff.moneyDiv
+                moneyGainMult = 1 + gameplayStuff.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 1
                     GameCarInstances[c].hpMultCar = 1
                     GameCarInstances[c].spdMultCar = 2
-                    GameCarInstances[c].scaleAdd = 0
                     GameCarInstances[c].scaleAdd = GameCarInstances[c].fromCar.scale
                 end
                 placingStuff.minX = -128
@@ -1398,8 +1395,8 @@ function love.update(dt)
                     Foggs[f].hpMultFogg = 1
                 end
             elseif modifier.current == modifier.nameList.MOD_TIMES_TWO_CAR_SPEED then
-                moneyGainDiv = 1
-                moneyGainMult = 1
+                moneyGainDiv = 1 + gameplayStuff.moneyDiv
+                moneyGainMult = 1 + gameplayStuff.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 1
@@ -1416,8 +1413,8 @@ function love.update(dt)
                     Foggs[f].hpMultFogg = 1
                 end
             elseif modifier.current == modifier.nameList.MOD_TIMES_TWO_EVERYTHING then
-                moneyGainDiv = 1
-                moneyGainMult = 2
+                moneyGainDiv = 1 + gameplayStuff.moneyDiv
+                moneyGainMult = 2 + gameplayStuff.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 1
@@ -1434,8 +1431,8 @@ function love.update(dt)
                     Foggs[f].hpMultFogg = 2
                 end
             elseif modifier.current == modifier.nameList.MOD_TIMES_TWO_FOGG_LIFE then
-                moneyGainDiv = 1
-                moneyGainMult = 1
+                moneyGainDiv = 1 + gameplayStuff.moneyDiv
+                moneyGainMult = 1 + gameplayStuff.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 1
@@ -1452,8 +1449,8 @@ function love.update(dt)
                     Foggs[f].hpMultFogg = 2
                 end
             elseif modifier.current == modifier.nameList.MOD_TWO_TIMES_MONEY_GAIN then
-                moneyGainDiv = 1
-                moneyGainMult = 2
+                moneyGainDiv = 1 + gameplayStuff.moneyDiv
+                moneyGainMult = 2 + gameplayStuff.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 1
@@ -1539,6 +1536,12 @@ function love.update(dt)
     end
 
 
+    if gameStuff.eventPause and currentRoom == rooms.quit then
+        canCloseGame = true
+        love.event.quit()
+    end
+
+
     --If the pause menu exists, update it
     if pauseMenuInstance ~= nil then
         pauseMenuInstance:update()
@@ -1557,7 +1560,7 @@ function love.update(dt)
 
 
     --If the timeSinceStart is more than 20000 frames, reset it
-    if gameStuff.timeSinceStart > 20000 then
+    if gameStuff.timeSinceStart > 2 then
         gameStuff.timeSinceStart = 0
     end
 
@@ -1577,14 +1580,6 @@ function love.update(dt)
     mouseScroll.y = 0
     --Update the game mouse
     mouse:updateMouse()
-    --Set the random number seed
-    if not gameStuff.useFixedSeed then
-        math.randomseed(gameStuff.timeSinceStart)
-        love.math.setRandomSeed(gameStuff.timeSinceStart)
-    else
-        math.randomseed(gameStuff.fixedSeed)
-        love.math.setRandomSeed(gameStuff.fixedSeed)
-    end
     --Update if the lmb and rmb was pressed in the last frames
     LastLeftMouseButton = love.mouse.isDown(1)
     LastRightMouseButton = love.mouse.isDown(2)
@@ -1606,6 +1601,14 @@ function love.update(dt)
     keyboardWasPressed = false
     --Increase the time since start
     gameStuff.timeSinceStart = gameStuff.timeSinceStart + 1
+    --Set the random number seed
+    if not gameStuff.useFixedSeed then
+        math.randomseed(os.time() + gameStuff.timeSinceStart)
+        love.math.setRandomSeed(os.time() + gameStuff.timeSinceStart)
+    else
+        math.randomseed(gameStuff.fixedSeed)
+        love.math.setRandomSeed(gameStuff.fixedSeed)
+    end
     --Save the game
     saveGame(love.window.getFullscreen(), gameStuff.lang, gameStuff.sfxVolume, gameStuff.musicVolume, gameStuff.higestRound, gameStuff.drawOutlines, targetFps, useVSync)
 end
@@ -1987,6 +1990,9 @@ function love.keypressed(key)
     if key == "f1" then
         debugStuff.enabled = not debugStuff.enabled
     end
+    if key == "f5" then
+        startEvent()
+    end
 end
 
 
@@ -2271,4 +2277,42 @@ end
 --Function to delete UI Instances
 function deleteUIInstance(whatInstance)
     table.remove(UiStuff, tableFind(UiStuff, whatInstance))
+end
+
+
+--Function to reload the mods
+function loadMods()
+    local modsFileInfo = love.filesystem.getInfo("Mods", "directory")
+    if #modsFileInfo == 0 then love.filesystem.createDirectory("Mods") end
+    local requireFolders = "?.lua;?/init.lua;/Mods/?.lua"
+    local files = love.filesystem.getDirectoryItems("Mods")
+    for f=1, #files do
+        local currentFileName = files[f]
+        local extenType = string.find(currentFileName, ".lua")
+
+
+        if extenType == nil then
+            requireFolders = requireFolders .. ";" .. "/" .. currentFileName .. "/?.lua"
+        end
+    end
+
+
+    love.filesystem.setRequirePath(requireFolders)
+
+
+    for f=1, #files do
+        local currentFileName = files[f]
+        local extenType = string.find(currentFileName, ".lua")
+
+
+        if extenType ~= nil then
+            currentFileName = string.sub(currentFileName, 0, extenType - 1)
+
+
+            if currentFileName ~= "mods" then
+                require("Mods." .. currentFileName)
+                table.insert(mods, #mods + 1, currentFileName)
+            end
+        end
+    end
 end

@@ -1,4 +1,4 @@
-function newAnimation(image, width, height, frames, speed, replayType)
+function newAnimation(image, width, height, framesH, framesV, speed, replayType)
     if speed == nil then
         speed = 8
     end
@@ -18,19 +18,21 @@ function newAnimation(image, width, height, frames, speed, replayType)
     animation.finished = false
 
 
-    animation.totalFrames = frames + 1
-    animation.duration = frames / speed
-
-
     function animation:reset()
         self.currentFrame = 1
         self.finished = false
     end
 
 
-    for x = 0, frames do
-        table.insert(animation.quads, love.graphics.newQuad(width * x, 0, width, height, image:getDimensions()))
+    for y = 0, framesV do
+        for x = 0, framesH do
+            table.insert(animation.quads, love.graphics.newQuad(width * x, height * y, width, height, image:getDimensions()))
+        end
     end
+
+
+    animation.totalFrames = #animation.quads + 1
+    animation.duration = (#animation.quads + 1) / speed
 
 
     function animation:update(dt)
@@ -70,5 +72,31 @@ function newAnimation(image, width, height, frames, speed, replayType)
     end
 
 
+
+    function animation:drawFrame(whatFrame, rot, x, y, sx, sy, ox, oy, outlineSize, outlineColor)
+        local spriteNum = whatFrame
+        
+
+        if ox == nil then
+            ox = width / 2
+        end
+        if oy == nil then
+            oy = height / 2
+        end
+
+
+        if outlineSize == nil then
+            love.graphics.draw(animation.spriteSheet, animation.quads[spriteNum], x, y, rot, sx, sy, ox, oy)
+        else
+            drawOutlinedSpriteQuad(animation.spriteSheet, animation.quads[spriteNum], x, y, rot, sx, sy, ox, oy, outlineSize, outlineColor)
+        end
+    end
+
+
     return animation
+end
+
+
+function isAnimation(what)
+    return what.spriteSheet ~= nil
 end

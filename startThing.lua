@@ -74,7 +74,7 @@ function createStartThing()
             self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 0.25 + 0.1 * math.sin(GlobalSinAngle / 4), 6)
         end
         self.logoScale = self.logoScale + 0.0001 * math.cos(GlobalSinAngle * 4)
-        self.logoRot = self.logoRot + 0.025 * math.cos(GlobalSinAngle * 4)
+        self.logoRot = self.logoRot + 0.015 * math.cos(GlobalSinAngle * 4)
         self.oldAccKey = love.keyboard.isDown("space", "return")
         self.nextStateTimer = self.nextStateTimer - 1 * globalDt
 

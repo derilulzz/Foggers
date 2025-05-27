@@ -286,7 +286,7 @@ function createMainMenu()
                     end
 
 
-                    if self.runConfigStuff.startRunButton.pressed then
+                    if self.runConfigStuff.startRunButton.pressed or self.oldSelectButtonPressed == false and love.keyboard.isDown("return", "space") then
                         if self.runConfigStuff.startingRoundNumBtn.textedText == "" then
                             gameStuff.currentStartingRound = 0
                         else
@@ -695,8 +695,9 @@ function createFpsSetter()
     function f:draw()
         love.graphics.setColor(0, 0, 0)
         drawOutlinedRect((800 / 2) - 256, (600 / 2) - 256, 512, 512, {1, 1, 1})
-        drawOutlinedText("FPS Setter", 800 / 2, 128, 0.09 * math.cos(GlobalSinAngle), 4, 4, nil, nil, 4, {0, 0, 0})
-        drawOutlinedText("0 Will Make your FPS Be Unlimited", 800 / 2, (600 / 2) + 64 + 16, 0.09 * math.sin(GlobalSinAngle), 2, 2, nil, nil, 4, {0, 0, 0})
+        love.graphics.setColor(1, 1, 1)
+        drawOutlinedText("FPS Setter", 800 / 2, 128, 0.09 * math.cos(GlobalSinAngle), 4, 4, nil, nil, 4, {0, 0, 0, 1})
+        drawOutlinedText("0 Will Make your FPS Be Unlimited", 800 / 2, (600 / 2) + 64 + 16, 0.09 * math.sin(GlobalSinAngle), 2, 2, nil, nil, 4, {0, 0, 0, 1})
     end
 
 
