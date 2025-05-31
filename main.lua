@@ -11,7 +11,7 @@ love.graphics.setDefaultFilter("nearest", "nearest")
 
 --Require all the other files in the project and the debugger
 if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
-	require("lldebugger").start()
+    require("lldebugger").start()
 end
 require "effects"
 require "cars"
@@ -57,7 +57,7 @@ GameCars = {
             0,
             0,
             0
-        ),{},
+        ), {},
         4,
         400,
         1,
@@ -76,7 +76,7 @@ GameCars = {
             0,
             0,
             0
-        ),{},
+        ), {},
         4.5,
         200,
         2,
@@ -99,7 +99,7 @@ GameCars = {
             0,
             0,
             0
-        ),{},
+        ), {},
         3,
         1000,
         0.5,
@@ -122,7 +122,7 @@ GameCars = {
             0,
             0,
             0
-        ),{},
+        ), {},
         3,
         50,
         0,
@@ -150,7 +150,7 @@ GameCars = {
             0,
             0,
             0
-        ),{},
+        ), {},
         3,
         250,
         0,
@@ -176,7 +176,7 @@ GameCars = {
             0,
             0,
             0
-        ),{},
+        ), {},
         3,
         250,
         0.5,
@@ -238,7 +238,7 @@ keyboardWasPressed = false
 --All the game ui stuff (buttons, text buttons, etc...)
 UiStuff = {}
 --The current mouse scroll value in the x and y
-mouseScroll = {x = 0, y = 0}
+mouseScroll = { x = 0, y = 0 }
 --The propertys for placing cars (the max x and the min x)
 placingStuff = {
     minX = 0,
@@ -570,7 +570,7 @@ frameTime = 1 / targetFps
 --The game main loop function, it gonna update the game, draw the game and exit the game, this function dont need to actually exist, it is just here for customization
 function love.run()
     --Intialize "Push"
-    Push:setupScreen(800, 600, 800, 600, {resizable=true})
+    Push:setupScreen(800, 600, 800, 600, { resizable = true })
     --Set the window title
     love.window.setTitle("Foggers")
     --Set game identity
@@ -653,7 +653,6 @@ function love.run()
     end
 end
 
-
 --Inits some stuff
 function love.load(args, unfilteredArgs)
     --Set the line style to "rough" to make it not blurry
@@ -680,21 +679,21 @@ function love.load(args, unfilteredArgs)
 
     --Create the example mod if it is the first play
     if gameStuff.firstPlay then
-        local exampleCode = 'function modDraw()\n\tif debugStuff.enabled then \n\t\tlove.graphics.setColor(1, 1, 1); drawOutlinedText("EXAMPLE MOD ENABLED", 800 / 2, 8, 0.1 * math.cos(GlobalSinAngle), 2, 2, nil, 0, 4, {0, 0, 0})\n\tend\nend\n\n\ntable.insert(modsStuff.frontDrawFunctions, 1, modDraw)'
+        local exampleCode =
+        'function modDraw()\n\tif debugStuff.enabled then \n\t\tlove.graphics.setColor(1, 1, 1); drawOutlinedText("EXAMPLE MOD ENABLED", 800 / 2, 8, 0.1 * math.cos(GlobalSinAngle), 2, 2, nil, 0, 4, {0, 0, 0})\n\tend\nend\n\n\ntable.insert(modsStuff.frontDrawFunctions, 1, modDraw)'
         love.filesystem.write("Mods/ExampleMod.lua", exampleCode)
         loadMods()
     end
 end
-
 
 --Update everything
 function love.update(dt)
     --Get the mouse positon transformed by the camera and scaled by "Push"
     local mP = { gameCam.transform:inverseTransformPoint(Push:toGame(love.mouse.getX(), love.mouse.getY())) }
     --Get the mouse position scaled by "Push" but not transformed by the camera
-    local realMPos = {Push:toGame(love.mouse.getX(), love.mouse.getY())}
+    local realMPos = { Push:toGame(love.mouse.getX(), love.mouse.getY()) }
     --Update the mouse position NOT transformed by the camera
-    PushsInGameMousePosNoTransform = {x = realMPos[1], y = realMPos[2]}
+    PushsInGameMousePosNoTransform = { x = realMPos[1], y = realMPos[2] }
     --Update the mouse position transformed by the camera
     PushsInGameMousePos = { x = mP[1], y = mP[2] }
     --Update the global delta time
@@ -737,11 +736,13 @@ function love.update(dt)
         local forceHoverdown = false
         local hoveredId = 1
 
-        
+
         --Pass thro all the UI instances to get if one is hovered
         for b = 1, #UiStuff do
             --if this button is already hovered, then force all the other buttons to be not hovered
-            if UiStuff[b].hovered then forceHoverdown = true; hoveredId = b end
+            if UiStuff[b].hovered then
+                forceHoverdown = true; hoveredId = b
+            end
         end
 
 
@@ -794,7 +795,7 @@ function love.update(dt)
 
 
     --Update non stop mods update functions
-    for f=1, #modsStuff.nonStopUpdateFunctions do
+    for f = 1, #modsStuff.nonStopUpdateFunctions do
         if type(modsStuff.nonStopUpdateFunctions[f]) == "function" then
             modsStuff.nonStopUpdateFunctions[f](dt)
         end
@@ -804,7 +805,7 @@ function love.update(dt)
     --If the game is not paused
     if not gameStuff.paused and not gameStuff.eventPause then
         --Update mods update functions
-        for f=1, #modsStuff.updateFunctions do
+        for f = 1, #modsStuff.updateFunctions do
             if type(modsStuff.updateFunctions[f]) == "function" then
                 modsStuff.updateFunctions[f](dt)
             end
@@ -906,7 +907,7 @@ function love.update(dt)
             --Get if the player is hovering the car selection box
             gameStuff.hoveringTopBox = PushsInGameMousePosNoTransform.y < upBoxStuff.y + upBoxStuff.h
 
-            
+
             --Let the player scroll the top bar
             if gameStuff.hoveringTopBox then
                 --If the mouse position is at the right side of the screen, increase the scroll value
@@ -923,7 +924,7 @@ function love.update(dt)
                 upBoxStuff.scrollX = Lume.clamp(upBoxStuff.scrollX, 0, 3.75 * #GameCars)
             end
             --Pass thro the game car buttons
-            for b=1, #gameCarButtons do
+            for b = 1, #gameCarButtons do
                 --Set the buttons positions effected by the scroll value
                 gameCarButtons[b].pos.x = Lume.lerp(gameCarButtons[b].pos.x, (0 + 128 * b) - 32 * upBoxStuff.scrollX, 6)
 
@@ -938,28 +939,28 @@ function love.update(dt)
 
 
             --#region Move the camera
-                --The x direction of the input
-                local inputDirX = 0
-                --The y direction of the input
-                local inputDirY = 0
-                --The camera speed
-                local mspd = 500
+            --The x direction of the input
+            local inputDirX = 0
+            --The y direction of the input
+            local inputDirY = 0
+            --The camera speed
+            local mspd = 500
 
 
-                --Get the inputs and make them actually set the direction
-                if love.keyboard.isDown("a") then inputDirX = inputDirX - 1 end
-                if love.keyboard.isDown("d") then inputDirX = inputDirX + 1 end
-                if love.keyboard.isDown("w") then inputDirY = inputDirY - 1 end
-                if love.keyboard.isDown("s") then inputDirY = inputDirY + 1 end
+            --Get the inputs and make them actually set the direction
+            if love.keyboard.isDown("a") then inputDirX = inputDirX - 1 end
+            if love.keyboard.isDown("d") then inputDirX = inputDirX + 1 end
+            if love.keyboard.isDown("w") then inputDirY = inputDirY - 1 end
+            if love.keyboard.isDown("s") then inputDirY = inputDirY + 1 end
 
 
-                --The player has pressed shift, increase the speed
-                if love.keyboard.isDown("lshift") then mspd = 850 end
+            --The player has pressed shift, increase the speed
+            if love.keyboard.isDown("lshift") then mspd = 850 end
 
 
-                --Set the camera velocity to the input direction
-                gameCam.vel.x = Lume.lerp(gameCam.vel.x, mspd * inputDirX, 6)
-                gameCam.vel.y = Lume.lerp(gameCam.vel.y, mspd * inputDirY, 6)
+            --Set the camera velocity to the input direction
+            gameCam.vel.x = Lume.lerp(gameCam.vel.x, mspd * inputDirX, 6)
+            gameCam.vel.y = Lume.lerp(gameCam.vel.y, mspd * inputDirY, 6)
             --#endregion
 
 
@@ -1007,8 +1008,8 @@ function love.update(dt)
                         --If the player is not placing cars, then start placing the current car
                         if placingCar == false then
                             startCarPlacing(b)
-                        --else, if the current car is the same as the car of the button pressed, stop placing cars
-                        --BUT if the player is placing cars and the current car selected is not equals to the car of the button pressed, start placing the car of the button pressed
+                            --else, if the current car is the same as the car of the button pressed, stop placing cars
+                            --BUT if the player is placing cars and the current car selected is not equals to the car of the button pressed, start placing the car of the button pressed
                         else
                             if currentBtnSelected == selectedCar then
                                 stopCarPlacing()
@@ -1078,7 +1079,7 @@ function love.update(dt)
                 if foggCreateTimer <= 0 then
                     createANewFogg()
 
-                    
+
                     foggCreateTimer = foggCreateTimerDef
                 end
             end
@@ -1509,8 +1510,8 @@ function love.update(dt)
         if gameCam.zoom ~= 0 then
             zoomPercent = (1 / gameCam.zoom)
         end
-        
-        
+
+
         --Update the game camera transformation
         gameCam.transform:setTransformation(
             -((gameCam.pos.x - gameCam.offset.x + Push:getWidth() / 2)) + ((Push:getWidth() * zoomPercent) / 2),
@@ -1610,9 +1611,9 @@ function love.update(dt)
         love.math.setRandomSeed(gameStuff.fixedSeed)
     end
     --Save the game
-    saveGame(love.window.getFullscreen(), gameStuff.lang, gameStuff.sfxVolume, gameStuff.musicVolume, gameStuff.higestRound, gameStuff.drawOutlines, targetFps, useVSync)
+    saveGame(love.window.getFullscreen(), gameStuff.lang, gameStuff.sfxVolume, gameStuff.musicVolume,
+        gameStuff.higestRound, gameStuff.drawOutlines, targetFps, useVSync)
 end
-
 
 --The function to draw the game
 function love.draw()
@@ -1781,7 +1782,7 @@ function love.draw()
 
 
     --Draw mods draw functions that are in the back
-    for f=1, #modsStuff.behindDrawFunctions do
+    for f = 1, #modsStuff.behindDrawFunctions do
         if type(modsStuff.behindDrawFunctions[f]) == "function" then
             modsStuff.behindDrawFunctions[f]()
         end
@@ -1801,7 +1802,7 @@ function love.draw()
 
 
     --Draw mods draw functions that are on front
-    for f=1, #modsStuff.frontDrawFunctions do
+    for f = 1, #modsStuff.frontDrawFunctions do
         if type(modsStuff.frontDrawFunctions[f]) == "function" then
             modsStuff.frontDrawFunctions[f]()
         end
@@ -1858,25 +1859,39 @@ function love.draw()
 
     --Draw debug info
     if debugStuff.enabled then
-        love.graphics.setColor({1, 1, 1})
+        love.graphics.setColor({ 1, 1, 1 })
         drawOutlinedText("RedRect: " .. tostring(damageEffectStuff.redRectRGBAdd), 8, 8, 0, 1, 1, 0, 0)
         drawOutlinedText("FPS: " .. tostring(love.timer.getFPS()), 8, 16 + 4, 0, 1, 1, 0, 0)
         drawOutlinedText("gameCarsAmnt: " .. tostring(#GameCarInstances), 8, 16 + 8 + 4 + 4, 0, 1, 1, 0, 0)
         drawOutlinedText("FoggsAmnt: " .. tostring(#Foggs), 8, 16 + 8 + 8 + 4 + 4 + 4, 0, 1, 1, 0, 0)
-        drawOutlinedText("gameInstancesAmnt: " .. tostring(#gameInstances), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("gameInstancesAmnt: " .. tostring(#gameInstances), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4, 0, 1, 1, 0,
+            0)
         drawOutlinedText("onTopGameInstancesAmnt: " .. tostring(#onTopGameInstaces), 8,
             16 + 8 + 8 + 8 + 8 + 4 + 4 + 4 +
             4 + 4, 0, 1, 1, 0, 0)
-        drawOutlinedText("timeSinceStartLove2D: " .. tostring(love.timer.getTime()), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4, 0, 1, 1, 0, 0)
-        drawOutlinedText("timeSinceStartFromGame: " .. tostring(gameStuff.timeSinceStart), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4, 0, 1, 1, 0, 0)
-        drawOutlinedText("random Number: " .. tostring(love.math.random(1, 4)), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
-        drawOutlinedText("random Number Lua: " .. tostring(math.random(1, 4)), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
-        drawOutlinedText("global Random Number: " .. tostring(randomNumber), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
-        drawOutlinedText("Ram used: " .. tostring(math.floor(collectgarbage("count") / 1024) .. " MB used"), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
-        drawOutlinedText("Current frog gaved: " .. tostring(gameStuff.currentFoggGaved), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8, 0, 1, 1, 0, 0)
-        drawOutlinedText("Amount of UI Instances: " .. tostring(#UiStuff), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8 + 4 + 8, 0, 1, 1, 0, 0)
-        drawOutlinedText("Current starting round: " .. tostring(gameStuff.currentStartingRound), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8 + 4 + 8 + 8 + 4, 0, 1, 1, 0, 0)
-        drawOutlinedText("Target fps: " .. tostring(targetFps), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8 + 4 + 8 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("timeSinceStartLove2D: " .. tostring(love.timer.getTime()), 8,
+            16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("timeSinceStartFromGame: " .. tostring(gameStuff.timeSinceStart), 8,
+            16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("random Number: " .. tostring(love.math.random(1, 4)), 8,
+            16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("random Number Lua: " .. tostring(math.random(1, 4)), 8,
+            16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("global Random Number: " .. tostring(randomNumber), 8,
+            16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("Ram used: " .. tostring(math.floor(collectgarbage("count") / 1024) .. " MB used"), 8,
+            16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("Current frog gaved: " .. tostring(gameStuff.currentFoggGaved), 8,
+            16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8, 0, 1, 1, 0, 0)
+        drawOutlinedText("Amount of UI Instances: " .. tostring(#UiStuff), 8,
+            16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8 + 4 + 8, 0, 1, 1,
+            0, 0)
+        drawOutlinedText("Current starting round: " .. tostring(gameStuff.currentStartingRound), 8,
+            16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8 + 4 + 8 + 8 + 4,
+            0, 1, 1, 0, 0)
+        drawOutlinedText("Target fps: " .. tostring(targetFps), 8,
+            16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8 + 4 + 8 + 8 + 4 +
+            8 + 4, 0, 1, 1, 0, 0)
     end
 
 
@@ -1884,13 +1899,11 @@ function love.draw()
     Push:finish()
 end
 
-
 --Called when the window gets resized
 function love.resize(w, h)
     --Update "Push"s, it is updated here and in love.update because my linux distro in making this function not run maximizing the window
     Push:resize(w, h)
 end
-
 
 --The function to create one new frog, just creates a new frog
 function createANewFogg(altX, altY)
@@ -1929,7 +1942,6 @@ function createANewFogg(altX, altY)
     end
 end
 
-
 --Called when one key gets pressed
 function love.keypressed(key)
     --Update the key that was pressed and set that the keyboard was pressed in the current frame
@@ -1948,7 +1960,7 @@ function love.keypressed(key)
     if key == "escape" then
         if currentRoom == rooms.mainMenu and currentRoom == rooms.start and currentRoom == rooms.startingOptions and currentRoom == rooms.credits and currentRoom == rooms.sourceCode then return end
 
-        
+
         if pauseMenuInstance ~= nil then
             if pauseMenuInstance.bgAlpha >= 0.85 then
                 gameStuff.paused = not gameStuff.paused
@@ -1995,7 +2007,6 @@ function love.keypressed(key)
     end
 end
 
-
 --Function to begin the car placing
 function startCarPlacing(whatCar)
     selectedCar = whatCar
@@ -2003,7 +2014,6 @@ function startCarPlacing(whatCar)
     currentSelectedCar = createCarInstance(GameCars[whatCar], PushsInGameMousePos.x, PushsInGameMousePos.y, false, true)
     table.remove(GameCarInstances, tableFind(GameCarInstances, currentSelectedCar))
 end
-
 
 --The function to stop car placing
 function stopCarPlacing()
@@ -2016,13 +2026,11 @@ function stopCarPlacing()
     mouse.LMBModulate = { 1, 1, 1 }
 end
 
-
 --The function to enable screen shake
 function enableScreenShake(force)
     screenShake.enabled = true
     screenShake.force = Lume.clamp(force, 0, 128)
 end
-
 
 --The function to change rooms
 function changeRoom(toWhat)
@@ -2038,12 +2046,10 @@ function changeRoom(toWhat)
         { progress = 0 }):ease("expoout"):oncomplete(disableTransition)
 end
 
-
 --The function to disable the transition (set that the transition is not running)
 function disableTransition()
     sceneTransition.enabled = false
 end
-
 
 --The function to set the current room, it needs to be run by the "changeScene" function
 function setRoom()
@@ -2051,7 +2057,9 @@ function setRoom()
 
 
     if currentRoom == rooms.mainMenu and mainMenuInstance ~= nil then mainMenuInstance.creditsButton = nil end
-    if currentRoom == rooms.game then createCamMoveTutorial(); gameCarButtons = {}; speedUpButton = nil end
+    if currentRoom == rooms.game then
+        createCamMoveTutorial(); gameCarButtons = {}; speedUpButton = nil
+    end
 
 
     currentRoom = rm
@@ -2097,8 +2105,6 @@ function setRoom()
     end
 end
 
-
-
 --The function to update all the cars
 function updateAllCars()
     for c = 1, #GameCarInstances do
@@ -2107,8 +2113,6 @@ function updateAllCars()
         end
     end
 end
-
-
 
 --The function to draw all cars
 function drawAllCars()
@@ -2142,7 +2146,6 @@ function drawAllCars()
     end
 end
 
-
 --The function to make the playe recieve damage
 function recieveDamage(dmg, x, y)
     gameStuff.hp = gameStuff.hp - dmg
@@ -2150,7 +2153,6 @@ function recieveDamage(dmg, x, y)
     damageEffectStuff.redRectRGBAdd = 1
     createDamageText(x, y)
 end
-
 
 --The function to update the music volume
 function updateMusicVolume()
@@ -2174,7 +2176,6 @@ function updateMusicVolume()
     end
 end
 
-
 --Sets if the game gonna use vsync
 function setVSyncUse(Use)
     if Use then
@@ -2186,7 +2187,6 @@ function setVSyncUse(Use)
     end
 end
 
-
 --Gets if one position is inside the camera
 function isPointInsideCam(x, y)
     return x >= (gameCam.pos.x + gameCam.offset.x) - ((800) * gameCam.zoom) and
@@ -2194,7 +2194,6 @@ function isPointInsideCam(x, y)
         y >= (gameCam.pos.y + gameCam.offset.y) - ((600) * gameCam.zoom) and
         y <= (gameCam.pos.y + gameCam.offset.y) - ((600 / 2) * gameCam.zoom) + 600 * 2
 end
-
 
 --Function to create the transition icon
 function createCoolTransition()
@@ -2215,37 +2214,36 @@ function createCoolTransition()
 
     function c:init()
         self.coolParticles:setParticleLifetime(2, 3)
-		self.coolParticles:moveTo(800 / 2, 600 / 2)
-		self.coolParticles:setLinearAcceleration(-2000, -600, 2000, 600)
-		self.coolParticles:setSizes(2, 4)
-		self.coolParticles:setRotation(-3, 3)
-		self.coolParticles:setColors({1, 1, 1, 1}, {1, 1, 1, 0})
-		self.coolParticles:setDirection(-1)
-		self.coolParticles:setParticleLifetime(1, 2)
-		self.coolParticles:emit(32)
+        self.coolParticles:moveTo(800 / 2, 600 / 2)
+        self.coolParticles:setLinearAcceleration(-2000, -600, 2000, 600)
+        self.coolParticles:setSizes(2, 4)
+        self.coolParticles:setRotation(-3, 3)
+        self.coolParticles:setColors({ 1, 1, 1, 1 }, { 1, 1, 1, 0 })
+        self.coolParticles:setDirection(-1)
+        self.coolParticles:setParticleLifetime(1, 2)
+        self.coolParticles:emit(32)
 
 
-        Flux.to(self, 0.25, {iconScale = 8, iconRot = 0}):ease("expoout"):after(self, 0.25, {iconScale = 0, iconRot = 6}):delay(0.5):ease("expoin"):oncomplete(c.deleteSelf)
+        Flux.to(self, 0.25, { iconScale = 8, iconRot = 0 }):ease("expoout"):after(self, 0.25,
+            { iconScale = 0, iconRot = 6 }):delay(0.5):ease("expoin"):oncomplete(c.deleteSelf)
     end
-
 
     function c:update()
         self.coolParticles:update(globalDt)
     end
 
-
     function c:draw()
         love.graphics.draw(self.coolParticles)
 
 
-        drawOutlinedSprite(self.icons[self.currentIcon], 800 / 2, 600 / 2, self.iconRot, self.iconScale, self.iconScale, self.icons[self.currentIcon]:getWidth() / 2, self.icons[self.currentIcon]:getHeight() / 2, 8, HSV(0.5 + 0.5 * math.sin(GlobalSinAngle * 4), 1, 1))
+        drawOutlinedSprite(self.icons[self.currentIcon], 800 / 2, 600 / 2, self.iconRot, self.iconScale, self.iconScale,
+            self.icons[self.currentIcon]:getWidth() / 2, self.icons[self.currentIcon]:getHeight() / 2, 8,
+            HSV(0.5 + 0.5 * math.sin(GlobalSinAngle * 4), 1, 1))
     end
-
 
     function c:deleteSelf()
         sceneTransition.coolIcon = nil
     end
-
 
     c:init()
 
@@ -2253,12 +2251,10 @@ function createCoolTransition()
     return c
 end
 
-
 --Function to make an y pos translate to one car y position AKA fix one y pos to one grid
 function transformToCarYPosGrid(posY)
     return Lume.clamp(math.floor(posY / carGridLockDist) * carGridLockDist, 0, 510)
 end
-
 
 --Function to use an bag item
 function recieveBagItem(whatItem)
@@ -2266,19 +2262,16 @@ function recieveBagItem(whatItem)
     table.insert(bagStuff.stored, #bagStuff.stored + 1, whatItem)
 end
 
-
 --Function that runs when the mouse gets scrolled
 function love.wheelmoved(x, y)
     mouseScroll.x = x
     mouseScroll.y = y
 end
 
-
 --Function to delete UI Instances
 function deleteUIInstance(whatInstance)
     table.remove(UiStuff, tableFind(UiStuff, whatInstance))
 end
-
 
 --Function to reload the mods
 function loadMods()
@@ -2286,7 +2279,7 @@ function loadMods()
     if #modsFileInfo == 0 then love.filesystem.createDirectory("Mods") end
     local requireFolders = "?.lua;?/init.lua;/Mods/?.lua"
     local files = love.filesystem.getDirectoryItems("Mods")
-    for f=1, #files do
+    for f = 1, #files do
         local currentFileName = files[f]
         local extenType = string.find(currentFileName, ".lua")
 
@@ -2300,7 +2293,7 @@ function loadMods()
     love.filesystem.setRequirePath(requireFolders)
 
 
-    for f=1, #files do
+    for f = 1, #files do
         local currentFileName = files[f]
         local extenType = string.find(currentFileName, ".lua")
 
