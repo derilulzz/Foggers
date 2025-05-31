@@ -1,6 +1,6 @@
 function createCitizen()
     local c = {
-        pos = {x = -128, y = math.random((600 / 2) - 128, (600 / 2) + 128)},
+        pos = { x = -128, y = math.random((600 / 2) - 128, (600 / 2) + 128) },
         spr = newAnimation(love.graphics.newImage("Sprs/Events/Citizen/CitizenWalk.png"), 32, 32, 3, 5),
         mspd = 50,
     }
@@ -26,7 +26,7 @@ function createCitizen()
 
 
         --Die handling
-        for f=1, #Foggs do
+        for f = 1, #Foggs do
             if Foggs[f] ~= nil then
                 if Lume.distance(self.pos.x, self.pos.y, Foggs[f].pos.x, Foggs[f].pos.y) <= 32 then
                     createWarningText("citizen died")
@@ -40,20 +40,19 @@ function createCitizen()
         self.spr:update(globalDt * gameStuff.speed)
     end
 
-
     function c:draw()
         drawShadow(self.pos.x, self.pos.y + 32, 4, 4, 0)
         love.graphics.setColor(1, 1, 1, 1)
-        self.spr:draw(self.rot, self.pos.x, self.pos.y, 2, 2, nil, nil, 2, {0, 0, 0})
+        self.spr:draw(self.rot, self.pos.x, self.pos.y, 2, 2, nil, nil, 2, { 0, 0, 0 })
     end
-
 
     table.insert(gameInstances, 1, c)
 end
+
 function createBombMan()
     local c = {
-        pos = {x = -128, y = math.random((600 / 2) - 128, (600 / 2) + 128)},
-        vel = {x = 0, y = 0},
+        pos = { x = -128, y = math.random((600 / 2) - 128, (600 / 2) + 128) },
+        vel = { x = 0, y = 0 },
         spd = 500,
         spr = newAnimation(love.graphics.newImage("Sprs/Events/SuicideBomber/SuicideBomberWalk.png"), 32, 32, 3, 5),
         mspd = 50,
@@ -64,7 +63,8 @@ function createBombMan()
     function c:update()
         local targetCar = 1
         if GameCarInstances[targetCar] ~= nil then
-            local angleTo = math.atan2(self.pos.y - GameCarInstances[targetCar].pos.y, self.pos.x - GameCarInstances[targetCar].pos.x)
+            local angleTo = math.atan2(self.pos.y - GameCarInstances[targetCar].pos.y,
+                self.pos.x - GameCarInstances[targetCar].pos.x)
 
 
             self.vel.x = Lume.lerp(self.vel.x, self.spd * math.cos(angleTo), 0.1)
@@ -76,7 +76,7 @@ function createBombMan()
                 GameCarInstances[targetCar].hp = 0
             end
         end
-        for f=1, #Foggs do
+        for f = 1, #Foggs do
             if Lume.distance(self.pos.x, self.pos.y, Foggs[f].pos.x, Foggs[f].pos.y) <= 32 then
                 createExplosion(self.pos.x, self.pos.y, GameCars[2])
             end
@@ -98,16 +98,15 @@ function createBombMan()
         self.spr:update(globalDt * gameStuff.speed)
     end
 
-
     function c:draw()
         drawShadow(self.pos.x, self.pos.y + 32, 4, 4, 0)
         love.graphics.setColor(1, 1, 1, 1)
-        self.spr:draw(self.rot, self.pos.x, self.pos.y, 2 * self.scaleX, 2, nil, nil, 2, {0, 0, 0})
+        self.spr:draw(self.rot, self.pos.x, self.pos.y, 2 * self.scaleX, 2, nil, nil, 2, { 0, 0, 0 })
     end
-
 
     table.insert(gameInstances, 1, c)
 end
+
 function createPlatformerChallenge()
     local p = {
         player = {
@@ -127,7 +126,7 @@ function createPlatformerChallenge()
             fallSprs = newAnimation(love.graphics.newImage("Sprs/Events/Platformer/PlayerFall.png"), 32, 32, 1, 0, 4, 0),
             spr = nil,
             rot = 0,
-            scale = {x = 4, y = 4},
+            scale = { x = 4, y = 4 },
             isMoving = false,
             velKeepTimer = 0,
             enableInputBuffer = false,
@@ -212,10 +211,10 @@ function createPlatformerChallenge()
 
 
     function p:init()
-        Flux.to(self, 1, {enterOffsetY=0}):ease("expoout")
+        Flux.to(self, 1, { enterOffsetY = 0 }):ease("expoout")
         self.tiles.spriteSheet:setWrap("repeat", "repeat")
-        
-        
+
+
         local x = 0
         while x < 800 do
             table.insert(self.peopleToShow, #self.peopleToShow + 1, math.random(1, #self.happyPeople))
@@ -227,13 +226,15 @@ function createPlatformerChallenge()
         self.player.pos.x = self.cols[self.selectedCol][1].x + 16
     end
 
-
     function p:update()
         self.player.rect = createRectangle(self.player.pos.x - 32, self.player.pos.y - 32 * 4, 32 * 2, 32 * 4)
 
 
         local inputDirX = 0
-        if love.keyboard.isDown("a") then inputDirX = inputDirX - 1 end; if love.keyboard.isDown("d") then inputDirX = inputDirX + 1 end
+        if love.keyboard.isDown("a") then inputDirX = inputDirX - 1 end; if love.keyboard.isDown("d") then
+            inputDirX =
+                inputDirX + 1
+        end
         if self.player.isOnFloor then
             self.player.vel.x = Lume.lerp(self.player.vel.x, self.player.mspd * inputDirX, 12)
         else
@@ -251,7 +252,7 @@ function createPlatformerChallenge()
 
 
         local isOnFloor = false
-        for c=1, #self.cols[self.selectedCol] do
+        for c = 1, #self.cols[self.selectedCol] do
             if self.player.rect:checkCollisionAdv(self.cols[self.selectedCol][c], self.player.vel.x * globalDt, -1) then
                 self.player.vel.x = 0
             end
@@ -259,8 +260,8 @@ function createPlatformerChallenge()
 
             if self.player.rect:checkCollisionAdv(self.cols[self.selectedCol][c], 0, self.player.vel.y * globalDt) then
                 self.player.vel.y = Lume.sign(self.player.vel.y)
-                
-                
+
+
                 while not self.player.rect:checkCollisionAdv(self.cols[self.selectedCol][c], 0, 0) do
                     if self.player.vel.y == 0 then self.player.vel.y = 1 end
 
@@ -272,7 +273,7 @@ function createPlatformerChallenge()
 
                 self.player.vel.y = 0
                 isOnFloor = true
-             end
+            end
         end
         if isOnFloor then
             if love.keyboard.isDown("space") and self.oldJumpKeyPressed == false then
@@ -374,7 +375,7 @@ function createPlatformerChallenge()
 
 
         if self.drawHappyPeople then
-            for b=1, #self.happyPeople do
+            for b = 1, #self.happyPeople do
                 self.happyPeople[b]:update(globalDt)
             end
         end
@@ -394,33 +395,29 @@ function createPlatformerChallenge()
         self.angle = self.angle + 16 * globalDt
     end
 
-
     function p:pass()
         if not self.drawHappyPeople then
             self.drawHappyPeople = true
-            Flux.to(self, 1, {peopleOffsetY=0}):ease("expoout")
+            Flux.to(self, 1, { peopleOffsetY = 0 }):ease("expoout")
             createEventSuccess(currentEvent)
 
 
-            Flux.to(self, 1, {enterOffsetY=600}):ease("expoout"):oncomplete(p.proceed):delay(2)
+            Flux.to(self, 1, { enterOffsetY = 600 }):ease("expoout"):oncomplete(p.proceed):delay(2)
         end
     end
-
 
     function p:proceed()
         money = money + 1000
         p.die()
     end
 
-
     function p:fail()
         if not self.failed and not self.drawHappyPeople then
             self.failed = true
             createEventFail(currentEvent)
-            Flux.to(self, 1, {enterOffsetY=600}):ease("expoin"):oncomplete(self.die)
+            Flux.to(self, 1, { enterOffsetY = 600 }):ease("expoin"):oncomplete(self.die)
         end
     end
-
 
     function p:die()
         gameStuff.pauseFroggCreation = false
@@ -429,7 +426,6 @@ function createPlatformerChallenge()
 
         table.remove(onTopGameInstaces, tableFind(onTopGameInstaces, p))
     end
-
 
     function p:draw()
         love.graphics.setScissor(32, 32 + self.enterOffsetY, 800 - 64, 600 - 64)
@@ -441,29 +437,39 @@ function createPlatformerChallenge()
 
         love.graphics.setColor(1, 1, 1, self.alpha)
         if isAnimation(self.player.spr) then
-            self.player.spr:draw(self.player.rot, self.player.pos.x, self.player.pos.y + self.enterOffsetY, self.player.scale.x, self.player.scale.y, nil, self.player.spr.sprHeight, 2, {0, 0, 0, self.alpha})
+            self.player.spr:draw(self.player.rot, self.player.pos.x, self.player.pos.y + self.enterOffsetY,
+                self.player.scale.x, self.player.scale.y, nil, self.player.spr.sprHeight, 2, { 0, 0, 0, self.alpha })
         else
-            drawOutlinedSprite(self.player.spr, self.player.pos.x, self.player.pos.y + self.enterOffsetY, self.player.rot, self.player.scale.x, self.player.scale.y, nil, self.player.spr:getHeight(), 2, {0, 0, 0, self.alpha})
+            drawOutlinedSprite(self.player.spr, self.player.pos.x, self.player.pos.y + self.enterOffsetY, self.player
+                .rot, self.player.scale.x, self.player.scale.y, nil, self.player.spr:getHeight(), 2,
+                { 0, 0, 0, self.alpha })
         end
 
 
-        for c=1, #self.cols[self.selectedCol] do
-            self.tiles:drawFrame(3, 0, self.cols[self.selectedCol][c].x, self.cols[self.selectedCol][c].y + self.enterOffsetY, 2, 2, 0, 0, nil)
+        for c = 1, #self.cols[self.selectedCol] do
+            self.tiles:drawFrame(3, 0, self.cols[self.selectedCol][c].x,
+                self.cols[self.selectedCol][c].y + self.enterOffsetY, 2, 2, 0, 0, nil)
 
 
-            for b=1, 1 do
-                self.tiles:drawFrame(2, 0, self.cols[self.selectedCol][c].x, self.cols[self.selectedCol][c].y + (32 * b) + self.enterOffsetY, 2, 2, 0, 0, nil)
+            for b = 1, 1 do
+                self.tiles:drawFrame(2, 0, self.cols[self.selectedCol][c].x,
+                    self.cols[self.selectedCol][c].y + (32 * b) + self.enterOffsetY, 2, 2, 0, 0, nil)
             end
-            for b=1, 16 do
-                self.tiles:drawFrame(1, 0, self.cols[self.selectedCol][c].x, self.cols[self.selectedCol][c].y + 32 + (32 * b) + self.enterOffsetY, 2, 2, 0, 0, nil)
+            for b = 1, 16 do
+                self.tiles:drawFrame(1, 0, self.cols[self.selectedCol][c].x,
+                    self.cols[self.selectedCol][c].y + 32 + (32 * b) + self.enterOffsetY, 2, 2, 0, 0, nil)
             end
         end
 
 
-        drawOutlinedText(string.format("%.1f", Lume.clamp(self.completeTimer, 0, 10)), 800 / 2, 64 + self.enterOffsetY, 0.1 * math.cos(GlobalSinAngle), 2 + 0.5 * math.cos(GlobalSinAngle * 2), 2 + 0.5 * math.cos(GlobalSinAngle * 2), nil, nil, 2, {0, 0, 0})
+        drawOutlinedText(string.format("%.1f", Lume.clamp(self.completeTimer, 0, 10)), 800 / 2, 64 + self.enterOffsetY,
+            0.1 * math.cos(GlobalSinAngle), 2 + 0.5 * math.cos(GlobalSinAngle * 2),
+            2 + 0.5 * math.cos(GlobalSinAngle * 2), nil, nil, 2, { 0, 0, 0 })
 
 
-        love.graphics.draw(self.targetFlag.spr, self.targetFlag.pos.x, self.targetFlag.pos.y + self.enterOffsetY, self.targetFlag.rot, self.targetFlag.scale, self.targetFlag.scale, self.targetFlag.spr:getWidth() / 2, self.targetFlag.spr:getHeight())
+        love.graphics.draw(self.targetFlag.spr, self.targetFlag.pos.x, self.targetFlag.pos.y + self.enterOffsetY,
+            self.targetFlag.rot, self.targetFlag.scale, self.targetFlag.scale, self.targetFlag.spr:getWidth() / 2,
+            self.targetFlag.spr:getHeight())
 
 
         love.graphics.setScissor()
@@ -473,16 +479,18 @@ function createPlatformerChallenge()
 
 
         if self.drawHappyPeople then
-            for p=1, #self.peopleToShow do
-                self.happyPeople[self.peopleToShow[p]]:draw(0, 0 + 64 + ((800 / 8) * (p - 1)), 600 + 32 + self.peopleOffsetY + self.enterOffsetY + 32 * math.sin(self.peopleWave - p), 8, 8, nil, self.happyPeople[self.peopleToShow[p]].sprHeight, nil)
+            for p = 1, #self.peopleToShow do
+                self.happyPeople[self.peopleToShow[p]]:draw(0, 0 + 64 + ((800 / 8) * (p - 1)),
+                    600 + 32 + self.peopleOffsetY + self.enterOffsetY + 32 * math.sin(self.peopleWave - p), 8, 8, nil,
+                    self.happyPeople[self.peopleToShow[p]].sprHeight, nil)
             end
         end
     end
 
-
     p:init()
     table.insert(onTopGameInstaces, 1, p)
 end
+
 function createPillChoose()
     local p = {
         guySpr = love.graphics.newImage("Sprs/Events/Pills/Guy.png"),
@@ -506,12 +514,12 @@ function createPillChoose()
             "Permanent x2 Car Damage",
         },
         pillSelected = false,
-        currentChoices = {1, 1},
+        currentChoices = { 1, 1 },
     }
 
 
     function p:init()
-        Flux.to(self, 1, {enterOffsetY=0, backgroundAlpha=0.85}):ease("expoout")
+        Flux.to(self, 1, { enterOffsetY = 0, backgroundAlpha = 0.85 }):ease("expoout")
         self.currentChoices[1] = math.random(1, #self.choises)
         self.currentChoices[2] = math.random(1, #self.choises)
 
@@ -521,7 +529,6 @@ function createPillChoose()
             self.currentChoices[2] = math.random(1, #self.choises)
         end
     end
-
 
     function p:update()
         if Lume.distance(PushsInGameMousePosNoTransform.x, PushsInGameMousePosNoTransform.y, (800 / 2) - 90, (600 / 2) + 116 + (16 * math.cos(GlobalSinAngle)) + self.enterOffsetY) < 128 then
@@ -535,7 +542,7 @@ function createPillChoose()
             if self.pillSelected then
                 self.selectedPillScale = self.selectedPillScale + 2 * globalDt
 
-                
+
                 if self.selectedPillScale >= 4 then
                     self.pill1Alpha = Lume.lerp(self.pill1Alpha, 0, 6)
                 end
@@ -592,7 +599,6 @@ function createPillChoose()
         self.notSelectedPillScale = Lume.lerp(self.notSelectedPillScale, 1, 6)
     end
 
-
     function p:draw()
         love.graphics.setColor(0, 0, 0, self.backgroundAlpha)
         love.graphics.rectangle("fill", 0, 0, 800, 600)
@@ -602,17 +608,23 @@ function createPillChoose()
 
 
         love.graphics.setColor(HSV(0, 0, 0.25 + 0.1 * math.cos(GlobalSinAngle)))
-        drawOutlinedRect(32, 32 + self.enterOffsetY, 800 - 64, 600 - 64, {0, 0, 0})
+        drawOutlinedRect(32, 32 + self.enterOffsetY, 800 - 64, 600 - 64, { 0, 0, 0 })
 
 
         love.graphics.setColor(1, 1, 1, 1)
-        love.graphics.draw(self.vigneteSpr, 800 / 2, 600 / 2, 0, self.vigneteScale, self.vigneteScale, self.vigneteSpr:getWidth() / 2, self.vigneteSpr:getHeight() / 2)
+        love.graphics.draw(self.vigneteSpr, 800 / 2, 600 / 2, 0, self.vigneteScale, self.vigneteScale,
+            self.vigneteSpr:getWidth() / 2, self.vigneteSpr:getHeight() / 2)
 
 
         love.graphics.setColor(1, 1, 1)
-        love.graphics.draw(self.guySpr, 800 / 2, (600 / 2) + self.enterOffsetY, 0, 4.5, 4.5 + 0.1 * math.cos(GlobalSinAngle), self.guySpr:getWidth() / 2, self.guySpr:getHeight() / 2)
-        love.graphics.draw(self.handSpr, (800 / 2) + 90, (600 / 2) + 116 + (16 * math.sin(GlobalSinAngle)) + self.enterOffsetY, 0, 0.1, 0.1, self.handSpr:getWidth() / 2, self.handSpr:getHeight() / 2)
-        love.graphics.draw(self.handSpr, (800 / 2) - 90, (600 / 2) + 116 + (16 * math.cos(GlobalSinAngle)) + self.enterOffsetY, 0, -0.1, 0.1, self.handSpr:getWidth() / 2, self.handSpr:getHeight() / 2)
+        love.graphics.draw(self.guySpr, 800 / 2, (600 / 2) + self.enterOffsetY, 0, 4.5,
+            4.5 + 0.1 * math.cos(GlobalSinAngle), self.guySpr:getWidth() / 2, self.guySpr:getHeight() / 2)
+        love.graphics.draw(self.handSpr, (800 / 2) + 90,
+            (600 / 2) + 116 + (16 * math.sin(GlobalSinAngle)) + self.enterOffsetY, 0, 0.1, 0.1,
+            self.handSpr:getWidth() / 2, self.handSpr:getHeight() / 2)
+        love.graphics.draw(self.handSpr, (800 / 2) - 90,
+            (600 / 2) + 116 + (16 * math.cos(GlobalSinAngle)) + self.enterOffsetY, 0, -0.1, 0.1,
+            self.handSpr:getWidth() / 2, self.handSpr:getHeight() / 2)
 
 
         local p1Scale = 1
@@ -624,38 +636,43 @@ function createPillChoose()
 
 
         love.graphics.setColor(1, 1, 1, self.pill1Alpha)
-        love.graphics.draw(self.pinkPillSpr, (800 / 2) + 90, (600 / 2) + 116 + (16 * math.sin(GlobalSinAngle)) + self.enterOffsetY, 0.25 * math.sin(GlobalSinAngle), p1Scale, p1Scale, self.pinkPillSpr:getWidth() / 2, self.pinkPillSpr:getHeight() / 2)
+        love.graphics.draw(self.pinkPillSpr, (800 / 2) + 90,
+            (600 / 2) + 116 + (16 * math.sin(GlobalSinAngle)) + self.enterOffsetY, 0.25 * math.sin(GlobalSinAngle),
+            p1Scale, p1Scale, self.pinkPillSpr:getWidth() / 2, self.pinkPillSpr:getHeight() / 2)
         love.graphics.setColor(1, 1, 1, self.pill2Alpha)
-        love.graphics.draw(self.greenPillSpr, (800 / 2) - 90, (600 / 2) + 116 + (16 * math.cos(GlobalSinAngle)) + self.enterOffsetY, 0.25 * math.cos(GlobalSinAngle), p2Scale, p2Scale, self.pinkPillSpr:getWidth() / 2, self.pinkPillSpr:getHeight() / 2)
+        love.graphics.draw(self.greenPillSpr, (800 / 2) - 90,
+            (600 / 2) + 116 + (16 * math.cos(GlobalSinAngle)) + self.enterOffsetY, 0.25 * math.cos(GlobalSinAngle),
+            p2Scale, p2Scale, self.pinkPillSpr:getWidth() / 2, self.pinkPillSpr:getHeight() / 2)
 
 
         if self.currentSelectedPill == 1 then
-            drawOutlinedText(self.choises[self.currentChoices[1]], 800 / 2, 128, 0, 2 + (math.random(-16, 16) / 64), 2 + (math.random(-16, 16) / 64), nil, nil)
+            drawOutlinedText(self.choises[self.currentChoices[1]], 800 / 2, 128, 0, 2 + (math.random(-16, 16) / 64),
+                2 + (math.random(-16, 16) / 64), nil, nil)
         elseif self.currentSelectedPill == 2 then
-            drawOutlinedText(self.choises[self.currentChoices[2]], 800 / 2, 128, 0, 2 + (math.random(-16, 16) / 64), 2 + (math.random(-16, 16) / 64), nil, nil)
+            drawOutlinedText(self.choises[self.currentChoices[2]], 800 / 2, 128, 0, 2 + (math.random(-16, 16) / 64),
+                2 + (math.random(-16, 16) / 64), nil, nil)
         end
 
 
         love.graphics.setScissor()
     end
 
-
     p:init()
     table.insert(onTopGameInstaces, #onTopGameInstaces + 1, p)
 end
 
-
+--TODO: finish the pill chose event
 eventTypes = {
-    {creationCode = createCitizen, stopFrogg=false, gamePause=false, id = 0, name = "Citizen", namePT = "Cidadão"},
-    {creationCode = createBombMan, stopFrogg=false, gamePause=false, id = 1, name = "Suicide Bomber", namePT = "Homem Bomba"},
-    {creationCode = createPlatformerChallenge, stopFrogg=true, gamePause=true, id = 2, name = "Platformer Challenge", namePT = "Desafio de plataforma"},
-    {creationCode = createPillChoose, stopFrogg=true, gamePause=true, id = 2, name = "Pills", namePT = "Pilulas"},
+    { creationCode = createCitizen,             stopFrogg = false, gamePause = false, id = 0, name = "Citizen",              namePT = "Cidadão" },
+    { creationCode = createBombMan,             stopFrogg = false, gamePause = false, id = 1, name = "Suicide Bomber",       namePT = "Homem Bomba" },
+    { creationCode = createPlatformerChallenge, stopFrogg = true,  gamePause = true,  id = 2, name = "Platformer Challenge", namePT = "Desafio de plataforma" },
+    --{creationCode = createPillChoose, stopFrogg=true, gamePause=true, id = 2, name = "Pills", namePT = "Pilulas"},
 }
 currentEvent = 0
 
 
 function startEvent()
-    currentEvent = eventTypes[4]--[[eventTypes[math.floor(math.random(1, #eventTypes))]]
+    currentEvent = eventTypes[4] --[[eventTypes[math.floor(math.random(1, #eventTypes))]]
     currentEvent.creationCode()
 
 
@@ -670,7 +687,6 @@ function startEvent()
     createEventStartText(currentEvent)
 end
 
-
 function createEventStartText(whatEvent)
     local t = {
         text = "EVENT STARTED",
@@ -684,35 +700,35 @@ function createEventStartText(whatEvent)
     function t:init()
         if gameStuff.lang == "pt-br" then self.text = "EVENTO INICIADO" end
 
-        
-        Flux.to(self, 1, {scale=5, rot=0, alpha=1}):after(self, 1, {scale=0, rot=-6, alpha=0}):delay(1):oncomplete(t.destroy)
-    end
 
+        Flux.to(self, 1, { scale = 5, rot = 0, alpha = 1 }):after(self, 1, { scale = 0, rot = -6, alpha = 0 }):delay(1)
+            :oncomplete(t.destroy)
+    end
 
     function t:destroy()
         table.remove(gameInstances, tableFind(gameInstances, t))
     end
 
-
     function t:draw()
         love.graphics.setColor(1, 1, 1, 1)
 
 
-        drawOutlinedText(self.text, 800 / 2, 600 / 2, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(self.text) / 2, love.graphics.getFont():getHeight(self.text) / 2, 8, {0, 0, 0})
+        drawOutlinedText(self.text, 800 / 2, 600 / 2, self.rot, self.scale, self.scale,
+            love.graphics.getFont():getWidth(self.text) / 2, love.graphics.getFont():getHeight(self.text) / 2, 8,
+            { 0, 0, 0 })
 
 
         local text = self.forEvent.name
         if gameStuff.lang == "pt-br" then text = self.forEvent.namePT end
-        drawOutlinedText(text, 800 / 2, (600 / 2) + 128, 0, self.scale, self.scale, love.graphics.getFont():getWidth(text) / 2, love.graphics.getFont():getHeight(text) / 2, 8, {0, 0, 0})
+        drawOutlinedText(text, 800 / 2, (600 / 2) + 128, 0, self.scale, self.scale,
+            love.graphics.getFont():getWidth(text) / 2, love.graphics.getFont():getHeight(text) / 2, 8, { 0, 0, 0 })
     end
-
 
     t:init()
 
 
     table.insert(onTopGameInstaces, #onTopGameInstaces + 1, t)
 end
-
 
 function createEventFail(whatEvent)
     local t = {
@@ -727,36 +743,35 @@ function createEventFail(whatEvent)
     function t:init()
         if gameStuff.lang == "pt-br" then self.text = "EVENTO FALHO" end
 
-        
-        Flux.to(self, 1, {scale=5, rot=0, alpha=1}):after(self, 1, {scale=0, rot=-6, alpha=0}):delay(1):oncomplete(t.destroy)
-    end
 
+        Flux.to(self, 1, { scale = 5, rot = 0, alpha = 1 }):after(self, 1, { scale = 0, rot = -6, alpha = 0 }):delay(1)
+            :oncomplete(t.destroy)
+    end
 
     function t:destroy()
         table.remove(gameInstances, tableFind(gameInstances, t))
     end
 
-
     function t:draw()
         love.graphics.setColor(1, 0, 0, 1)
 
 
-        drawOutlinedText(self.text, 800 / 2, 600 / 2, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(self.text) / 2, love.graphics.getFont():getHeight(self.text) / 2, 8, {0, 0, 0})
+        drawOutlinedText(self.text, 800 / 2, 600 / 2, self.rot, self.scale, self.scale,
+            love.graphics.getFont():getWidth(self.text) / 2, love.graphics.getFont():getHeight(self.text) / 2, 8,
+            { 0, 0, 0 })
 
 
         local text = self.forEvent.name
         if gameStuff.lang == "pt-br" then text = self.forEvent.namePT end
-        drawOutlinedText(text, 800 / 2, (600 / 2) + 128, 0, self.scale, self.scale, love.graphics.getFont():getWidth(text) / 2, love.graphics.getFont():getHeight(text) / 2, 8, {0, 0, 0})
+        drawOutlinedText(text, 800 / 2, (600 / 2) + 128, 0, self.scale, self.scale,
+            love.graphics.getFont():getWidth(text) / 2, love.graphics.getFont():getHeight(text) / 2, 8, { 0, 0, 0 })
     end
-
 
     t:init()
 
 
     table.insert(onTopGameInstaces, #onTopGameInstaces + 1, t)
 end
-
-
 
 function createEventSuccess(whatEvent)
     local t = {
@@ -771,28 +786,29 @@ function createEventSuccess(whatEvent)
     function t:init()
         if gameStuff.lang == "pt-br" then self.text = "EVENTO COMPLETADO" end
 
-        
-        Flux.to(self, 1, {scale=5, rot=0, alpha=1}):after(self, 1, {scale=0, rot=-6, alpha=0}):delay(1):oncomplete(t.destroy)
-    end
 
+        Flux.to(self, 1, { scale = 5, rot = 0, alpha = 1 }):after(self, 1, { scale = 0, rot = -6, alpha = 0 }):delay(1)
+            :oncomplete(t.destroy)
+    end
 
     function t:destroy()
         table.remove(gameInstances, tableFind(gameInstances, t))
     end
 
-
     function t:draw()
         love.graphics.setColor(HSV(0.5, 1, 1))
 
 
-        drawOutlinedText(self.text, 800 / 2, 600 / 2, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(self.text) / 2, love.graphics.getFont():getHeight(self.text) / 2, 8, {0, 0, 0})
+        drawOutlinedText(self.text, 800 / 2, 600 / 2, self.rot, self.scale, self.scale,
+            love.graphics.getFont():getWidth(self.text) / 2, love.graphics.getFont():getHeight(self.text) / 2, 8,
+            { 0, 0, 0 })
 
 
         local text = self.forEvent.name
         if gameStuff.lang == "pt-br" then text = self.forEvent.namePT end
-        drawOutlinedText(text, 800 / 2, (600 / 2) + 128, 0, self.scale, self.scale, love.graphics.getFont():getWidth(text) / 2, love.graphics.getFont():getHeight(text) / 2, 8, {0, 0, 0})
+        drawOutlinedText(text, 800 / 2, (600 / 2) + 128, 0, self.scale, self.scale,
+            love.graphics.getFont():getWidth(text) / 2, love.graphics.getFont():getHeight(text) / 2, 8, { 0, 0, 0 })
     end
-
 
     t:init()
 

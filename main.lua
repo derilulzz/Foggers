@@ -62,7 +62,13 @@ GameCars = {
         400,
         1,
         1,
-        4
+        4,
+        100,
+        1,
+        1,
+        128,
+        {},
+        carsCategorys.Common
     ),
     createCar(
         "Truck",
@@ -85,7 +91,9 @@ GameCars = {
         200,
         2,
         2,
-        256
+        256,
+        {},
+        carsCategorys.Common
     ),
     createCar(
         "Sport Car",
@@ -108,7 +116,9 @@ GameCars = {
         400,
         1,
         1.5,
-        64
+        64,
+        {},
+        carsCategorys.Common
     ),
     createCar(
         "Seller Car",
@@ -136,7 +146,8 @@ GameCars = {
             seller = true,
             recieveCooldownDef = 1,
             recieveCooldown = 1,
-        }
+        },
+        carsCategorys.MoneyGenerator
     ),
     createCar(
         "Dinamite Car",
@@ -162,7 +173,8 @@ GameCars = {
         512,
         {
             explosive = true,
-        }
+        },
+        carsCategorys.Explosive
     ),
     createCar(
         "Cat Car",
@@ -190,7 +202,8 @@ GameCars = {
             cats = true,
             catCreateDelay = 1,
             catCreateDelayDef = 1,
-        }
+        },
+        carsCategorys.Special
     ),
     createCar(
         "Tank",
@@ -226,7 +239,8 @@ GameCars = {
             bulletCreateFunction = createTankBullet,
             dir = 0,
             target = "Frogs",
-        }
+        },
+        carsCategorys.Military
     ),
 }
 --The propertys of the car selection box
@@ -500,7 +514,7 @@ gameStuff = {
     --The current sfx volume
     sfxVolume = 0.1,
     --The current music volume
-    musicVolume = 0.5,
+    musicVolume = 0.25,
     --One value added to the music volume, used to make the music transition
     musicVolumeAdd = 0,
     --The current game version
@@ -514,6 +528,8 @@ onTopGameInstaces = {}
 moneyGainDiv = 1
 --The multiplier (it is not markplier) of + gameplayStuff.moneyMult the money recieved
 moneyGainMult = 1
+--The time since start in the last frame
+lastTime = 0
 --Some debug related propertys
 debugStuff = {
     --If the debug is enabled or not
@@ -702,7 +718,11 @@ function love.update(dt)
     randomNumber = math.random(1, 4)
 
 
-    --If the delay for updating the "Push" window size is less than 0
+    --Sort game instances
+    sortGameInstances()
+
+
+    --If the delay for updating the "Push" is less than 0
     if pushUpdateDelayTimer <= 0 then
         --Update "Push"s window size
         Push:resize(love.graphics.getWidth(), love.graphics.getHeight())
@@ -935,6 +955,10 @@ function love.update(dt)
                 else
                     gameCarButtons[b].alpha = Lume.lerp(gameCarButtons[b].alpha, 0, 6)
                 end
+
+
+                --Update buttons
+                gameCarButtons[b]:update()
             end
 
 
@@ -955,7 +979,7 @@ function love.update(dt)
 
 
             --The player has pressed shift, increase the speed
-            if love.keyboard.isDown("lshift") then mspd = 850 end
+            if love.keyboard.isDown("lctrl") then mspd = 850 end
 
 
             --Set the camera velocity to the input direction
@@ -1199,7 +1223,7 @@ function love.update(dt)
 
 
                 --Maybe start an event
-                local chance = love.math.random(0, 2)
+                local chance = math.random(0, 2)
                 if chance == 0 then
                     startEvent()
                 end
@@ -1225,11 +1249,11 @@ function love.update(dt)
             healthTextStuff.scaleAdd = Lume.lerp(healthTextStuff.scaleAdd, 0, 6)
             --Update if on the last frame the player was placing cars
             oldPlacingCar = placingCar
-            --Drecrease the tip create timer
+            --Decrease the tip create timer
             tipCreateTimer = tipCreateTimer - (1 * gameStuff.speed) * dt
 
 
-            --#region Make the modifiers work
+            --Make the modifiers work
             --MESSY ASF CODE BELOW, PROCEED WITH CAUTION
 
 
@@ -1604,13 +1628,14 @@ function love.update(dt)
     gameStuff.timeSinceStart = gameStuff.timeSinceStart + 1
     --Set the random number seed
     if not gameStuff.useFixedSeed then
-        math.randomseed(os.time() + gameStuff.timeSinceStart)
-        love.math.setRandomSeed(os.time() + gameStuff.timeSinceStart)
+        math.randomseed((lastTime - love.timer.getTime()) * 1000)
+        love.math.setRandomSeed((lastTime - love.timer.getTime()) * 1000)
     else
         math.randomseed(gameStuff.fixedSeed)
         love.math.setRandomSeed(gameStuff.fixedSeed)
     end
-    --Save the game
+    --Set what time since start is
+    lastTime = love.timer.getTime()
     saveGame(love.window.getFullscreen(), gameStuff.lang, gameStuff.sfxVolume, gameStuff.musicVolume,
         gameStuff.higestRound, gameStuff.drawOutlines, targetFps, useVSync)
 end
@@ -1621,6 +1646,10 @@ function love.draw()
     Push:start()
     --Apply the camera transform
     love.graphics.applyTransform(gameCam.transform)
+
+
+    --Sort game instances
+    sortGameInstances()
 
 
     if currentRoom == rooms.mainMenu then
@@ -1707,7 +1736,7 @@ function love.draw()
                 txt = "Custo: " .. GameCars[selectedCar].cost
             end
 
-            drawOutlinedText(txt, Lume.clamp(PushsInGameMousePos.x, placingStuff.minX, placingStuff.maxX), yForCar - 64,
+            drawOutlinedText(txt, xForCar, yForCar - 64,
                 0.1 * math.cos(GlobalSinAngle), 4, 4, love.graphics.getFont():getWidth(txt) / 2,
                 love.graphics.getFont():getHeight(txt) / 2, 4)
             love.graphics.setFont(mainFnt)
@@ -1797,6 +1826,33 @@ function love.draw()
     for b = 1, #UiStuff do
         if UiStuff[b].visible and (UiStuff[b].alpha ~= nil and UiStuff[b].alpha > 0) then
             UiStuff[b]:draw()
+        end
+    end
+
+
+    --Draw the game car buttons if the player is in the game room
+    if currentRoom == rooms.game then
+        for b = 1, #gameCarButtons do
+            gameCarButtons[b]:draw()
+
+
+            if gameCarButtons[b].backColorOverride == nil then
+                love.graphics.setColor({ 0, 0, 0, gameCarButtons[b].alpha })
+            else
+                love.graphics.setColor({ gameCarButtons[b].backColorOverride[1], gameCarButtons[b].backColorOverride[2],
+                    gameCarButtons[b].backColorOverride[3],
+                    gameCarButtons[b].alpha })
+            end
+
+
+            local sizeAdd = (gameCarButtons[b].size.w / gameCarButtons[b].wantedSize.w) +
+                (gameCarButtons[b].size.h / gameCarButtons[b].wantedSize.h)
+            drawOutlinedText("$" .. getCarByName(gameCarButtons[b].text).cost, gameCarButtons[b].pos.x,
+                gameCarButtons[b].pos.y + (gameCarButtons[b].size.h / 2) - 16, gameCarButtons[b].rot, 1 * sizeAdd,
+                1 * sizeAdd, nil, nil, 2,
+                { (gameCarButtons[b].frontColorOverride or { 1, 1, 1 })[1], (gameCarButtons[b].frontColorOverride or { 1, 1, 1 })
+                    [2], (gameCarButtons[b].frontColorOverride or { 1, 1, 1 })
+                    [3], gameCarButtons[b].alpha })
         end
     end
 
@@ -2076,6 +2132,7 @@ function setRoom()
     gameStuff.paused = false
     onTopGameInstaces = {}
     gameStuff.canPlaceFroggs = false
+    gameStuff.eventPause = false
     foggCreateTimerDef = 5
     gameStuff.currentFoggGaved = 0
     gameStuff.hp = 10
@@ -2097,10 +2154,37 @@ function setRoom()
             gameStuff.currentFoggGaved = 0
         end
 
+        local orderedCars = GameCars
+        table.sort(orderedCars, function(carA, carB)
+            return carA.category < carB.category
+        end)
 
-        for c = 1, #GameCars do
-            table.insert(gameCarButtons, #gameCarButtons + 1,
-                createButton(0 + 128 * c, 64, 108, 108, GameCars[c].name, GameCars[c].desc, false))
+        for c = 1, #orderedCars do
+            local b = createButton(0 + 128 * c, 64, 108, 108, GameCars[c].name, GameCars[c].desc, true)
+
+
+            if GameCars[c].category == carsCategorys.Common then
+                b.frontColorOverride = HSV(0.6, 1, 1)
+                b.backColorOverride = HSV(0.8, 1, 0.15)
+            elseif GameCars[c].category == carsCategorys.Military then
+                b.frontColorOverride = HSV(0.4, 1, 1)
+                b.backColorOverride = HSV(0.6, 1, 0.15)
+            elseif GameCars[c].category == carsCategorys.Special then
+                b.frontColorOverride = HSV(0.8, 1, 1)
+                b.backColorOverride = HSV(1, 1, 0.15)
+            elseif GameCars[c].category == carsCategorys.Explosive then
+                b.frontColorOverride = HSV(0, 1, 1)
+                b.backColorOverride = HSV(0.8, 1, 0.15)
+            elseif GameCars[c].category == carsCategorys.MoneyGenerator then
+                b.frontColorOverride = HSV(0.15, 1, 1)
+                b.backColorOverride = HSV(0, 1, 0.15)
+            end
+
+
+            table.remove(UiStuff, tableFind(UiStuff, b))
+
+
+            table.insert(gameCarButtons, #gameCarButtons + 1, b)
         end
     end
 end
@@ -2142,6 +2226,15 @@ function drawAllCars()
 
         if GameCarInstances[c] ~= nil then
             GameCarInstances[c]:draw()
+        end
+    end
+end
+
+--Function to get an car based in his name
+function getCarByName(carName)
+    for c = 1, #GameCars do
+        if GameCars[c].name == carName or GameCars[c].namePT == carName then
+            return GameCars[c]
         end
     end
 end
@@ -2308,4 +2401,29 @@ function loadMods()
             end
         end
     end
+end
+
+--Function to sort game instances besed on zIndex
+function sortGameInstances()
+    table.sort(gameInstances, function(a, b)
+        if a.zIndex == nil then a.zIndex = 0 end
+        if b.zIndex == nil then b.zIndex = 0 end
+
+
+        return a.zIndex < b.zIndex
+    end)
+    table.sort(GameCars, function(a, b)
+        if a.zIndex == nil then a.zIndex = 0 end
+        if b.zIndex == nil then b.zIndex = 0 end
+
+
+        return a.zIndex < b.zIndex
+    end)
+    table.sort(Foggs, function(a, b)
+        if a.zIndex == nil then a.zIndex = 0 end
+        if b.zIndex == nil then b.zIndex = 0 end
+
+
+        return a.zIndex < b.zIndex
+    end)
 end

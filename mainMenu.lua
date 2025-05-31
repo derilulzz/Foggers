@@ -1,6 +1,3 @@
-
-
-
 mainMenuInstance = nil
 function createMainMenu()
     local m = {
@@ -107,10 +104,9 @@ function createMainMenu()
 
         deleteUIInstance(self.creditsButton)
         deleteUIInstance(self.sourceCodeButton)
-        self.sourceCodeButton = createButton(800 - (64 + 8), 600 - (64 + 32 + 8 + 8), 128, 64, "Source Code", "", true)
-        self.creditsButton = createButton(800 - (64 + 8), 600 - (32 + 8), 128, 64, text, "", true)
+        self.sourceCodeButton = createButton(800 - (64 + 8), 600 - (64 + 32 + 8 + 8), 128, 64, "Source Code", "", false)
+        self.creditsButton = createButton(800 - (64 + 8), 600 - (32 + 8), 128, 64, text, "", false)
     end
-
 
     function m:init()
         gameStuff.musicLooping = true
@@ -118,20 +114,19 @@ function createMainMenu()
         self:createCreditsButton()
 
 
-        Flux.to(self, 1, {scale=16, blackEnterAlpha=0}):ease("expoout")
+        Flux.to(self, 1, { scale = 16, blackEnterAlpha = 0 }):ease("expoout")
 
 
-        for i=1, #GameCars do
+        for i = 1, #GameCars do
             if 128 + 32 * i > 600 then break end
 
-            
+
             createCarInstance(GameCars[i], 800, 128 + 32 * i)
         end
 
 
         oldMainMenuTheme = self.theme
     end
-
 
     function m:update()
         if not self.pauseMainMenu then
@@ -181,7 +176,7 @@ function createMainMenu()
                     while ((Push:getHeight() / 2) + 64 + 40 * #self.options[self.menuLevel]) + 32 - optionsYRem > 600 do
                         optionsYRem = optionsYRem + 1
                     end
-                    for o=1, #self.options[self.menuLevel] do
+                    for o = 1, #self.options[self.menuLevel] do
                         if PushsInGameMousePos.x > (Push:getWidth() / 2) - (love.graphics.getFont():getWidth(self.options[self.menuLevel][o]) * 4) / 2 and PushsInGameMousePos.y > (((Push:getHeight() / 2) + 64 + 40 * o) - (love.graphics.getFont():getHeight(self.options[self.menuLevel][o]) * 4) / 2) - optionsYRem then
                             if PushsInGameMousePos.x < (Push:getWidth() / 2) + (love.graphics.getFont():getWidth(self.options[self.menuLevel][o]) * 4) / 2 and PushsInGameMousePos.y < ((Push:getHeight() / 2) + 64 + 40 * o) + ((love.graphics.getFont():getHeight(self.options[self.menuLevel][o]) * 4) / 2) - 4 - optionsYRem then
                                 hoveringOne = true
@@ -263,12 +258,24 @@ function createMainMenu()
 
 
                     if self.menuLevel == 3 and self.pos == 1 then
-                        if love.keyboard.isDown("left", "a") then gameStuff.sfxVolume = gameStuff.sfxVolume - 0.1 * globalDt end
-                        if love.keyboard.isDown("right", "d") then gameStuff.sfxVolume = gameStuff.sfxVolume + 0.1 * globalDt end
+                        if love.keyboard.isDown("left", "a") then
+                            gameStuff.sfxVolume = gameStuff.sfxVolume -
+                                0.1 * globalDt
+                        end
+                        if love.keyboard.isDown("right", "d") then
+                            gameStuff.sfxVolume = gameStuff.sfxVolume +
+                                0.1 * globalDt
+                        end
                     end
                     if self.menuLevel == 3 and self.pos == 2 then
-                        if love.keyboard.isDown("left", "a") then gameStuff.musicVolume = gameStuff.musicVolume - 0.1 * globalDt end
-                        if love.keyboard.isDown("right", "d") then gameStuff.musicVolume = gameStuff.musicVolume + 0.1 * globalDt end
+                        if love.keyboard.isDown("left", "a") then
+                            gameStuff.musicVolume = gameStuff.musicVolume -
+                                0.1 * globalDt
+                        end
+                        if love.keyboard.isDown("right", "d") then
+                            gameStuff.musicVolume = gameStuff.musicVolume +
+                                0.1 * globalDt
+                        end
                     end
                 else
                     if gameStuff.lang == "pt-br" then
@@ -291,13 +298,14 @@ function createMainMenu()
                             gameStuff.currentStartingRound = 0
                         else
                             if self.runConfigStuff.startingRoundNumBtn.textedText ~= "" then
-                                gameStuff.currentStartingRound = tonumber(self.runConfigStuff.startingRoundNumBtn.textedText)
+                                gameStuff.currentStartingRound = tonumber(self.runConfigStuff.startingRoundNumBtn
+                                    .textedText)
                             else
                                 gameStuff.currentStartingRound = 0
                             end
                         end
-                        
-                        
+
+
                         if self.runConfigStuff.seedNumBtn ~= nil and self.runConfigStuff.seedNumBtn.textedText ~= "" then
                             gameStuff.useFixedSeed = true
                             gameStuff.fixedSeed = tonumber(self.runConfigStuff.seedNumBtn.textedText)
@@ -305,8 +313,8 @@ function createMainMenu()
 
 
                         stopMusic()
-                        
-                        
+
+
                         changeRoom(rooms.game)
 
 
@@ -345,7 +353,7 @@ function createMainMenu()
 
 
                 if self.runConfigStuff.cancelRunButton ~= nil and self.runConfigStuff.cancelRunButton.pressed then
-                    Flux.to(self.runConfigStuff, 0.5, {boxYOffset=600}):ease("expoin"):oncomplete(m.disableRunConf)
+                    Flux.to(self.runConfigStuff, 0.5, { boxYOffset = 600 }):ease("expoin"):oncomplete(m.disableRunConf)
                     self.runConfigStuff.cancelRunButton.pressed = false
                 end
 
@@ -359,7 +367,7 @@ function createMainMenu()
         end
         if self.fpsSetter ~= nil then
             self.fpsSetter:update()
-            
+
 
             if self.fpsSetter.died then
                 if self.fpsSetter.wantedFps ~= nil then
@@ -373,9 +381,11 @@ function createMainMenu()
             end
         end
 
-        
-        self.creditsButton.visible = self.showRunConfig == false and self.showCarsStats == false and not self.pauseMainMenu
-        self.sourceCodeButton.visible = self.showRunConfig == false and self.showCarsStats == false and not self.pauseMainMenu
+
+        self.creditsButton.visible = self.showRunConfig == false and self.showCarsStats == false and
+            not self.pauseMainMenu
+        self.sourceCodeButton.visible = self.showRunConfig == false and self.showCarsStats == false and
+            not self.pauseMainMenu
 
 
         self.angle = self.angle + 1 * globalDt
@@ -389,18 +399,16 @@ function createMainMenu()
         self.oldSelectButtonPressed = love.keyboard.isDown("return", "space")
     end
 
-
     function m:disableRunConf()
         m.showRunConfig = false
     end
-
 
     function m:selectOption()
         if self.menuLevel == 1 then
             if self.pos == 1 then
                 self.showRunConfig = true
                 self:initRunConfig()
-                Flux.to(self.runConfigStuff, 0.5, {boxYOffset=0}):ease("expoout")
+                Flux.to(self.runConfigStuff, 0.5, { boxYOffset = 0 }):ease("expoout")
             elseif self.pos == 2 then
                 self.showCarsStats = true
             elseif self.pos == 3 then
@@ -445,7 +453,6 @@ function createMainMenu()
         end
     end
 
-
     function m:unnitRunConfig()
         deleteUIInstance(self.runConfigStuff.startRunButton)
         deleteUIInstance(self.runConfigStuff.startingRoundNumBtn)
@@ -459,30 +466,32 @@ function createMainMenu()
         self.runConfigStuff.cancelRunButton = nil
     end
 
-
     function m:initRunConfig()
         self.runConfigStuff.startRunButton = createButton((800 / 2) + 128, (600) - 64, 128, 64, "Start", "Start the run")
-        self.runConfigStuff.startingRoundNumBtn = createNumberInsertButton(800 / 2, 64, 128, 64, "0", "The round that the game will start",  true, true)
-        self.runConfigStuff.seedNumBtn = createNumberInsertButton(800 / 2, 128 + 8, 128, 64, "Random", "The number used to create random numbers",  true, true)
-        self.runConfigStuff.cancelRunButton = createButton((800 / 2) - 128, 600 - 32 - 8, 128, 64, "Cancel", "Cancel run", true)
+        self.runConfigStuff.startingRoundNumBtn = createNumberInsertButton(800 / 2, 64, 128, 64, "0",
+            "The round that the game will start", true, true)
+        self.runConfigStuff.seedNumBtn = createNumberInsertButton(800 / 2, 128 + 8, 128, 64, "Random",
+            "The number used to create random numbers", true, true)
+        self.runConfigStuff.cancelRunButton = createButton((800 / 2) - 128, 600 - 32 - 8, 128, 64, "Cancel", "Cancel run",
+            true)
     end
-
 
     function m:setMenuLevel(toWhat)
         self.menuLevel = toWhat
         self.pos = 1
-        createExplosion(Push:getWidth() / 2, (Push:getHeight() / 2) + 128, {fromCar=GameCars[2]})
+        createExplosion(Push:getWidth() / 2, (Push:getHeight() / 2) + 128, { fromCar = GameCars[3] })
     end
-
 
     function m:draw()
         if self.theme == self.THEMES.THEME_NORMAL then
             drawGrass()
             local txt = "FOGGERS"
-            love.graphics.setColor({0, 0, 0, 1})
-            drawOutlinedText(txt, (Push:getWidth() / 2) + 8 + 8, 80 + 8, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, {0, 0, 0})
-            love.graphics.setColor({1, 1, 1})
-            drawOutlinedText(txt, (Push:getWidth() / 2) + 8, 80, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, {0, 0, 0})
+            love.graphics.setColor({ 0, 0, 0, 1 })
+            drawOutlinedText(txt, (Push:getWidth() / 2) + 8 + 8, 80 + 8, self.rot, self.scale, self.scale,
+                love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, { 0, 0, 0 })
+            love.graphics.setColor({ 1, 1, 1 })
+            drawOutlinedText(txt, (Push:getWidth() / 2) + 8, 80, self.rot, self.scale, self.scale,
+                love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, { 0, 0, 0 })
         elseif self.theme == self.THEMES.THEME_HARD then
             love.graphics.setColor(HSV(0, 1, 1))
             love.graphics.rectangle("fill", 0, 0, 800, 600)
@@ -490,12 +499,16 @@ function createMainMenu()
 
             local txt = "FOGGERS"
             love.graphics.setColor(HSV(0, 0, 0.25 + 0.25 * math.sin(GlobalSinAngle)))
-            drawOutlinedText(txt, (Push:getWidth() / 2) + 8 + 8, 80 + 8, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, {0, 0, 0})
+            drawOutlinedText(txt, (Push:getWidth() / 2) + 8 + 8, 80 + 8, self.rot, self.scale, self.scale,
+                love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, { 0, 0, 0 })
             love.graphics.setColor(HSV(0, 1, 0.85 + 0.25 * math.sin(GlobalSinAngle / 2)))
-            drawOutlinedText(txt, (Push:getWidth() / 2) + 8, 80, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, {0, 0, 0})
+            drawOutlinedText(txt, (Push:getWidth() / 2) + 8, 80, self.rot, self.scale, self.scale,
+                love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, { 0, 0, 0 })
 
 
-            drawOutlinedText("DIE EDITION", 800 / 2, 8 + (love.graphics.getFont():getHeight(txt) * self.scale), 0.05 * math.sin(GlobalSinAngle), 2, 2, love.graphics.getFont():getWidth("DIE EDITION") / 2, love.graphics.getFont():getHeight("DIE EDITION") / 2, 2, {0, 0, 0})
+            drawOutlinedText("DIE EDITION", 800 / 2, 8 + (love.graphics.getFont():getHeight(txt) * self.scale),
+                0.05 * math.sin(GlobalSinAngle), 2, 2, love.graphics.getFont():getWidth("DIE EDITION") / 2,
+                love.graphics.getFont():getHeight("DIE EDITION") / 2, 2, { 0, 0, 0 })
         elseif self.theme == self.THEMES.THEME_SOFT then
             love.graphics.setColor(HSV(0.95, 0.25, 1))
             love.graphics.rectangle("fill", 0, 0, 800, 600)
@@ -503,12 +516,18 @@ function createMainMenu()
 
             local txt = "FOGGERS"
             love.graphics.setColor(HSV(0.985, 0.5, 1))
-            drawOutlinedText(txt, (Push:getWidth() / 2) + 8 + 8, 80 + 8, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, HSV(0.925, 1, 0.4))
+            drawOutlinedText(txt, (Push:getWidth() / 2) + 8 + 8, 80 + 8, self.rot, self.scale, self.scale,
+                love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4,
+                HSV(0.925, 1, 0.4))
             love.graphics.setColor(HSV(0.95, 0, 1))
-            drawOutlinedText(txt, (Push:getWidth() / 2) + 8, 80, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, HSV(0.9, 0.85, 0.6))
-            
-            
-            drawOutlinedText("CALM EDITION", 800 / 2, 8 + (love.graphics.getFont():getHeight(txt) * self.scale), 0.05 * math.sin(GlobalSinAngle), 2, 2, love.graphics.getFont():getWidth("CALM EDITION") / 2, love.graphics.getFont():getHeight("CALM EDITION") / 2, 2, {0, 0, 0})
+            drawOutlinedText(txt, (Push:getWidth() / 2) + 8, 80, self.rot, self.scale, self.scale,
+                love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4,
+                HSV(0.9, 0.85, 0.6))
+
+
+            drawOutlinedText("CALM EDITION", 800 / 2, 8 + (love.graphics.getFont():getHeight(txt) * self.scale),
+                0.05 * math.sin(GlobalSinAngle), 2, 2, love.graphics.getFont():getWidth("CALM EDITION") / 2,
+                love.graphics.getFont():getHeight("CALM EDITION") / 2, 2, { 0, 0, 0 })
         elseif self.theme == self.THEMES.THEME_BLOOD then
             love.graphics.setColor(0, 0, 0)
             love.graphics.rectangle("fill", 0, 0, 800, 600)
@@ -516,12 +535,16 @@ function createMainMenu()
 
             local txt = "FOGGERS"
             love.graphics.setColor(0, 0, 0)
-            drawOutlinedText(txt, (Push:getWidth() / 2) + 8 + 8, 80 + 8, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, {1, 0, 0})
+            drawOutlinedText(txt, (Push:getWidth() / 2) + 8 + 8, 80 + 8, self.rot, self.scale, self.scale,
+                love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, { 1, 0, 0 })
             love.graphics.setColor(0, 0, 0)
-            drawOutlinedText(txt, (Push:getWidth() / 2) + 8, 80, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, {1, 0, 0})
+            drawOutlinedText(txt, (Push:getWidth() / 2) + 8, 80, self.rot, self.scale, self.scale,
+                love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, { 1, 0, 0 })
 
 
-            drawOutlinedText("DARK EDITION", 800 / 2, 8 + (love.graphics.getFont():getHeight(txt) * self.scale), 0.05 * math.sin(GlobalSinAngle), 2, 2, love.graphics.getFont():getWidth("DARK EDITION") / 2, love.graphics.getFont():getHeight("DARK EDITION") / 2, 2, {0, 0, 0})
+            drawOutlinedText("DARK EDITION", 800 / 2, 8 + (love.graphics.getFont():getHeight(txt) * self.scale),
+                0.05 * math.sin(GlobalSinAngle), 2, 2, love.graphics.getFont():getWidth("DARK EDITION") / 2,
+                love.graphics.getFont():getHeight("DARK EDITION") / 2, 2, { 0, 0, 0 })
         elseif self.theme == self.THEMES.THEME_CAT then
             love.graphics.setColor(HSV(0.5 + 0.5 * math.cos(GlobalSinAngle), 1, 1))
             love.graphics.rectangle("fill", 0, 0, 800, 600)
@@ -529,23 +552,30 @@ function createMainMenu()
 
             local txt = "FOGGERS"
             love.graphics.setColor(0, 0, 0)
-            drawOutlinedText(txt, (Push:getWidth() / 2) + 8 + 8, 80 + 8, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, {1, 0, 0})
+            drawOutlinedText(txt, (Push:getWidth() / 2) + 8 + 8, 80 + 8, self.rot, self.scale, self.scale,
+                love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, { 1, 0, 0 })
             love.graphics.setColor(1, 1, 1)
-            drawOutlinedText(txt, (Push:getWidth() / 2) + 8, 80, self.rot, self.scale, self.scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, {1, 0, 0})
+            drawOutlinedText(txt, (Push:getWidth() / 2) + 8, 80, self.rot, self.scale, self.scale,
+                love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, { 1, 0, 0 })
 
 
-            drawOutlinedText("CAT EDITION", 800 / 2, 8 + (love.graphics.getFont():getHeight(txt) * self.scale), 0.05 * math.sin(GlobalSinAngle), 2, 2, love.graphics.getFont():getWidth("DARK EDITION") / 2, love.graphics.getFont():getHeight("DARK EDITION") / 2, 2, {0, 0, 0})
+            drawOutlinedText("CAT EDITION", 800 / 2, 8 + (love.graphics.getFont():getHeight(txt) * self.scale),
+                0.05 * math.sin(GlobalSinAngle), 2, 2, love.graphics.getFont():getWidth("DARK EDITION") / 2,
+                love.graphics.getFont():getHeight("DARK EDITION") / 2, 2, { 0, 0, 0 })
 
 
             love.graphics.setColor(1, 1, 1)
             love.graphics.circle("fill", (800 / 2) - 164, 600 / 2, 128, 8)
             love.graphics.circle("fill", (800 / 2) + 164, 600 / 2, 128, 8)
             love.graphics.setColor(0, 0, 0)
-            love.graphics.ellipse("fill", (800 / 2) - 164 + 32 * math.cos(GlobalSinAngle), (600 / 2) + 32 * math.sin(GlobalSinAngle), 32, 64, 8)
-            love.graphics.ellipse("fill", (800 / 2) + 164 + 32 * math.cos(GlobalSinAngle), (600 / 2) + 32 * math.sin(GlobalSinAngle), 32, 64, 8)
+            love.graphics.ellipse("fill", (800 / 2) - 164 + 32 * math.cos(GlobalSinAngle),
+                (600 / 2) + 32 * math.sin(GlobalSinAngle), 32, 64, 8)
+            love.graphics.ellipse("fill", (800 / 2) + 164 + 32 * math.cos(GlobalSinAngle),
+                (600 / 2) + 32 * math.sin(GlobalSinAngle), 32, 64, 8)
             love.graphics.setColor(1, 1, 1)
             love.graphics.setLineWidth(8)
-            love.graphics.line((800 / 2) - 164, (600 / 2) + 164, (800 / 2) - 148, (600 / 2) + 256, (800 / 2), (600 / 2) + 164, (800 / 2) + 128, (600 / 2) + 256, (800 / 2) + 148, (600 / 2) + 164)
+            love.graphics.line((800 / 2) - 164, (600 / 2) + 164, (800 / 2) - 148, (600 / 2) + 256, (800 / 2),
+                (600 / 2) + 164, (800 / 2) + 128, (600 / 2) + 256, (800 / 2) + 148, (600 / 2) + 164)
             love.graphics.setLineWidth(1)
         end
 
@@ -557,21 +587,21 @@ function createMainMenu()
 
 
         if not self.showRunConfig and not self.showCarsStats then
-            for o=1, #self.options[self.menuLevel] do
+            for o = 1, #self.options[self.menuLevel] do
                 local scale = 4
                 local rotAdd = 0
                 if o ~= self.pos then
-                    local outlineColor = {0, 0, 0}
-                    love.graphics.setColor({1, 1, 1})
+                    local outlineColor = { 0, 0, 0 }
+                    love.graphics.setColor({ 1, 1, 1 })
 
 
                     if self.theme == self.THEMES.THEME_SOFT then
                         outlineColor = HSV(0.925, 1, 0.4)
                     end
                     if self.theme == self.THEMES.THEME_BLOOD then
-                        outlineColor = {0.25, 0, 0}
-                    love.graphics.setColor({0, 0, 0})
-                end
+                        outlineColor = { 0.25, 0, 0 }
+                        love.graphics.setColor({ 0, 0, 0 })
+                    end
 
 
                     local txt = self.options[self.menuLevel][o]
@@ -582,25 +612,27 @@ function createMainMenu()
                     end
 
 
-                    drawOutlinedText(txt, (Push:getWidth() / 2), ((Push:getHeight() / 2) + 64 + 40 * o) - optionsYRem, 0 + rotAdd, scale, scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, outlineColor)
+                    drawOutlinedText(txt, (Push:getWidth() / 2), ((Push:getHeight() / 2) + 64 + 40 * o) - optionsYRem,
+                        0 + rotAdd, scale, scale, love.graphics.getFont():getWidth(txt) / 2,
+                        love.graphics.getFont():getHeight(txt) / 2, 4, outlineColor)
                 end
             end
 
 
-            local outlineColor = {0, 0, 0}
+            local outlineColor = { 0, 0, 0 }
             if self.theme == self.THEMES.THEME_NORMAL then
-                love.graphics.setColor({0, 1, 0})
+                love.graphics.setColor({ 0, 1, 0 })
             elseif self.theme == self.THEMES.THEME_HARD then
                 love.graphics.setColor(HSV(0, 1, 0.85 + 0.25 * math.sin(GlobalSinAngle / 2)))
             elseif self.theme == self.THEMES.THEME_SOFT then
                 love.graphics.setColor(HSV(0.95, 0, 1))
                 outlineColor = HSV(0.9, 0.85, 0.6)
             elseif self.theme == self.THEMES.THEME_BLOOD then
-                love.graphics.setColor({0, 0, 0})
-                outlineColor = {1, 0, 0}
+                love.graphics.setColor({ 0, 0, 0 })
+                outlineColor = { 1, 0, 0 }
             elseif self.theme == self.THEMES.THEME_CAT then
                 love.graphics.setColor(HSV(0.5 + 0.5 * math.sin(GlobalSinAngle), 1, 1))
-                outlineColor = {0, 0, 0}
+                outlineColor = { 0, 0, 0 }
             end
             rotAdd = 0.1 * math.sin(GlobalSinAngle)
             scale = self.currentOptionScale
@@ -610,17 +642,20 @@ function createMainMenu()
             if gameStuff.lang == "pt-br" then
                 txt = self.optionsPT[self.menuLevel][self.pos]
             end
-            drawOutlinedText(txt, (Push:getWidth() / 2), ((Push:getHeight() / 2) + 64 + 40 * self.pos) - optionsYRem, 0 + rotAdd, scale, scale, love.graphics.getFont():getWidth(txt) / 2, love.graphics.getFont():getHeight(txt) / 2, 4, outlineColor)
+            drawOutlinedText(txt, (Push:getWidth() / 2), ((Push:getHeight() / 2) + 64 + 40 * self.pos) - optionsYRem,
+                0 + rotAdd, scale, scale, love.graphics.getFont():getWidth(txt) / 2,
+                love.graphics.getFont():getHeight(txt) / 2, 4, outlineColor)
 
 
-            love.graphics.setColor({1, 1, 1})
+            love.graphics.setColor({ 1, 1, 1 })
             local txt = "Version: " .. tostring(gameStuff.currentVersion)
             if gameStuff.lang == "pt-br" then txt = "Versão: " .. tostring(gameStuff.currentVersion) end
-            drawOutlinedText(txt, 8, 600 - 8, 0, 2, 2, 0, love.graphics.getFont():getHeight(txt), 2, {0, 0, 0})
-            
-            
+            drawOutlinedText(txt, 8, 600 - 8, 0, 2, 2, 0, love.graphics.getFont():getHeight(txt), 2, { 0, 0, 0 })
+
+
             if debugStuff.enabled then
-                drawOutlinedText(tostring(self.theme), 8, 600 - 8 - 32, 0, 2, 2, 0, love.graphics.getFont():getHeight(txt), 2, {0, 0, 0})
+                drawOutlinedText(tostring(self.theme), 8, 600 - 8 - 32, 0, 2, 2, 0,
+                    love.graphics.getFont():getHeight(txt), 2, { 0, 0, 0 })
             end
         end
 
@@ -634,7 +669,7 @@ function createMainMenu()
 
         if self.showRunConfig then
             love.graphics.setColor(HSV(0, 0, 0.1 + 0.1 * math.cos(GlobalSinAngle)))
-            drawOutlinedRect(32, 32 + self.runConfigStuff.boxYOffset, 800 - 64, 600 - 64, {0, 0, 0})
+            drawOutlinedRect(32, 32 + self.runConfigStuff.boxYOffset, 800 - 64, 600 - 64, { 0, 0, 0 })
             love.graphics.setColor(1, 1, 1)
 
 
@@ -647,8 +682,12 @@ function createMainMenu()
             end
 
 
-            drawOutlinedText(text1, (800 / 2) - (love.graphics.getFont():getWidth(text1) * 2), 68 + self.runConfigStuff.boxYOffset, 0, 2, 2, love.graphics.getFont():getWidth(text1) / 2, love.graphics.getFont():getHeight(text1) / 2, 4, {0, 0, 0})
-            drawOutlinedText(text2, (800 / 2) - (love.graphics.getFont():getWidth(text2) * 3.85), 128 + 8 + self.runConfigStuff.boxYOffset, 0, 2, 2, love.graphics.getFont():getWidth(text2) / 2, love.graphics.getFont():getHeight(text2) / 2, 4, {0, 0, 0})
+            drawOutlinedText(text1, (800 / 2) - (love.graphics.getFont():getWidth(text1) * 2),
+                68 + self.runConfigStuff.boxYOffset, 0, 2, 2, love.graphics.getFont():getWidth(text1) / 2,
+                love.graphics.getFont():getHeight(text1) / 2, 4, { 0, 0, 0 })
+            drawOutlinedText(text2, (800 / 2) - (love.graphics.getFont():getWidth(text2) * 3.85),
+                128 + 8 + self.runConfigStuff.boxYOffset, 0, 2, 2, love.graphics.getFont():getWidth(text2) / 2,
+                love.graphics.getFont():getHeight(text2) / 2, 4, { 0, 0, 0 })
         end
 
 
@@ -664,13 +703,11 @@ function createMainMenu()
         end
     end
 
-
     m:init()
 
 
     return m
 end
-
 
 function createFpsSetter()
     local f = {
@@ -691,15 +728,14 @@ function createFpsSetter()
         end
     end
 
-
     function f:draw()
         love.graphics.setColor(0, 0, 0)
-        drawOutlinedRect((800 / 2) - 256, (600 / 2) - 256, 512, 512, {1, 1, 1})
+        drawOutlinedRect((800 / 2) - 256, (600 / 2) - 256, 512, 512, { 1, 1, 1 })
         love.graphics.setColor(1, 1, 1)
-        drawOutlinedText("FPS Setter", 800 / 2, 128, 0.09 * math.cos(GlobalSinAngle), 4, 4, nil, nil, 4, {0, 0, 0, 1})
-        drawOutlinedText("0 Will Make your FPS Be Unlimited", 800 / 2, (600 / 2) + 64 + 16, 0.09 * math.sin(GlobalSinAngle), 2, 2, nil, nil, 4, {0, 0, 0, 1})
+        drawOutlinedText("FPS Setter", 800 / 2, 128, 0.09 * math.cos(GlobalSinAngle), 4, 4, nil, nil, 4, { 0, 0, 0, 1 })
+        drawOutlinedText("0 Will Make your FPS Be Unlimited", 800 / 2, (600 / 2) + 64 + 16,
+            0.09 * math.sin(GlobalSinAngle), 2, 2, nil, nil, 4, { 0, 0, 0, 1 })
     end
-
 
     return f
 end

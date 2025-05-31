@@ -1,9 +1,9 @@
 function createCamMoveTutorial()
     local t = {
         animsSpr = {
-            newAnimation(love.graphics.newImage("Tutorial/CamMove.png"), 32, 32, 4, 2, 0),
-            newAnimation(love.graphics.newImage("Tutorial/ClickButton.png"), 16, 16, 7, 4, 0),
-            newAnimation(love.graphics.newImage("Tutorial/CreateCar.png"), 16, 16, 10, 4, 0),
+            newAnimation(love.graphics.newImage("Tutorial/CamMove.png"), 32, 32, 4, 0, 2, 0),
+            newAnimation(love.graphics.newImage("Tutorial/ClickButton.png"), 16, 16, 7, 0, 4, 0),
+            newAnimation(love.graphics.newImage("Tutorial/CreateCar.png"), 16, 16, 10, 0, 4, 0),
         },
         state = 1,
         walkedA = false,
@@ -57,10 +57,10 @@ function createCamMoveTutorial()
         self.animsSpr[self.state]:update(globalDt)
     end
 
-
     function t:draw()
-        love.graphics.setColor({1, 1, 1})
-        self.animsSpr[self.state]:draw(0, 800 / 2, 600 - self.animsSpr[self.state].sprHeight * 2, 4, 4, nil, nil, 4, {0, 0, 0})
+        love.graphics.setColor({ 1, 1, 1 })
+        self.animsSpr[self.state]:draw(0, 800 / 2, 600 - self.animsSpr[self.state].sprHeight * 2, 4, 4, nil, nil, 4,
+            { 0, 0, 0 })
 
 
         if self.state == 1 then
@@ -68,9 +68,10 @@ function createCamMoveTutorial()
 
 
             if gameStuff.lang == "pt-br" then text = "WASD Para Mover" end
-            
-            
-            drawOutlinedText(text, 800 / 2, (600 - self.animsSpr[self.state].sprHeight * 3) - 8, 0, 2, 2, love.graphics.getFont():getWidth(text) / 2, love.graphics.getFont():getHeight(text), 4, {0, 0, 0})
+
+
+            drawOutlinedText(text, 800 / 2, (600 - self.animsSpr[self.state].sprHeight * 3) - 8, 0, 2, 2,
+                love.graphics.getFont():getWidth(text) / 2, love.graphics.getFont():getHeight(text), 4, { 0, 0, 0 })
         elseif self.state == 2 then
             local text = "LMB In The Buttons At The Top To Select A Car"
 
@@ -78,32 +79,33 @@ function createCamMoveTutorial()
             if gameStuff.lang == "pt-br" then text = "LMB Nos Botoes Na Parte De Cima Para Selecionar Um Carro" end
 
 
-            local wrap = {love.graphics.getFont():getWrap(text, 800 / 2)}
+            local wrap = { love.graphics.getFont():getWrap(text, 800 / 2) }
             local linesNum = #wrap[2]
 
 
             local txtHeight = love.graphics.getFont():getHeight() * linesNum
 
 
-            drawOutlinedTextF(text, 0, (600 - self.animsSpr[self.state].sprHeight * 4) - 8, 800 / 2, "center", 0, 2, 2, 0, txtHeight / 2, 4, {0, 0, 0})
+            drawOutlinedTextF(text, 0, (600 - self.animsSpr[self.state].sprHeight * 4) - 8, 800 / 2, "center", 0, 2, 2, 0,
+                txtHeight / 2, 4, { 0, 0, 0 })
         elseif self.state == 3 then
             local text = "LMB To Create An Car"
 
 
             if gameStuff.lang == "pt-br" then text = "LMB Para Criar Um Carro" end
-            
-            
-            local wrap = {love.graphics.getFont():getWrap(text, 800 / 2)}
+
+
+            local wrap = { love.graphics.getFont():getWrap(text, 800 / 2) }
             local linesNum = #wrap[2]
 
 
             local txtHeight = love.graphics.getFont():getHeight() * linesNum
 
 
-            drawOutlinedTextF(text, 0, (600 - self.animsSpr[self.state].sprHeight * 4) - 8, 800 / 2, "center", 0, 2, 2, 0, txtHeight / 2, 4, {0, 0, 0})
+            drawOutlinedTextF(text, 0, (600 - self.animsSpr[self.state].sprHeight * 4) - 8, 800 / 2, "center", 0, 2, 2, 0,
+                txtHeight / 2, 4, { 0, 0, 0 })
         end
     end
-
 
     table.insert(onTopGameInstaces, 1, t)
 end
