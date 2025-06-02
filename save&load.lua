@@ -1,7 +1,8 @@
 require "external librarys.base64"
 
 
-function saveGame(isFullscreen, lang, sfxVol, musVol, higestRound, drawOutlines, targetFps, useVSync)
+function saveGame(isFullscreen, lang, sfxVol, musVol, higestRound, drawOutlines, targetFps, useVSync, permaMoneyMult,
+                  permaCarAmount, permaCarDamage, permaCarSpeed, permaFrogAmount)
     data = {}
     data.isFullscreen = isFullscreen
     data.lang = lang
@@ -11,9 +12,14 @@ function saveGame(isFullscreen, lang, sfxVol, musVol, higestRound, drawOutlines,
     data.drawOutlines = drawOutlines
     data.targetFps = targetFps
     data.useVSync = useVSync
+    data.permaMoneyMult = permaMoneyMult
+    data.permaCarAmount = permaCarAmount
+    data.permaCarDamage = permaCarDamage
+    data.permaCarSpeed = permaCarSpeed
+    data.permaFrogAmount = permaFrogAmount
 
 
-    serialized = Lume.serialize(data)
+    local serialized = Lume.serialize(data)
 
 
     serialized = enc(serialized)
@@ -22,13 +28,14 @@ function saveGame(isFullscreen, lang, sfxVol, musVol, higestRound, drawOutlines,
     love.filesystem.write("GameSave.FoggersSaveFile", serialized)
 end
 
-
 function loadGame()
     --read the data
-    file = love.filesystem.read("GameSave.FoggersSaveFile")
+    local file = love.filesystem.read("GameSave.FoggersSaveFile")
 
 
-    if file == nil then data = {}; gameStuff.firstPlay = true else
+    if file == nil then
+        data = {}; gameStuff.firstPlay = true
+    else
         file = dec(file)
         print("Save stats:\n" .. file)
         data = Lume.deserialize(file)
@@ -60,6 +67,21 @@ function loadGame()
         end
         if data.useVSync ~= nil then
             setVSyncUse(data.useVSync)
+        end
+        if data.permaMoneyMult ~= nil then
+            permaUpgrades.permaMoneyMult = data.permaMoneyMult
+        end
+        if data.permaCarAmount ~= nil then
+            permaUpgrades.permaCarAmount = data.permaCarAmount
+        end
+        if data.permaCarDamage ~= nil then
+            permaUpgrades.permaCarDamage = data.permaCarDamage
+        end
+        if data.permaCarSpeed ~= nil then
+            permaUpgrades.permaCarSpeed = data.permaCarSpeed
+        end
+        if data.permaFrogAmount ~= nil then
+            permaUpgrades.permaFrogAmount = data.permaFrogAmount
         end
     end
 end

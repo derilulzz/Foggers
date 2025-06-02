@@ -287,7 +287,7 @@ function createCarInstance(_inheritFrom, _x, _y, _ghostCar, _example)
 
 
         if self.fromCar.especialPropertys.isTank then
-            addSprsRot = self.fromCar.especialPropertys.weaponRot
+            addSprsRot = math.pi + self.fromCar.especialPropertys.weaponRot
         end
 
 

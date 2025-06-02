@@ -477,6 +477,19 @@ sceneTransition = {
     --The icon that gets shown in the transition
     coolIcon = nil,
 }
+--Permanent upgrade values
+permaUpgrades = {
+    --Permanent Money Mult
+    moneyMult = 1,
+    --Permanent Frog Mult
+    frogMult = 1,
+    --Permanent Car Amount
+    carAmount = 1,
+    --Permanent Car Damage
+    carDamage = 1,
+    --Permanent Car Speed
+    carSpeed = 1,
+}
 --Some global game propertys
 gameStuff = {
     --If the game is paused
@@ -1259,7 +1272,7 @@ function love.update(dt)
 
             if modifier.current == modifier.nameList.NO_MOD then
                 moneyGainDiv = 1 + gameplayStuff.moneyDiv
-                moneyGainMult = 1 + gameplayStuff.moneyMult
+                moneyGainMult = 1 + gameplayStuff.moneyMult + permaUpgrades.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 1
@@ -1277,7 +1290,7 @@ function love.update(dt)
                 end
             elseif modifier.current == modifier.nameList.MOD_HALF_CAR_LIFE then
                 moneyGainDiv = 1 + gameplayStuff.moneyDiv
-                moneyGainMult = 1 + gameplayStuff.moneyMult
+                moneyGainMult = 1 + gameplayStuff.moneyMult + permaUpgrades.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 2
                     GameCarInstances[c].spdDivCar = 1
@@ -1295,7 +1308,7 @@ function love.update(dt)
                 end
             elseif modifier.current == modifier.nameList.MOD_HALF_CAR_SPEED then
                 moneyGainDiv = 1 + gameplayStuff.moneyDiv
-                moneyGainMult = 1 + gameplayStuff.moneyMult
+                moneyGainMult = 1 + gameplayStuff.moneyMult + permaUpgrades.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 2
@@ -1313,7 +1326,7 @@ function love.update(dt)
                 end
             elseif modifier.current == modifier.nameList.MOD_HALF_EVERYTHING then
                 moneyGainDiv = 2 + gameplayStuff.moneyDiv
-                moneyGainMult = 1 + gameplayStuff.moneyMult
+                moneyGainMult = 1 + gameplayStuff.moneyMult + permaUpgrades.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 2
                     GameCarInstances[c].spdDivCar = 2
@@ -1331,7 +1344,7 @@ function love.update(dt)
                 end
             elseif modifier.current == modifier.nameList.MOD_HALF_FOGG_LIFE then
                 moneyGainDiv = 1 + gameplayStuff.moneyDiv
-                moneyGainMult = 1 + gameplayStuff.moneyMult
+                moneyGainMult = 1 + gameplayStuff.moneyMult + permaUpgrades.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 1
@@ -1349,7 +1362,7 @@ function love.update(dt)
                 end
             elseif modifier.current == modifier.nameList.MOD_HALF_MONEY_GAIN then
                 moneyGainDiv = 2 + gameplayStuff.moneyDiv
-                moneyGainMult = 1 + gameplayStuff.moneyMult
+                moneyGainMult = 1 + gameplayStuff.moneyMult + permaUpgrades.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 1
@@ -1367,7 +1380,7 @@ function love.update(dt)
                 end
             elseif modifier.current == modifier.nameList.MOD_HALF_SCREEN then
                 moneyGainDiv = 1 + gameplayStuff.moneyDiv
-                moneyGainMult = 1 + gameplayStuff.moneyMult
+                moneyGainMult = 1 + gameplayStuff.moneyMult + permaUpgrades.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 1
@@ -1385,7 +1398,7 @@ function love.update(dt)
                 end
             elseif modifier.current == modifier.nameList.MOD_TIMES_TWO_CAR_LIFE then
                 moneyGainDiv = 1 + gameplayStuff.moneyDiv
-                moneyGainMult = 1 + gameplayStuff.moneyMult
+                moneyGainMult = 1 + gameplayStuff.moneyMult + permaUpgrades.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 1
@@ -1403,7 +1416,7 @@ function love.update(dt)
                 end
             elseif modifier.current == modifier.nameList.MOD_TIMES_TWO_CAR_SIZE then
                 moneyGainDiv = 1 + gameplayStuff.moneyDiv
-                moneyGainMult = 1 + gameplayStuff.moneyMult
+                moneyGainMult = 1 + gameplayStuff.moneyMult + permaUpgrades.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 1
@@ -1421,7 +1434,7 @@ function love.update(dt)
                 end
             elseif modifier.current == modifier.nameList.MOD_TIMES_TWO_CAR_SPEED then
                 moneyGainDiv = 1 + gameplayStuff.moneyDiv
-                moneyGainMult = 1 + gameplayStuff.moneyMult
+                moneyGainMult = 1 + gameplayStuff.moneyMult + permaUpgrades.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 1
@@ -1439,7 +1452,7 @@ function love.update(dt)
                 end
             elseif modifier.current == modifier.nameList.MOD_TIMES_TWO_EVERYTHING then
                 moneyGainDiv = 1 + gameplayStuff.moneyDiv
-                moneyGainMult = 2 + gameplayStuff.moneyMult
+                moneyGainMult = 2 + gameplayStuff.moneyMult + permaUpgrades.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 1
@@ -1457,7 +1470,7 @@ function love.update(dt)
                 end
             elseif modifier.current == modifier.nameList.MOD_TIMES_TWO_FOGG_LIFE then
                 moneyGainDiv = 1 + gameplayStuff.moneyDiv
-                moneyGainMult = 1 + gameplayStuff.moneyMult
+                moneyGainMult = 1 + gameplayStuff.moneyMult + permaUpgrades.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 1
@@ -1475,7 +1488,7 @@ function love.update(dt)
                 end
             elseif modifier.current == modifier.nameList.MOD_TWO_TIMES_MONEY_GAIN then
                 moneyGainDiv = 1 + gameplayStuff.moneyDiv
-                moneyGainMult = 2 + gameplayStuff.moneyMult
+                moneyGainMult = 2 + gameplayStuff.moneyMult + permaUpgrades.moneyMult
                 for c = 1, #GameCarInstances do
                     GameCarInstances[c].hpDivCar = 1
                     GameCarInstances[c].spdDivCar = 1

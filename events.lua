@@ -1,7 +1,7 @@
 function createCitizen()
     local c = {
         pos = { x = -128, y = math.random((600 / 2) - 128, (600 / 2) + 128) },
-        spr = newAnimation(love.graphics.newImage("Sprs/Events/Citizen/CitizenWalk.png"), 32, 32, 3, 5),
+        spr = newAnimation(love.graphics.newImage("Sprs/Events/Citizen/CitizenWalk.png"), 32, 32, 3, 0, 5),
         mspd = 50,
     }
 
@@ -53,8 +53,8 @@ function createBombMan()
     local c = {
         pos = { x = -128, y = math.random((600 / 2) - 128, (600 / 2) + 128) },
         vel = { x = 0, y = 0 },
-        spd = 500,
-        spr = newAnimation(love.graphics.newImage("Sprs/Events/SuicideBomber/SuicideBomberWalk.png"), 32, 32, 3, 5),
+        spd = 1000,
+        spr = newAnimation(love.graphics.newImage("Sprs/Events/SuicideBomber/SuicideBomberWalk.png"), 32, 32, 3, 0, 5),
         mspd = 50,
         scaleX = 1,
     }
@@ -63,8 +63,8 @@ function createBombMan()
     function c:update()
         local targetCar = 1
         if GameCarInstances[targetCar] ~= nil then
-            local angleTo = math.atan2(self.pos.y - GameCarInstances[targetCar].pos.y,
-                self.pos.x - GameCarInstances[targetCar].pos.x)
+            local angleTo = Lume.angle(self.pos.x, self.pos.y, GameCarInstances[targetCar].pos.x,
+                GameCarInstances[targetCar].pos.y)
 
 
             self.vel.x = Lume.lerp(self.vel.x, self.spd * math.cos(angleTo), 0.1)
@@ -74,15 +74,19 @@ function createBombMan()
             if Lume.distance(self.pos.x, self.pos.y, GameCarInstances[targetCar].pos.x, GameCarInstances[targetCar].pos.y) <= 32 then
                 createExplosion(self.pos.x, self.pos.y, GameCars[2])
                 GameCarInstances[targetCar].hp = 0
+                table.remove(gameInstances, tableFind(gameInstances, self))
             end
         end
         for f = 1, #Foggs do
             if Lume.distance(self.pos.x, self.pos.y, Foggs[f].pos.x, Foggs[f].pos.y) <= 32 then
                 createExplosion(self.pos.x, self.pos.y, GameCars[2])
+                Foggs[f]:die()
+                table.remove(gameInstances, tableFind(gameInstances, self))
             end
         end
         if Lume.distance(self.pos.x, self.pos.y, PushsInGameMousePos.x, PushsInGameMousePos.y) <= 32 then
             createExplosion(self.pos.x, self.pos.y, GameCars[2])
+            table.remove(gameInstances, tableFind(gameInstances, self))
         end
 
 
@@ -509,7 +513,7 @@ function createPillChoose()
         choises = {
             "Permanent x2 Money Gain",
             "Permanent x2 Frog Amount",
-            "Permanent x2 Car Amount, 0.25% Less Damage",
+            "Permanent x2 Car Amount, 0.25% Less Car Damage",
             "Permanent x2 Car Speed",
             "Permanent x2 Car Damage",
         },
@@ -540,7 +544,7 @@ function createPillChoose()
 
 
             if self.pillSelected then
-                self.selectedPillScale = self.selectedPillScale + 2 * globalDt
+                self.selectedPillScale = self.selectedPillScale + 8 * globalDt
 
 
                 if self.selectedPillScale >= 4 then
@@ -646,11 +650,11 @@ function createPillChoose()
 
 
         if self.currentSelectedPill == 1 then
-            drawOutlinedText(self.choises[self.currentChoices[1]], 800 / 2, 128, 0, 2 + (math.random(-16, 16) / 64),
-                2 + (math.random(-16, 16) / 64), nil, nil)
+            drawOutlinedText(self.choises[self.currentChoices[1]], 800 / 2, 128, 0, 2 + (0.1 * math.random()),
+                2 + (0.1 * math.random()), nil, nil)
         elseif self.currentSelectedPill == 2 then
-            drawOutlinedText(self.choises[self.currentChoices[2]], 800 / 2, 128, 0, 2 + (math.random(-16, 16) / 64),
-                2 + (math.random(-16, 16) / 64), nil, nil)
+            drawOutlinedText(self.choises[self.currentChoices[2]], 800 / 2, 128, 0, 2 + (0.1 * math.random()),
+                2 + (0.1 * math.random()), nil, nil)
         end
 
 
@@ -661,18 +665,19 @@ function createPillChoose()
     table.insert(onTopGameInstaces, #onTopGameInstaces + 1, p)
 end
 
---TODO: finish the pill chose event
+--TODO: finish the pill chose event. FINISHED LADIES AND GENTLEMEN
 eventTypes = {
     { creationCode = createCitizen,             stopFrogg = false, gamePause = false, id = 0, name = "Citizen",              namePT = "Cidadão" },
     { creationCode = createBombMan,             stopFrogg = false, gamePause = false, id = 1, name = "Suicide Bomber",       namePT = "Homem Bomba" },
     { creationCode = createPlatformerChallenge, stopFrogg = true,  gamePause = true,  id = 2, name = "Platformer Challenge", namePT = "Desafio de plataforma" },
-    --{creationCode = createPillChoose, stopFrogg=true, gamePause=true, id = 2, name = "Pills", namePT = "Pilulas"},
+    --{ creationCode = createPillChoose,          stopFrogg = true,  gamePause = true,  id = 2, name = "Pills",                namePT = "Pilulas" },
 }
 currentEvent = 0
 
 
 function startEvent()
-    currentEvent = eventTypes[4] --[[eventTypes[math.floor(math.random(1, #eventTypes))]]
+    --[[eventTypes[4]]
+    currentEvent = eventTypes[math.floor(math.random(1, #eventTypes))]
     currentEvent.creationCode()
 
 
