@@ -39,6 +39,7 @@ require "StartingOptions.startingOptions"
 require "SourceCodeRoom.source"
 require "CarStatsInstance.carStats"
 require "Mods.mods"
+require "FUCKINGMETH"
 
 
 --All the game car instances
@@ -482,7 +483,7 @@ permaUpgrades = {
     --Permanent Money Mult
     moneyMult = 1,
     --Permanent Frog Mult
-    frogMult = 1,
+    frogAmnt = 1,
     --Permanent Car Amount
     carAmount = 1,
     --Permanent Car Damage
@@ -592,8 +593,46 @@ modsStuff = {
 }
 --If the game gonna use v-sync
 useVSync = true
---The time that one frame stays
+--The time that one frame stats
 frameTime = 1 / targetFps
+--Where is dump off the time related stuff
+time = {
+    ticks = 0,
+    TIMES = {
+        DAY = 0,
+        AFTERNOON = 1,
+        NIGHT = 2,
+        SUNRISE = 3,
+    },
+    currentTime = 0,
+    timeUntilPass = 30,
+    colorToBlendIn = {1, 1, 1, 1},
+    carLightsAlpha = 0,
+    --The texture used for the car light
+    carLightTexture = love.graphics.newImage("Sprs/Cars/CarLight.png"),
+}
+--Where i dump off the weather stuff
+weather = {
+    WEATHERS = {
+        CLEAN = 0,
+        RAIN = 1,
+        FOG = 2,
+        HEAVY_RAIN = 3,
+    },
+    currentWeather = 0,
+    ticks = 0,
+    timeUntilPass = 60,
+    rainSpr = love.graphics.newImage("Sprs/Weather/Rain.png"),
+    fogTexture = love.graphics.newImage("Sprs/Weather/Fog.png"),
+    --The quad used to make the fog scroll
+    fogMovingQuad = nil,
+    rainQuad = nil,
+    --The scroll of the fog
+    fogScroll = 0,
+    rainScroll = 0,
+    rainAlpha = 0,
+    fogAlpha = 0,
+}
 
 
 --The game main loop function, it gonna update the game, draw the game and exit the game, this function dont need to actually exist, it is just here for customization
@@ -704,6 +743,14 @@ function love.load(args, unfilteredArgs)
 
     --Load the game save file
     loadGame()
+
+
+    time.currentTime = time.TIMES.DAY
+    weather.currentWeather = weather.WEATHERS.CLEAN
+    weather.fogMovingQuad = love.graphics.newQuad(0, 0, 800, 600, weather.fogTexture)
+    weather.rainQuad = love.graphics.newQuad(0, 0, 800, 600, weather.rainSpr)
+    weather.fogTexture:setWrap("repeat", "repeat", "clamp")
+    weather.rainSpr:setWrap("repeat", "repeat", "clamp")
 
 
     --Create the example mod if it is the first play
@@ -937,10 +984,6 @@ function love.update(dt)
             xForCar = Lume.clamp(PushsInGameMousePos.x, placingStuff.minX, placingStuff.maxX)
 
 
-            --Get if the player is hovering the car selection box
-            gameStuff.hoveringTopBox = PushsInGameMousePosNoTransform.y < upBoxStuff.y + upBoxStuff.h
-
-
             --Let the player scroll the top bar
             if gameStuff.hoveringTopBox then
                 --If the mouse position is at the right side of the screen, increase the scroll value
@@ -956,6 +999,8 @@ function love.update(dt)
                 upBoxStuff.scrollX = upBoxStuff.scrollX + mouseScroll.y + mouseScroll.x
                 upBoxStuff.scrollX = Lume.clamp(upBoxStuff.scrollX, 0, 3.75 * #GameCars)
             end
+
+
             --Pass thro the game car buttons
             for b = 1, #gameCarButtons do
                 --Set the buttons positions effected by the scroll value
@@ -1079,6 +1124,10 @@ function love.update(dt)
             end
 
 
+            --Get if the player is hovering the car selection box
+            gameStuff.hoveringTopBox = PushsInGameMousePosNoTransform.y < upBoxStuff.y + upBoxStuff.h
+
+
             --If the player is not hovering the top box
             if not gameStuff.hoveringTopBox then
                 --If the rmb is pressed, stop placing cars, that's if you are placing cars
@@ -1114,7 +1163,10 @@ function love.update(dt)
             --If the megawave is not enabled and the game can place frogs, if the frog create timer is less or equals to 0, create a new frog and reset the timer
             if not megaWave.enabled and gameStuff.canPlaceFroggs then
                 if foggCreateTimer <= 0 then
-                    createANewFogg()
+                    for f=0, permaUpgrades.frogAmnt do
+                        createANewFogg()
+                        print("Created a new frog")
+                    end
 
 
                     foggCreateTimer = foggCreateTimerDef
@@ -1130,28 +1182,30 @@ function love.update(dt)
                     createMegaWaveWarning()
 
 
-                    --Create all the frogs
-                    for f = 0, megaWave.force * (gameStuff.currentFoggGaved + 1) do
-                        local posToPut = math.random(0, 2)
-                        local modX = 0
-                        local modY = 0
+                    --Create all the frogs for the wave
+                    for f=0, permaUpgrades.frogAmnt do
+                        for f = 0, megaWave.force * (gameStuff.currentFoggGaved + 1) do
+                            local posToPut = math.random(0, 2)
+                            local modX = 0
+                            local modY = 0
 
 
-                        if posToPut == 0 then
-                            modX = 0
-                            modY = math.random(600 / 2, 632)
+                            if posToPut == 0 then
+                                modX = 0
+                                modY = math.random(600 / 2, 632)
+                            end
+                            if posToPut == 1 then
+                                modX = math.random(0, 800 * 1.5)
+                                modY = 632 + math.random(-64, 64)
+                            end
+                            if posToPut == 2 then
+                                modX = 800 * 1.5
+                                modY = math.random(600 / 2, 632)
+                            end
+
+
+                            createANewFogg(modX, modY)
                         end
-                        if posToPut == 1 then
-                            modX = math.random(0, 800 * 1.5)
-                            modY = 632 + math.random(-64, 64)
-                        end
-                        if posToPut == 2 then
-                            modX = 800 * 1.5
-                            modY = math.random(600 / 2, 632)
-                        end
-
-
-                        createANewFogg(modX, modY)
                     end
                 end
             end
@@ -1256,6 +1310,12 @@ function love.update(dt)
             end
 
 
+            --Run the function to update time
+            updateTime()
+            --Run the function to update weather
+            updateWeather()
+
+
             --Decrease the beat timer
             healthTextStuff.beatTimer = healthTextStuff.beatTimer - (1 * gameStuff.speed) * dt
             --Lerp the health text back to 0
@@ -1264,9 +1324,11 @@ function love.update(dt)
             oldPlacingCar = placingCar
             --Decrease the tip create timer
             tipCreateTimer = tipCreateTimer - (1 * gameStuff.speed) * dt
+            --Increase the ticks
+            time.ticks = time.ticks + 1 * dt * gameStuff.speed
 
 
-            --Make the modifiers work
+            --#region Make the modifiers work
             --MESSY ASF CODE BELOW, PROCEED WITH CAUTION
 
 
@@ -1733,10 +1795,12 @@ function love.draw()
         --Draw the car selected example
         if placingCar and GameCars[selectedCar] ~= nil and currentSelectedCar ~= nil then
             love.graphics.setColor(0.5, 0.5, 0.5, 0.85)
-            currentSelectedCar.pos.x = xForCar
-            currentSelectedCar.pos.y = yForCar
-            currentSelectedCar.rot = 0.25 * math.cos(GlobalSinAngle * 2)
-            currentSelectedCar:draw()
+            for c=1, permaUpgrades.carAmount do
+                currentSelectedCar.pos.x = xForCar
+                currentSelectedCar.pos.y = yForCar
+                currentSelectedCar.rot = 0.25 * math.cos(GlobalSinAngle * 2) + (c / 32)
+                currentSelectedCar:draw()
+            end
             love.graphics.setColor(1, 1, 1, 1)
 
 
@@ -1774,6 +1838,91 @@ function love.draw()
         love.graphics.origin()
 
 
+        --#region Draw time related stuff
+        if time.currentTime == time.TIMES.DAY then
+            time.colorToBlendIn = colorLerp(time.colorToBlendIn, {1, 1, 1, 1}, 6)
+        elseif time.currentTime == time.TIMES.AFTERNOON then
+            time.colorToBlendIn = colorLerp(time.colorToBlendIn, {0.85, 0.85, 0, 1}, 6)
+        elseif time.currentTime == time.TIMES.NIGHT then
+            time.colorToBlendIn = colorLerp(time.colorToBlendIn, {0.1, 0.1, 0.2, 0.9}, 6)
+        elseif time.currentTime == time.TIMES.SUNRISE then
+            time.colorToBlendIn = colorLerp(time.colorToBlendIn, {0.5, 0.5, 0.6, 1}, 6)
+        end
+        
+        
+        if time.currentTime == time.TIMES.NIGHT then time.carLightsAlpha = Lume.lerp(time.carLightsAlpha, 0.25, 6) else time.carLightsAlpha = Lume.lerp(time.carLightsAlpha, -0.1, 6) end
+        
+
+        love.graphics.setBlendMode("multiply", "premultiplied")
+        love.graphics.setColor(time.colorToBlendIn)
+        love.graphics.rectangle("fill", 0, 0, 800, 600)
+        love.graphics.setBlendMode("alpha", "alphamultiply")
+
+
+        for c=1, #GameCarInstances do
+            love.graphics.setColor({1, 1, 1, time.carLightsAlpha + 0.1 * math.cos(GlobalSinAngle)})
+            local inScrnPos = toScreen(GameCarInstances[c].pos.x, GameCarInstances[c].pos.y)
+            local scaleAdd = 0.1 * math.cos(GlobalSinAngle)
+            love.graphics.draw(time.carLightTexture, inScrnPos[1] - 32, inScrnPos[2], 0, 4 + scaleAdd, 4 + scaleAdd, time.carLightTexture:getWidth(), time.carLightTexture:getHeight() / 2)
+        end
+        --#endregion
+
+
+        --#region Draw weather stuff
+        if weather.currentWeather == weather.WEATHERS.CLEAN then
+            weather.fogAlpha = Lume.lerp(weather.fogAlpha, 0, 6)
+            weather.rainAlpha = Lume.lerp(weather.rainAlpha, 0, 6)
+        elseif weather.currentWeather == weather.WEATHERS.RAIN then
+            love.graphics.setColor(0.5, 0.5, 1, 0.25)
+            love.graphics.rectangle("fill", 0, 0, 800, 600)
+            love.graphics.setColor(1, 1, 1, weather.rainAlpha)
+
+
+            weather.fogAlpha = Lume.lerp(weather.fogAlpha, 0, 6)
+            weather.rainAlpha = Lume.lerp(weather.rainAlpha, 1, 6)
+
+
+            weather.rainQuad = love.graphics.newQuad(weather.rainScroll, -weather.rainScroll, 800, 600, weather.rainSpr)
+
+
+            love.graphics.draw(weather.rainSpr, weather.rainQuad, 0, 0, 0, 4, 4, 0, 0)
+
+
+            weather.rainScroll = weather.rainScroll + (40 * gameStuff.speed) * globalDt
+        elseif weather.currentWeather == weather.WEATHERS.FOG then
+            love.graphics.setColor(1, 1, 1, weather.fogAlpha)
+
+
+            weather.fogAlpha = Lume.lerp(weather.fogAlpha, 0.5, 6)
+            weather.rainAlpha = Lume.lerp(weather.rainAlpha, 0, 6)
+
+
+            weather.fogMovingQuad = love.graphics.newQuad(weather.fogScroll, weather.fogScroll, 800, 600, weather.fogTexture)
+
+
+            love.graphics.draw(weather.fogTexture, weather.fogMovingQuad, 0, 0, 0, 16, 16, 0, 0)
+
+
+            weather.fogScroll = weather.fogScroll + (8 * gameStuff.speed) * globalDt
+        elseif weather.currentWeather == weather.WEATHERS.HEAVY_RAIN then
+            love.graphics.setColor(0.5, 0.5, 1, 0.5)
+            love.graphics.rectangle("fill", 0, 0, 800, 600)
+            love.graphics.setColor(1, 1, 1, weather.rainAlpha)
+
+
+            weather.fogAlpha = Lume.lerp(weather.fogAlpha, 0, 6)
+            weather.rainAlpha = Lume.lerp(weather.rainAlpha, 1, 6)
+
+
+            weather.rainQuad = love.graphics.newQuad(weather.rainScroll, -weather.rainScroll, 800, 600, weather.rainSpr)
+
+
+            love.graphics.draw(weather.rainSpr, weather.rainQuad, 0, 0, 0, 8, 8, 0, 0)
+            weather.rainScroll = weather.rainScroll + (80 * gameStuff.speed) * globalDt
+        end
+        --#endregion
+
+
         --Draw the up box
         love.graphics.setColor({ 0.8, 1, 0.8 })
         love.graphics.rectangle("fill", upBoxStuff.x, upBoxStuff.y, upBoxStuff.w, upBoxStuff.h)
@@ -1784,16 +1933,16 @@ function love.draw()
         --Draw the current money
         love.graphics.setColor(0.1, 0.1, 0.1, 0.5)
         love.graphics.rectangle("fill", upBoxStuff.x + 8, upBoxStuff.y + upBoxStuff.h + 8,
-            (love.graphics.getFont():getWidth(tostring(money)) * 4) + 16,
-            (love.graphics.getFont():getHeight(tostring(money)) * 4) + 8)
+            (love.graphics.getFont():getWidth(tostring(math.floor(money))) * 4) + 16,
+            (love.graphics.getFont():getHeight(tostring(math.floor(money))) * 4) + 8)
         love.graphics.setColor(1, 1, 1, 1)
         love.graphics.rectangle("line", upBoxStuff.x + 8, upBoxStuff.y + upBoxStuff.h + 8,
-            (love.graphics.getFont():getWidth(tostring(money)) * 4) + 16,
-            (love.graphics.getFont():getHeight(tostring(money)) * 4) + 8)
+            (love.graphics.getFont():getWidth(tostring(math.floor(money))) * 4) + 16,
+            (love.graphics.getFont():getHeight(tostring(math.floor(money))) * 4) + 8)
         love.graphics.setColor(1, 1, 1, 1)
-        drawOutlinedText(tostring(money), upBoxStuff.x + (love.graphics.getFont():getWidth(tostring(money)) * 2) + 16,
-            upBoxStuff.y + upBoxStuff.h + 32, 0, 4, 4, love.graphics.getFont():getWidth(tostring(money)) / 2,
-            love.graphics.getFont():getHeight(tostring(money)) / 2, 8)
+        drawOutlinedText(tostring(math.floor(money)), upBoxStuff.x + (love.graphics.getFont():getWidth(tostring(math.floor(money))) * 2) + 16,
+            upBoxStuff.y + upBoxStuff.h + 32, 0, 4, 4, love.graphics.getFont():getWidth(tostring(math.floor(money))) / 2,
+            love.graphics.getFont():getHeight(tostring(math.floor(money))) / 2, 8)
 
 
         --Draw the mega wave timer
@@ -1871,6 +2020,7 @@ function love.draw()
 
 
     --Draw mods draw functions that are on front
+    love.graphics.setColor({1, 1, 1})
     for f = 1, #modsStuff.frontDrawFunctions do
         if type(modsStuff.frontDrawFunctions[f]) == "function" then
             modsStuff.frontDrawFunctions[f]()
@@ -1899,10 +2049,6 @@ function love.draw()
     end
 
 
-    --Draw the mouse
-    mouse:drawMouse()
-
-
     --If the sceneTransition is enabled, draw it
     if sceneTransition.enabled then
         love.graphics.setColor({ 0, 0, 0 })
@@ -1926,6 +2072,10 @@ function love.draw()
     end
 
 
+    --Draw the mouse
+    mouse:drawMouse()
+
+
     --Draw debug info
     if debugStuff.enabled then
         love.graphics.setColor({ 1, 1, 1 })
@@ -1933,34 +2083,19 @@ function love.draw()
         drawOutlinedText("FPS: " .. tostring(love.timer.getFPS()), 8, 16 + 4, 0, 1, 1, 0, 0)
         drawOutlinedText("gameCarsAmnt: " .. tostring(#GameCarInstances), 8, 16 + 8 + 4 + 4, 0, 1, 1, 0, 0)
         drawOutlinedText("FoggsAmnt: " .. tostring(#Foggs), 8, 16 + 8 + 8 + 4 + 4 + 4, 0, 1, 1, 0, 0)
-        drawOutlinedText("gameInstancesAmnt: " .. tostring(#gameInstances), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4, 0, 1, 1, 0,
-            0)
-        drawOutlinedText("onTopGameInstancesAmnt: " .. tostring(#onTopGameInstaces), 8,
-            16 + 8 + 8 + 8 + 8 + 4 + 4 + 4 +
-            4 + 4, 0, 1, 1, 0, 0)
-        drawOutlinedText("timeSinceStartLove2D: " .. tostring(love.timer.getTime()), 8,
-            16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4, 0, 1, 1, 0, 0)
-        drawOutlinedText("timeSinceStartFromGame: " .. tostring(gameStuff.timeSinceStart), 8,
-            16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4, 0, 1, 1, 0, 0)
-        drawOutlinedText("random Number: " .. tostring(love.math.random(1, 4)), 8,
-            16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
-        drawOutlinedText("random Number Lua: " .. tostring(math.random(1, 4)), 8,
-            16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
-        drawOutlinedText("global Random Number: " .. tostring(randomNumber), 8,
-            16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
-        drawOutlinedText("Ram used: " .. tostring(math.floor(collectgarbage("count") / 1024) .. " MB used"), 8,
-            16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
-        drawOutlinedText("Current frog gaved: " .. tostring(gameStuff.currentFoggGaved), 8,
-            16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8, 0, 1, 1, 0, 0)
-        drawOutlinedText("Amount of UI Instances: " .. tostring(#UiStuff), 8,
-            16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8 + 4 + 8, 0, 1, 1,
-            0, 0)
-        drawOutlinedText("Current starting round: " .. tostring(gameStuff.currentStartingRound), 8,
-            16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8 + 4 + 8 + 8 + 4,
-            0, 1, 1, 0, 0)
-        drawOutlinedText("Target fps: " .. tostring(targetFps), 8,
-            16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8 + 4 + 8 + 8 + 4 +
-            8 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("gameInstancesAmnt: " .. tostring(#gameInstances), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("onTopGameInstancesAmnt: " .. tostring(#onTopGameInstaces), 8, 16 + 8 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("timeSinceStartLove2D: " .. tostring(love.timer.getTime()), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("timeSinceStartFromGame: " .. tostring(gameStuff.timeSinceStart), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("random Number: " .. tostring(love.math.random(1, 4)), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("random Number Lua: " .. tostring(math.random(1, 4)), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("global Random Number: " .. tostring(randomNumber), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("Ram used: " .. tostring(math.floor(collectgarbage("count") / 1024) .. " MB used"), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("Current frog gaved: " .. tostring(gameStuff.currentFoggGaved), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8, 0, 1, 1, 0, 0)
+        drawOutlinedText("Amount of UI Instances: " .. tostring(#UiStuff), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8 + 4 + 8, 0, 1, 1, 0, 0)
+        drawOutlinedText("Current starting round: " .. tostring(gameStuff.currentStartingRound), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8 + 4 + 8 + 8 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("Target fps: " .. tostring(targetFps), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8 + 4 + 8 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
+        drawOutlinedText("Frog create timer: " .. tostring(foggCreateTimer), 8, 16 + 8 + 8 + 8 + 4 + 4 + 4 + 4 + 16 + 4 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 8 + 4 + 4 + 8 + 4 + 8 + 8 + 4 + 8 + 4, 0, 1, 1, 0, 0)
     end
 
 
@@ -2053,11 +2188,9 @@ function love.keypressed(key)
         end
     end
     if tonumber(key) ~= nil and tonumber(key) <= #GameCars then
-        if placingCar == false or selectedCar ~= tonumber(key) then
-            startCarPlacing(tonumber(key))
-        else
-            stopCarPlacing()
-        end
+        gameCarButtons[tonumber(key)].hovered = true
+        gameCarButtons[tonumber(key)].pressed = true
+        gameStuff.hoveringTopBox = true
     end
     if key == "lshift" then
         if gameStuff.speed == 1 then
@@ -2439,4 +2572,40 @@ function sortGameInstances()
 
         return a.zIndex < b.zIndex
     end)
+end
+
+
+--Function to update time stuff
+function updateTime()
+    if time.ticks >= time.timeUntilPass then
+        time.currentTime = time.currentTime + 1
+
+
+        if time.currentTime > time.TIMES.SUNRISE then
+            time.currentTime = time.TIMES.DAY
+        end
+
+
+        time.ticks = 0
+    end
+end
+
+
+
+--Function to update weather stuff
+function updateWeather()
+    if weather.ticks > weather.timeUntilPass then
+        weather.currentWeather = weather.currentWeather + 1
+        weather.ticks = 0
+    end
+
+
+    weather.ticks = weather.ticks + (1 * gameStuff.speed) * globalDt
+end
+
+
+--Converts an in world pos to a in screen pos
+function toScreen(x, y)
+    local p = {gameCam.transform:transformPoint(x, y)}
+    return p
 end

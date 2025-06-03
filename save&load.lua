@@ -28,6 +28,7 @@ function saveGame(isFullscreen, lang, sfxVol, musVol, higestRound, drawOutlines,
     love.filesystem.write("GameSave.FoggersSaveFile", serialized)
 end
 
+
 function loadGame()
     --read the data
     local file = love.filesystem.read("GameSave.FoggersSaveFile")

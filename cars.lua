@@ -125,8 +125,7 @@ function createCarInstance(_inheritFrom, _x, _y, _ghostCar, _example)
         if self.isExampleCar then return end
 
 
-        self.vel.x = Lume.lerp(self.vel.x,
-            (((-self.fromCar.spd + self.spdAdd) + self.spdAddCar) * self.spdMultCar) / self.spdDivCar, 6)
+        self.vel.x = Lume.lerp(self.vel.x, ((((-self.fromCar.spd + self.spdAdd) + self.spdAddCar) * self.spdMultCar) / self.spdDivCar) * permaUpgrades.carSpeed, 6)
         self.vel.y = Lume.lerp(self.vel.y, 0, 6)
 
 

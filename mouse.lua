@@ -49,8 +49,10 @@ function mouse:drawMouse()
 
     love.graphics.setColor({ 1, 1, 1 })
 
+
     if love.mouse.isDown(1) then spr = self.pressSpr end
     if love.mouse.isDown(2) then spr = self.pressRSpr end
+
 
     love.graphics.draw(spr, self.pos.x, self.pos.y, self.rot, self.scale, self.scale, 3)
 

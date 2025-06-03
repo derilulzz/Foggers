@@ -505,17 +505,18 @@ function createPillChoose()
         vigneteScale = 800,
         enterOffsetY = -600,
         backgroundAlpha = 0,
+        dying = false,
         pill1Alpha = 1,
         pill2Alpha = 1,
         selectedPillScale = 1,
         notSelectedPillScale = 1,
         currentSelectedPill = 1,
         choises = {
-            "Permanent x2 Money Gain",
-            "Permanent x2 Frog Amount",
-            "Permanent x2 Car Amount, 0.25% Less Car Damage",
-            "Permanent x2 Car Speed",
-            "Permanent x2 Car Damage",
+            "Permanent +1 Money Mult",
+            "Permanent +1 Frog Amount",
+            "Permanent +1 Car Amount, 0.25% Less Car Damage",
+            "Permanent x1.5 Car Speed",
+            "Permanent x1.5 Car Damage",
         },
         pillSelected = false,
         currentChoices = { 1, 1 },
@@ -543,18 +544,6 @@ function createPillChoose()
             end
 
 
-            if self.pillSelected then
-                self.selectedPillScale = self.selectedPillScale + 8 * globalDt
-
-
-                if self.selectedPillScale >= 4 then
-                    self.pill1Alpha = Lume.lerp(self.pill1Alpha, 0, 6)
-                end
-            else
-                self.selectedPillScale = Lume.lerp(self.selectedPillScale, 2, 6)
-            end
-
-
             if love.mouse.isDown(1) and LastLeftMouseButton == false then
                 self.pillSelected = true
             end
@@ -566,34 +555,36 @@ function createPillChoose()
             end
 
 
-            if self.pillSelected then
-                self.selectedPillScale = self.selectedPillScale + 2 * globalDt
-
-
-                if self.selectedPillScale >= 4 then
-                    self.pill2Alpha = Lume.lerp(self.pill2Alpha, 0, 6)
-                end
-            else
-                self.selectedPillScale = Lume.lerp(self.selectedPillScale, 2, 6)
-            end
-
-
             if love.mouse.isDown(1) and LastLeftMouseButton == false then
                 self.pillSelected = true
-            end
-        else
-            if not self.pillSelected then
-                self.selectedPillScale = Lume.lerp(self.selectedPillScale, 1, 6)
-            else
-                if self.pillSelected then
-                    self.selectedPillScale = self.selectedPillScale + 2 * globalDt
-                else
-                    self.selectedPillScale = Lume.lerp(self.selectedPillScale, 2, 6)
-                end
             end
         end
 
 
+        if self.pillSelected then
+                self.selectedPillScale = self.selectedPillScale + 8 * globalDt
+
+
+                if self.selectedPillScale >= 4 then
+                    if self.currentSelectedPill == 1 then
+                        self.pill1Alpha = Lume.lerp(self.pill1Alpha, 0, 6)
+
+
+                        if self.pill1Alpha <= 0.1 then
+                            self:die()
+                        end
+                    else
+                        self.pill2Alpha = Lume.lerp(self.pill2Alpha, 0, 6)
+
+
+                        if self.pill2Alpha <= 0.1 then
+                            self:die()
+                        end
+                    end
+                end
+            else
+                self.selectedPillScale = Lume.lerp(self.selectedPillScale, 2, 6)
+            end
         if self.pillSelected then
             self.selectedPillScale = self.selectedPillScale + 10 * globalDt
         end
@@ -602,6 +593,40 @@ function createPillChoose()
         self.vigneteScale = Lume.lerp(self.vigneteScale, 8, 6)
         self.notSelectedPillScale = Lume.lerp(self.notSelectedPillScale, 1, 6)
     end
+
+
+    function p:die()
+        if self.dying then return end
+
+
+        self.dying = true
+        Flux.to(self, 1, {enterOffsetY=600, backgroundAlpha=0}):ease("expoout"):oncomplete(p.destroy)
+    end
+
+
+    function p:destroy()
+        if p.currentChoices[p.currentSelectedPill] == 1 then
+            permaUpgrades.moneyMult = permaUpgrades.moneyMult + 1
+        end
+        if p.currentChoices[p.currentSelectedPill] == 2 then
+            permaUpgrades.frogAmnt = permaUpgrades.frogAmnt + 1
+        end
+        if p.currentChoices[p.currentSelectedPill] == 3 then
+            permaUpgrades.carDamage = permaUpgrades.carDamage - (permaUpgrades.carDamage * 0.25)
+            permaUpgrades.carAmount = permaUpgrades.carAmount + 1
+        end
+        if p.currentChoices[p.currentSelectedPill] == 4 then
+            permaUpgrades.carSpeed = permaUpgrades.carSpeed * 1.5
+        end
+        if p.currentChoices[p.currentSelectedPill] == 5 then
+            permaUpgrades.carDamage = permaUpgrades.carDamage * 1.5
+        end
+
+
+        table.remove(onTopGameInstaces, tableFind(onTopGameInstaces, p))
+        gameStuff.eventPause = false
+    end
+
 
     function p:draw()
         love.graphics.setColor(0, 0, 0, self.backgroundAlpha)
@@ -649,12 +674,13 @@ function createPillChoose()
             p2Scale, p2Scale, self.pinkPillSpr:getWidth() / 2, self.pinkPillSpr:getHeight() / 2)
 
 
+        local txtScale = getRandomNumber(0, 0.1)
         if self.currentSelectedPill == 1 then
-            drawOutlinedText(self.choises[self.currentChoices[1]], 800 / 2, 128, 0, 2 + (0.1 * math.random()),
-                2 + (0.1 * math.random()), nil, nil)
+            drawOutlinedText(self.choises[self.currentChoices[1]], 800 / 2, 128, 0, 2 + (txtScale),
+                2 + (txtScale), nil, nil)
         elseif self.currentSelectedPill == 2 then
-            drawOutlinedText(self.choises[self.currentChoices[2]], 800 / 2, 128, 0, 2 + (0.1 * math.random()),
-                2 + (0.1 * math.random()), nil, nil)
+            drawOutlinedText(self.choises[self.currentChoices[2]], 800 / 2, 128, 0, 2 + (txtScale),
+                2 + (txtScale), nil, nil)
         end
 
 
@@ -670,14 +696,13 @@ eventTypes = {
     { creationCode = createCitizen,             stopFrogg = false, gamePause = false, id = 0, name = "Citizen",              namePT = "Cidadão" },
     { creationCode = createBombMan,             stopFrogg = false, gamePause = false, id = 1, name = "Suicide Bomber",       namePT = "Homem Bomba" },
     { creationCode = createPlatformerChallenge, stopFrogg = true,  gamePause = true,  id = 2, name = "Platformer Challenge", namePT = "Desafio de plataforma" },
-    --{ creationCode = createPillChoose,          stopFrogg = true,  gamePause = true,  id = 2, name = "Pills",                namePT = "Pilulas" },
+    { creationCode = createPillChoose,          stopFrogg = true,  gamePause = true,  id = 2, name = "Pills",                namePT = "Pilulas" },
 }
 currentEvent = 0
 
 
 function startEvent()
-    --[[eventTypes[4]]
-    currentEvent = eventTypes[math.floor(math.random(1, #eventTypes))]
+    currentEvent = eventTypes[4]--[[eventTypes[math.floor(math.random(1, #eventTypes))]]
     currentEvent.creationCode()
 
 

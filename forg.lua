@@ -98,10 +98,10 @@ function createForg(_x, _y, _spr, _jumpSpr, _hp, _jumpTimerDef)
         if amnt == nil then return end
 
 
-        self.hp = self.hp - amnt
-        warningSfx:setPitch(1.5 * math.random())
+        self.hp = self.hp - amnt * permaUpgrades.carDamage
+        warningSfx:setPitch(math.random())
         playSound(warningSfx)
-        createDamageNum(amnt, self.pos.x, self.pos.y)
+        createDamageNum(amnt * permaUpgrades.carDamage, self.pos.x, self.pos.y)
 
 
         if self.hp <= 0 then

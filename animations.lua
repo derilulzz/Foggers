@@ -74,7 +74,12 @@ function newAnimation(image, width, height, framesH, framesV, speed, replayType)
     end
 
     function animation:drawFrame(whatFrame, rot, x, y, sx, sy, ox, oy, outlineSize, outlineColor)
-        local spriteNum = whatFrame
+        local spriteNum = math.floor(whatFrame)
+
+
+        if spriteNum > #animation.quads then
+            spriteNum = 1
+        end
 
 
         if ox == nil then
@@ -86,7 +91,7 @@ function newAnimation(image, width, height, framesH, framesV, speed, replayType)
 
 
         if outlineSize == nil then
-            love.graphics.draw(animation.spriteSheet, animation.quads[spriteNum], x, y, rot, sx, sy, ox, oy)
+            love.graphics.draw(animation.spriteSheet, animation.quads[Lume.clamp(spriteNum, 1, #animation.quads)], x, y, rot, sx, sy, ox, oy)
         else
             drawOutlinedSpriteQuad(animation.spriteSheet, animation.quads[spriteNum], x, y, rot, sx, sy, ox, oy,
                 outlineSize, outlineColor)

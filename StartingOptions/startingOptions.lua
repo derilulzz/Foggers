@@ -2,12 +2,23 @@ function createStartingOptions()
     local o = {
         questions = {
             {"What language you speak?", "Que lingua você fala?"},
+            {
+                "Please, be aware that the modding system this game offers is capable of doing anything to the game or your compter.\nIM NOT RESPONSABLE FOR YOUR COMPUTER EXPLOSION, OK?\nBe cautious when intalling mods ;)",
+                "Esteja avisado que o sistema de mods que esse jogo oferece é capaz de fazer tudo tanto com o jogo tanto com o seu computador.\nEU NÃO SOU RESPONSAVEL PELA EXPLOSÃO DO SEU COMPUTADOR, OK?\nTenha cuidado instalando mods ;)"
+            },
         },
         answers = {
             {
                 "English",
                 "Portuguese (Brasil)",
             },
+            {
+                "Ok",
+            }
+        },
+        questionsScales = {
+            4,
+            2
         },
         alpha = 0,
         currentQuestion = 1,
@@ -44,11 +55,13 @@ function createStartingOptions()
 
 
         rm = rooms.start
-        if op == 2 then setRoom(); return end
+        if op == 3 then setRoom(); return end
 
 
         for i=1, #o.answers[o.currentQuestion] do
-            table.insert(o.optionsButtons, #o.optionsButtons + 1, createButton((800 / #o.answers[o.currentQuestion]) - (384 / 2) + 384 * (i - 1), 600 - 256, 256, 128, o.answers[o.currentQuestion][i], "", true))
+            local x = (800 / #o.answers[o.currentQuestion]) - (384 / 2) + 384 * (i - 1)
+            if #o.answers[o.currentQuestion] == 1 then x = 800 / 2 end
+            table.insert(o.optionsButtons, #o.optionsButtons + 1, createButton(x, 600 - 256, 256, 128, o.answers[o.currentQuestion][i], "", true))
         end
 
 
@@ -70,6 +83,13 @@ function createStartingOptions()
                     gameStuff.lang = "pt-br"
                     self:setCurrentOptions(2)
                     self.optionsButtons[2].pressed = false
+                end
+            end
+        elseif self.currentQuestion == 2 then
+            if self.optionsButtons[1] ~= nil then
+                if self.optionsButtons[1].pressed then
+                    self:setCurrentOptions(3)
+                    self.optionsButtons[1].pressed = false
                 end
             end
         end
@@ -112,24 +132,19 @@ function createStartingOptions()
 
 
         love.graphics.setColor(0, 0, 0, self.alpha)
-        drawOutlinedTextF(text, 800 / 2, 64, 800 / 4, "center", 0, 4, 4, nil, nil, 4, {1, 1, 1, self.alpha})
-        if self.currentQuestion == 2 then
-            local text = "The music is very bad\n:("
-            local wtfIsOST = "OST: Original SoundTrack"
-            if gameStuff.lang == "pt-br" then text = "A musica é bem ruim\n:(" end
-            drawOutlinedTextF(text, 800 / 2, 128 + 32, 800 / 4, "center", 0, 2, 2, nil, nil, 2, {1, 1, 1, self.alpha})
-            drawOutlinedText(wtfIsOST, 8, 128 + 32, 0, 1, 1, 0, nil, 1, {1, 1, 1, self.alpha})
-        end
+        drawOutlinedTextF(text, 800 / 2, 64, 800 / 4, "center", 0, self.questionsScales[self.currentQuestion], self.questionsScales[self.currentQuestion], nil, 0, 4, {1, 1, 1, self.alpha})
 
 
-        local fnt = love.graphics.getFont()
-        local text = "This can be changed later"
-        if self.currentQuestion == 1 then
-            if self.w == 2 then text = "Isso pode ser mudado depois" end
-        else
-            if gameStuff.lang == "pt-br" then text = "Isso pode ser mudado depois" end
+        if self.currentQuestion ~= 2 then
+            local fnt = love.graphics.getFont()
+            local text = "This can be changed later"
+            if self.currentQuestion == 1 then
+                if self.w == 2 then text = "Isso pode ser mudado depois" end
+            else
+                if gameStuff.lang == "pt-br" then text = "Isso pode ser mudado depois" end
+            end
+            drawOutlinedText(text, 800 / 2, 600 - (fnt:getHeight() * 2), 0, 2, 2, nil, fnt:getHeight(), 2, {1, 1, 1, self.alpha})
         end
-        drawOutlinedText(text, 800 / 2, 600 - (fnt:getHeight() * 2), 0, 2, 2, nil, fnt:getHeight(), 2, {1, 1, 1, self.alpha})
     end
 
 
