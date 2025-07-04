@@ -27,6 +27,12 @@ function createSourceInfo()
         end
 
 
+        self.openGitButton.pos.x = gameSize.w / 2
+        self.returnButton.pos.x = gameSize.w / 2
+        self.openGitButton.pos.y = gameSize.h / 2 - 32 - 8
+        self.returnButton.pos.y = gameSize.h / 2 + 32 + 8
+
+
         if self.openGitButton.pressed then
             love.system.openURL(self.gitUrl)
             self.openGitButton.pressed = false
@@ -42,10 +48,10 @@ function createSourceInfo()
         drawGrass()
 
 
-        drawOutlinedText("Source Code", 800 / 2, 16 + 8, 0.1 * math.sin(GlobalSinAngle), 4, 4, nil, nil, 2, {0, 0, 0})
+        drawOutlinedText("Source Code", gameSize.w / 2, 16 + 8, 0.1 * math.sin(GlobalSinAngle), 4, 4, nil, nil, 2, {0, 0, 0})
         local text = "All the game's code and everything else is under the MIT licence, that means you can do almost whatever you want with the game, the only thing you CANT do is say that you created the original game"
         if gameStuff.lang == "pt-br" then text = "Todo o jogo está sobre a MIT licence, isso significa que você pode fazer quase tudo oque você quiser com o jogo, a unica coisa que você não pode fazer é falar que criou o jogo original" end
-        drawOutlinedTextF(text, 800 / 2, 32 + 64, 800 / 2, "center", 0.01 * math.sin(GlobalSinAngle), 2, 2, nil, nil, 2, {0, 0, 0})
+        drawOutlinedTextF(text, gameSize.w / 2 + 8, 32 + 64, gameSize.w / 2 - 16, "center", 0.01 * math.sin(GlobalSinAngle), 2, 2, nil, nil, 2, {0, 0, 0})
     end
 
 

@@ -1,14 +1,21 @@
 require("rectangle")
 
 
-function createForg(_x, _y, _spr, _jumpSpr, _hp, _jumpTimerDef)
+originalFrogColors = {
+    {0.376, 1, 0.251, 1},
+    {0, 0.502, 0.243, 1},
+    {0, 0, 0, 1},
+}
+
+
+function createForg(_x, _y, _level, _hp, _jumpTimerDef)
     if _hp == nil then _hp = 2 end
 
 
     local f = {
         pos = { x = _x, y = _y },
-        spr = _spr,
-        jumpSpr = _jumpSpr,
+        spr = newAnimation(love.graphics.newImage("Sprs/Fog/Idle.png"), 18, 19, 2, 1, 5),
+        jumpSpr = newAnimation(love.graphics.newImage("Sprs/Fog/Jump.png"), 18, 19, 2, 1, 5),
         targetPos = { x = _x, y = _y },
         jumpTimer = _jumpTimerDef,
         zIndex = 0,
@@ -26,11 +33,35 @@ function createForg(_x, _y, _spr, _jumpSpr, _hp, _jumpTimerDef)
         spdDivFogg = 1,
         spdMultFogg = 1,
         alpha = 0,
+        newSprColors = {
+            {
+                {0.376, 1, 0.251, 1},
+                {0, 0.502, 0.243, 1},
+                {0, 0, 0, 1},
+            },
+            {
+                {1, 0.984, 0.251, 1},
+                {0.502, 0.208, 0, 1},
+                {0, 0, 0, 1},
+            },
+        },
+        usedColors = {},
     }
 
 
     function f:init()
         self.scale = 16
+
+
+        if gameStuff.currentFoggGaved + 1 <= #self.newSprColors then
+            self.usedColors = self.newSprColors[gameStuff.currentFoggGaved + 1]
+        else
+            self.usedColors = {
+                {Lume.random(), Lume.random(), Lume.random(), 1},
+                {Lume.random(), Lume.random(), Lume.random(), 1},
+                {0, 0, 0, 1},
+            }
+        end
 
 
         Flux.to(self, 1, { alpha = 1, scale = 2 }):ease("expoout")
@@ -122,11 +153,31 @@ function createForg(_x, _y, _spr, _jumpSpr, _hp, _jumpTimerDef)
 
     function f:draw()
         love.graphics.setColor(1, 1, 1, self.alpha)
-        if self.jumping then
-            self.jumpSpr:draw(self.rot, self.pos.x, self.pos.y, self.scale, self.scale)
-        else
-            self.spr:draw(self.rot, self.pos.x, self.pos.y, self.scale, self.scale)
-        end
+            paletteSetterShader:send("colorOriginal",
+                {
+                    originalFrogColors[1][1], originalFrogColors[1][2], originalFrogColors[1][3], originalFrogColors[1][4],
+                    originalFrogColors[2][1], originalFrogColors[2][2], originalFrogColors[2][3], originalFrogColors[2][4],
+                    originalFrogColors[3][1], originalFrogColors[3][2], originalFrogColors[3][3], originalFrogColors[3][4],
+                }
+            )
+            paletteSetterShader:send("colorToSet",
+                {
+                    self.usedColors[1][1], self.usedColors[1][2], self.usedColors[1][3], self.usedColors[1][4],
+                    self.usedColors[2][1], self.usedColors[2][2], self.usedColors[2][3], self.usedColors[2][4],
+                    self.usedColors[3][1], self.usedColors[3][2], self.usedColors[3][3], self.usedColors[3][4],
+                }
+            )
+            love.graphics.setShader(paletteSetterShader)
+
+
+            if self.jumping then
+                self.jumpSpr:draw(self.rot, self.pos.x, self.pos.y, self.scale, self.scale)
+            else
+                self.spr:draw(self.rot, self.pos.x, self.pos.y, self.scale, self.scale)
+            end 
+
+
+            love.graphics.setShader()
         love.graphics.setColor(1, 1, 1, 1)
     end
 
@@ -146,9 +197,11 @@ function createForg(_x, _y, _spr, _jumpSpr, _hp, _jumpTimerDef)
         table.remove(Foggs, tableFind(Foggs, self))
     end
 
+
     f:init()
 
 
+    table.insert(Foggs, #Foggs + 1, f)
     return f
 end
 

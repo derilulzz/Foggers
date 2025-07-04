@@ -1,4 +1,6 @@
-local colorSetterShader = love.graphics.newShader("Shaders/setColor.fs")
+colorSetterShader = love.graphics.newShader("Shaders/setColor.fs")
+paletteSetterShader = love.graphics.newShader("Shaders/palettezation.fs")
+
 
 local function processOutlineColor(color)
     if not color then
@@ -94,6 +96,9 @@ function drawOutlinedText(text, x, y, r, sx, sy, ox, oy, outlineSize, outlineCol
     y = y or 0
     ox = ox or font:getWidth(text) / 2
     oy = oy or font:getHeight() / 2
+    if ox == "totalR" then
+        ox = font:getWidth(text)
+    end
 
     love.graphics.push("all")
     love.graphics.setShader(colorSetterShader)
@@ -132,6 +137,9 @@ function drawOutlinedTextF(text, x, y, limit, align, r, sx, sy, ox, oy, outlineS
     if oy == "bottom" then
         oy = font:getHeight() * #wrap[2]
     end
+    if ox == "totalR" then
+        ox = limit
+    end
 
     love.graphics.push("all")
     colorSetterShader:send("colorToSet", outlineColor)
@@ -159,4 +167,10 @@ function drawOutlinedRect(x, y, width, height, outlineColor)
     love.graphics.setColor(processOutlineColor(outlineColor))
     love.graphics.rectangle("line", x, y, width, height)
     love.graphics.setColor(currentColor)
+end
+
+
+function getWAndHOfFText(text, limit)
+    local wrap = {love.graphics.getFont():getWrap(text, limit)}
+    return {w=limit, h=love.graphics.getFont():getHeight() * #wrap[2]}
 end

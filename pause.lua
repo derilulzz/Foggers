@@ -160,7 +160,7 @@ function createPause()
             end
         elseif self.menuLevel == 2 then
             if self.pos == 1 then
-                love.window.setFullscreen(not love.window.getFullscreen())
+                setFullscreen(not love.window.getFullscreen())
             elseif self.pos == 2 then
                 if gameStuff.lang == "pt-br" then
                     gameStuff.lang = "eng"

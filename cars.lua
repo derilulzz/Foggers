@@ -4,6 +4,7 @@ carsCategorys = {
     Special = 2,
     Explosive = 3,
     MoneyGenerator = 4,
+    numbers = {},
 }
 
 

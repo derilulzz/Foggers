@@ -11,11 +11,20 @@ mouse = {
     showLMBIcon = false,
     RMBModulate = { 1, 1, 1 },
     LMBModulate = { 1, 1, 1 },
+    pressTimer = 0,
+    mousePressedPos = {x = 0, y = 0},
 }
 
 
 function mouse:updateMouse()
-    local mGame = { Push:toGame(love.mouse.getX(), love.mouse.getY()) }
+    local mGame = {Push:toGame(love.mouse.getX(), love.mouse.getY())}
+
+
+    if not gameStuff.usePush then
+        mGame = {love.mouse.getX(), love.mouse.getY()}
+    end
+    
+    
     self.pos.x = mGame[1]
     self.pos.y = mGame[2]
 
@@ -25,6 +34,7 @@ function mouse:updateMouse()
 
     if love.mouse.isDown(1) and LastLeftMouseButton == false then
         self.scale = self.scale - 1
+        self.mousePressedPos = self.pos
     end
     if love.mouse.isDown(1) == false and LastLeftMouseButton then
         self.scale = self.scale + 1
@@ -41,6 +51,13 @@ function mouse:updateMouse()
     self.rot = Lume.lerp(self.rot, 0, 6)
     self.oldMousePos = { x = mGame[1], y = mGame[2] }
     self.rmbPressSpr:update(globalDt)
+
+
+    if love.mouse.isDown(1) then
+        self.pressTimer = self.pressTimer + 1 * globalDt
+    else
+        self.pressTimer = 0
+    end
 end
 
 function mouse:drawMouse()

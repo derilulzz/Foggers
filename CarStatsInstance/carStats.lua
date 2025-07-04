@@ -4,7 +4,7 @@
 function createCarStats()
     local c = {
         pos = {x = 16, y = 16},
-        size = {w = 800 - 32, h = 600 - 32},
+        size = {w = gameSize.w - 32, h = gameSize.h - 32},
         currentShowedCar = nil,
         oldCurrentShowedCar = nil,
         selectedCarScaleAdd = 0,
@@ -24,6 +24,9 @@ function createCarStats()
 
 
     function c:update()
+        self.size = {w = gameSize.w - 32, h = gameSize.h - 32}
+
+
         if self.returnButton.pressed then
             self:die()
             self.returnButton.pressed = false
@@ -76,18 +79,18 @@ function createCarStats()
         local yAdd = 0
         local c = 0
         self.totalCarLines = 0
-        local sizeW = (self.size.w / 2) / 4.5
+        local sizeW = (self.size.w / 2) / 5
         while c < #GameCars do
             local carScale = 1
             local biggerThanSlot = GameCars[c + 1].spr.sprWidth * (carScale) > sizeW / 2
             local x = self.pos.x + 8 + ((sizeW + 8) * (c - cRem))
 
 
-            if x > self.size.w / 2 then
-                cRem = cRem + 4
+            if x + sizeW > self.size.w / 2 then
+                cRem = cRem + c
                 self.totalCarLines = self.totalCarLines + 1
                 yAdd = yAdd + 64 + 8
-                x = self.pos.x + 8 + ((sizeW + 8) * (c - cRem))
+                x = self.pos.x + 8-- + ((sizeW + 8) * (c - cRem))
             end
 
 
@@ -202,10 +205,10 @@ function createCarStats()
 
 
             local descStats = drawOutlinedTextF(carDesc, (self.pos.x + scrnHalf) + scrnHalf / 2, self.pos.y + 200, scrnHalf / 2, "center", 0.025 * math.cos(GlobalSinAngle), 2, 2, nil, nil, 2, {0, 0, 0, self.alpha})
-            drawOutlinedText(speedText .. tostring(GameCars[self.currentShowedCar].spd), self.pos.x + scrnHalf + 64 + 8, self.pos.y + 200 + descStats.h + 32, 0.01 * math.sin(GlobalSinAngle), 2, 2, nil, nil, 2, {0, 0, 0, self.alpha})
-            drawOutlinedText(hpText .. tostring(GameCars[self.currentShowedCar].hp), self.pos.x + scrnHalf + 64 + 8, self.pos.y + 200 + descStats.h + 32 + 32, 0.01 * math.sin(GlobalSinAngle), 2, 2, nil, nil, 2, {0, 0, 0, self.alpha})
-            drawOutlinedText(damageText .. tostring(GameCars[self.currentShowedCar].damage), self.pos.x + scrnHalf + 64 + 8, self.pos.y + 200 + descStats.h + 32 + 32 + 32, 0.01 * math.sin(GlobalSinAngle), 2, 2, nil, nil, 2, {0, 0, 0, self.alpha})
-            drawOutlinedText(costText .. tostring(GameCars[self.currentShowedCar].cost), self.pos.x + scrnHalf + 64 + 8, self.pos.y + 200 + descStats.h + 32 + 32 + 32 + 32, 0.01 * math.sin(GlobalSinAngle), 2, 2, nil, nil, 2, {0, 0, 0, self.alpha})
+            drawOutlinedText(speedText .. tostring(GameCars[self.currentShowedCar].spd), self.pos.x + scrnHalf + 8, self.pos.y + 200 + descStats.h + 32, 0.01 * math.sin(GlobalSinAngle), 2, 2, 0, nil, 2, {0, 0, 0, self.alpha})
+            drawOutlinedText(hpText .. tostring(GameCars[self.currentShowedCar].hp), self.pos.x + scrnHalf + 8, self.pos.y + 200 + descStats.h + 32 + 32, 0.01 * math.sin(GlobalSinAngle), 2, 2, 0, nil, 2, {0, 0, 0, self.alpha})
+            drawOutlinedText(damageText .. tostring(GameCars[self.currentShowedCar].damage), self.pos.x + scrnHalf + 8, self.pos.y + 200 + descStats.h + 32 + 32 + 32, 0.01 * math.sin(GlobalSinAngle), 2, 2, 0, nil, 2, {0, 0, 0, self.alpha})
+            drawOutlinedText(costText .. tostring(GameCars[self.currentShowedCar].cost), self.pos.x + scrnHalf + 8, self.pos.y + 200 + descStats.h + 32 + 32 + 32 + 32, 0.01 * math.sin(GlobalSinAngle), 2, 2, 0, nil, 2, {0, 0, 0, self.alpha})
 
 
             if GameCars[self.currentShowedCar].especialPropertys.shoots then
@@ -215,19 +218,19 @@ function createCarStats()
                 if GameCars[self.currentShowedCar].especialPropertys.isTank then
                     yDec = yDec + 32
                     yDec = yDec + 32
-                    drawOutlinedText(isTankText, self.pos.x + scrnHalf + 64 + 8 + scrnHalf / 2, self.pos.y + 200 + descStats.h + 32 + 32, 0.01 * math.sin(GlobalSinAngle), 2, 2, nil, nil, 2, {0, 0, 0, self.alpha})
-                    drawOutlinedText(targetText .. tostring(GameCars[self.currentShowedCar].especialPropertys.target), self.pos.x + scrnHalf + 64 + 8 + scrnHalf / 2, self.pos.y + 200 + descStats.h + 32 + 32 + 32, 0.01 * math.sin(GlobalSinAngle), 2, 2, nil, nil, 2, {0, 0, 0, self.alpha})
+                    drawOutlinedText(isTankText, self.pos.x + self.size.w - 8, self.pos.y + 200 + descStats.h + 32 + 32, 0.01 * math.sin(GlobalSinAngle), 2, 2, "totalR", nil, 2, {0, 0, 0, self.alpha})
+                    drawOutlinedText(targetText .. tostring(GameCars[self.currentShowedCar].especialPropertys.target), self.pos.x + self.size.w - 8, self.pos.y + 200 + descStats.h + 32 + 32 + 32, 0.01 * math.sin(GlobalSinAngle), 2, 2, "totalR", nil, 2, {0, 0, 0, self.alpha})
                 end
 
 
-                drawOutlinedText(shootsText, self.pos.x + scrnHalf + 64 + 8 + scrnHalf / 2, self.pos.y + 200 + descStats.h + 32, 0.01 * math.sin(GlobalSinAngle), 2, 2, nil, nil, 2, {0, 0, 0, self.alpha})
-                drawOutlinedText(cooldownText .. tostring(GameCars[self.currentShowedCar].especialPropertys.cooldownDef), self.pos.x + scrnHalf + 64 + 8 + scrnHalf / 2, self.pos.y + 200 + yDec + descStats.h + 32 + 32, 0.01 * math.sin(GlobalSinAngle), 2, 2, nil, nil, 2, {0, 0, 0, self.alpha})
+                drawOutlinedText(shootsText, self.pos.x + self.size.w - 8, self.pos.y + 200 + descStats.h + 32, 0.01 * math.sin(GlobalSinAngle), 2, 2, "totalR", nil, 2, {0, 0, 0, self.alpha})
+                drawOutlinedText(cooldownText .. tostring(GameCars[self.currentShowedCar].especialPropertys.cooldownDef), self.pos.x + self.size.w - 8, self.pos.y + 200 + yDec + descStats.h + 32 + 32, 0.01 * math.sin(GlobalSinAngle), 2, 2, "totalR", nil, 2, {0, 0, 0, self.alpha})
             end
 
 
             if GameCars[self.currentShowedCar].especialPropertys.cats then
-                drawOutlinedText(createsCatText, self.pos.x + scrnHalf + 64 + 8 + scrnHalf / 2, self.pos.y + 200 + descStats.h + 32, 0.01 * math.sin(GlobalSinAngle), 2, 2, nil, nil, 2, {0, 0, 0, self.alpha})
-                drawOutlinedText(cooldownText .. tostring(GameCars[self.currentShowedCar].especialPropertys.catCreateDelayDef), self.pos.x + scrnHalf + 64 + 8 + scrnHalf / 2, self.pos.y + 200 + descStats.h + 32 + 32, 0.01 * math.sin(GlobalSinAngle), 2, 2, nil, nil, 2, {0, 0, 0, self.alpha})
+                drawOutlinedText(createsCatText, self.pos.x + self.size.w - 8, self.pos.y + 200 + descStats.h + 32, 0.01 * math.sin(GlobalSinAngle), 2, 2, "totalR", nil, 2, {0, 0, 0, self.alpha})
+                drawOutlinedText(cooldownText .. tostring(GameCars[self.currentShowedCar].especialPropertys.catCreateDelayDef), self.pos.x + self.size.w - 8, self.pos.y + 200 + descStats.h + 32 + 32, 0.01 * math.sin(GlobalSinAngle), 2, 2, "totalR", nil, 2, {0, 0, 0, self.alpha})
             end
         end
     end

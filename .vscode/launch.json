@@ -9,7 +9,7 @@
             "type": "lua-local",
             "request": "launch",
             "program": {
-                "command": "love"
+                "command": "love-git"
             },
             "args": ["./"]
         }

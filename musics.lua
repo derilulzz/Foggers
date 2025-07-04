@@ -21,16 +21,6 @@ function playMusic(whatMusic)
 end
 
 
-function playTransitionMusic(transition, music)
-    transitioningMusic = true
-    musicToSet = music
-    gameStuff.musicLooping = false
-    musics[currentMusic]:stop()
-    currentMusic = transition
-    musics[currentMusic]:play()
-end
-
-
 function musicUpdate()
     if transitioningMusic then
         if not musics[currentMusic]:isPlaying() then

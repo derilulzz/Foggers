@@ -11,6 +11,7 @@ function createStartThing()
         nextStateTimer = 5,
         oldAccKey = false,
         forcePassTimer = 1,
+        angle = 0,
         blackbarsWhiteLineAlpha = 1,
     }
 
@@ -71,12 +72,13 @@ function createStartThing()
 
 
         if self.state ~= 1 and self.state ~= 3 and self.state ~= 4 then
-            self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 0.25 + 0.1 * math.sin(GlobalSinAngle / 4), 6)
+            self.blackBarsProgress = Lume.lerp(self.blackBarsProgress, 0.25 + 0.1 * math.sin(self.angle / 4), 6)
         end
-        self.logoScale = self.logoScale + 0.0001 * math.cos(GlobalSinAngle * 4)
-        self.logoRot = self.logoRot + 0.015 * math.cos(GlobalSinAngle * 4)
+        self.logoScale = self.logoScale + 0.0001 * math.cos(self.angle / 2)
+        self.logoRot = self.logoRot + 0.015 * math.cos(self.angle / 2)
         self.oldAccKey = love.keyboard.isDown("space", "return")
         self.nextStateTimer = self.nextStateTimer - 1 * globalDt
+        self.angle = self.angle + 10 * globalDt
 
 
         self.state = Lume.clamp(self.state, 0, 4)

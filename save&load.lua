@@ -45,7 +45,7 @@ function loadGame()
 
     if data then
         if data.isFullscreen ~= nil then
-            love.window.setFullscreen(data.isFullscreen)
+            setFullscreen(data.isFullscreen)
         end
         if data.lang ~= nil then
             gameStuff.lang = data.lang

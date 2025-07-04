@@ -1,3 +1,14 @@
+placeToScale = {
+    Center = 0,
+    LeftCenter = 0,
+    LeftTop = 0,
+    LeftBottom = 0,
+    RightCenter = 0,
+    RightTop = 0,
+    RightBottom = 0,
+}
+
+
 function createButton(_x, _y, _w, _h, _text, additionalText, _fixedToScreen)
     _fixedToScreen = _fixedToScreen or true
     local b = {
@@ -12,6 +23,7 @@ function createButton(_x, _y, _w, _h, _text, additionalText, _fixedToScreen)
         oldHovered = false,
         hoverTime = 0,
         alpha = 1,
+        zIndex = 0,
         frontColorOverride = nil,
         backColorOverride = nil,
         visible = true,
@@ -23,15 +35,58 @@ function createButton(_x, _y, _w, _h, _text, additionalText, _fixedToScreen)
         buttonUpdate(self, hoverdown == false)
     end
 
-    function b:draw()
-        buttonDraw(self, nil, self.alpha)
+
+    function b:draw(drawDesc)
+        buttonDraw(self, nil, self.alpha, drawDesc)
     end
+
 
     table.insert(UiStuff, 1, b)
 
 
     return b
 end
+
+
+function createIconButton(_x, _y, _w, _h, _text, _icon, additionalText, _fixedToScreen)
+    _fixedToScreen = _fixedToScreen or true
+    local b = {
+        pos = { x = _x, y = _y },
+        size = { w = _w, h = _h },
+        wantedSize = { w = _w, h = _h },
+        text = _text,
+        icon = _icon,
+        fixedToScreen = _fixedToScreen,
+        hovered = false,
+        pressed = false,
+        addText = additionalText,
+        oldHovered = false,
+        hoverTime = 0,
+        alpha = 1,
+        zIndex = 0,
+        frontColorOverride = nil,
+        backColorOverride = nil,
+        visible = true,
+        disabled = false,
+    }
+
+
+    function b:update(hoverdown)
+        buttonUpdate(self, hoverdown == false)
+    end
+
+
+    function b:draw(drawDesc)
+        buttonDraw(self, nil, self.alpha, drawDesc, true)
+    end
+
+
+    table.insert(UiStuff, 1, b)
+
+
+    return b
+end
+
 
 function createDropDownButton(_x, _y, _w, _h, _text, additionalText, _fixedToScreen, childUis)
     local b = {
@@ -57,6 +112,7 @@ function createDropDownButton(_x, _y, _w, _h, _text, additionalText, _fixedToScr
         hoverTime = 0,
         visible = true,
         disabled = false,
+        zIndex = 0,
         fixedToScreen = _fixedToScreen,
         childUis = childUis,
         showChilds = false,
@@ -137,6 +193,7 @@ function createNumberInsertButton(_x, _y, _w, _h, _text, additionalText, _fixedT
         visible = true,
         alpha = 1,
         disabled = false,
+        zIndex = 0,
         fixedToScreen = _fixedToScreen,
         texting = false,
     }
@@ -153,9 +210,15 @@ function createNumberInsertButton(_x, _y, _w, _h, _text, additionalText, _fixedT
 
         if self.pressed then
             self.texting = not self.texting
+            love.keyboard.setTextInput(self.texting)
             self.pressed = false
         end
         if not self.hovered and love.mouse.isDown(1) and LastLeftMouseButton == false then
+            if self.texting then
+                love.keyboard.setTextInput(false)
+            end
+
+
             self.texting = false
         end
 
@@ -223,6 +286,7 @@ function createNumberInsertButton(_x, _y, _w, _h, _text, additionalText, _fixedT
     return b
 end
 
+
 function buttonUpdate(self, hoverOverride)
     if self.visible == false then return end
 
@@ -237,8 +301,21 @@ function buttonUpdate(self, hoverOverride)
 
 
     if not hoverOverride then
-        self.hovered = usedMousePos.x >= realPos.x and usedMousePos.x <= realPos.x + self.size.w and
-            usedMousePos.y >= realPos.y and usedMousePos.y <= realPos.y + self.size.h
+        local hasHoveredButtons = false
+
+
+        for b=1, #UiStuff do
+            if UiStuff[b].pressed ~= nil and UiStuff[b] ~= self then
+                if UiStuff[b].hovered then hasHoveredButtons = true end
+            end
+        end
+
+
+        if not hasHoveredButtons then
+            self.hovered = usedMousePos.x >= realPos.x and usedMousePos.x <= realPos.x + self.size.w and usedMousePos.y >= realPos.y and usedMousePos.y <= realPos.y + self.size.h
+        else
+            self.hovered = false
+        end
     else
         self.hovered = true
     end
@@ -255,6 +332,9 @@ function buttonUpdate(self, hoverOverride)
 
 
     if self.hovered then
+        self.zIndex = 10
+
+
         if love.mouse.isDown(1) then
             self.size.w = Lume.lerp(self.size.w, self.wantedSize.w, 12)
             self.size.h = Lume.lerp(self.size.h, self.wantedSize.h, 12)
@@ -277,6 +357,7 @@ function buttonUpdate(self, hoverOverride)
 
         self.hoverTime = self.hoverTime + 1 * globalDt
     else
+        self.zIndex = 0
         self.hoverTime = 0
         self.size.w = Lume.lerp(self.size.w, self.wantedSize.w, 12)
         self.size.h = Lume.lerp(self.size.h, self.wantedSize.h, 12)
@@ -286,9 +367,11 @@ function buttonUpdate(self, hoverOverride)
     self.oldHovered = self.hovered
 end
 
-function buttonDraw(self, modText, alpha)
+function buttonDraw(self, modText, alpha, drawDesc, iconed)
+    drawDesc = drawDesc or true
     alpha = alpha or 1
     modText = modText or self.text
+    iconed = iconed or false
 
 
     if not self.fixedToScreen then
@@ -297,26 +380,41 @@ function buttonDraw(self, modText, alpha)
 
 
     if self.visible == false then return end
-    if self.pos.x - self.size.w / 2 > 800 then return end
+    if self.pos.x - self.size.w / 2 > gameSize.w then return end
     if self.pos.x + self.size.w / 2 < 0 then return end
-    if self.pos.y - self.size.h / 2 > 600 then return end
+    if self.pos.y - self.size.h / 2 > gameSize.h then return end
     if self.pos.y + self.size.h / 2 < 0 then return end
+  
+
+    local realPos = {
+        x = self.pos.x - self.size.w / 2,
+        y = self.pos.y - self.size.h / 2
+    }
 
 
-    local realPos = { x = self.pos.x - self.size.w / 2, y = self.pos.y - self.size.h / 2 }
-    if self.frontColorOverride == nil then
-        love.graphics.setColor({ 1, 1, 1, alpha })
+    if not iconed then
+        love.graphics.setColor(0, 0, 0, alpha)
+        local shPosX = realPos.x + 8
+        if realPos.x < gameSize.w / 2 then shPosX = realPos.x - 8 end
+        love.graphics.rectangle("fill", shPosX, realPos.y + 8, self.size.w, self.size.h)
+
+        
+        if self.frontColorOverride == nil then
+            love.graphics.setColor({ 1, 1, 1, alpha })
+        else
+            love.graphics.setColor({ self.frontColorOverride[1], self.frontColorOverride[2], self.frontColorOverride[3],
+                alpha })
+        end
+        love.graphics.rectangle("fill", realPos.x, realPos.y, self.size.w, self.size.h)
+        if self.backColorOverride == nil then
+            love.graphics.setColor({ 0, 0, 0, alpha })
+        else
+            love.graphics.setColor({ self.backColorOverride[1], self.backColorOverride[2], self.backColorOverride[3], alpha })
+        end
+        love.graphics.rectangle("line", realPos.x, realPos.y, self.size.w, self.size.h)
     else
-        love.graphics.setColor({ self.frontColorOverride[1], self.frontColorOverride[2], self.frontColorOverride[3],
-            alpha })
+        Lovepatch.draw(self.icon, realPos.x, realPos.y, self.size.w, self.size.h)
     end
-    love.graphics.rectangle("fill", realPos.x, realPos.y, self.size.w, self.size.h)
-    if self.backColorOverride == nil then
-        love.graphics.setColor({ 0, 0, 0, alpha })
-    else
-        love.graphics.setColor({ self.backColorOverride[1], self.backColorOverride[2], self.backColorOverride[3], alpha })
-    end
-    love.graphics.rectangle("line", realPos.x, realPos.y, self.size.w, self.size.h)
 
 
     local fnt = love.graphics.getFont()
@@ -329,7 +427,16 @@ function buttonDraw(self, modText, alpha)
             [3], alpha })
 
 
-    if self.hoverTime >= 1 and self.addText ~= "" then
+    if drawDesc then
+        drawButtonDesc(self, fnt, alpha)
+    end
+
+    love.graphics.origin()
+end
+
+
+function drawButtonDesc(self, fnt, alpha)
+    if self.hoverTime >= 1 and self.addText ~= "" and self.addText ~= nil then
         local wrap = { fnt:getWrap(self.addText, self.size.w / 2) }
         local txtHeight = fnt:getHeight() * #wrap[2]
         love.graphics.setColor({ 0, 0, 0, alpha })
@@ -342,6 +449,4 @@ function buttonDraw(self, modText, alpha)
             PushsInGameMousePosNoTransform.y + 32 + 8 + ((txtHeight / 2) * 2), self.size.w / 2, "center", 0, 2, 2,
             self.size.w / 4, txtHeight / 2, 4, { 0, 0, 0, alpha })
     end
-
-    love.graphics.origin()
 end
